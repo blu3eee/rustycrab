@@ -6,6 +6,7 @@ use std::env;
 use std::collections::HashMap;
 use tokio::sync::RwLock;
 use std::sync::Arc;
+
 #[tokio::main]
 async fn main() {
     dotenv().ok();

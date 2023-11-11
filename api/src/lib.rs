@@ -26,6 +26,22 @@ use std::collections::HashMap;
 use tokio::sync::RwLock;
 use std::sync::Arc;
 
+// macro_rules! merge_option_field {
+//     ($model:expr, $dto:expr, $field:ident) => {
+//         if let Some(value) = $dto.$field {
+//             $model.$field = Set(Some(value));
+//         }
+//     };
+// }
+
+// macro_rules! merge_field {
+//     ($model:expr, $dto:expr, $field:ident) => {
+//         if let Some(value) = $dto.$field {
+//             $model.$field = Set(value);
+//         }
+//     };
+// }
+
 pub async fn run(app_state: AppState) {
     let app: Router = Router::new().nest("/api", create_router(app_state).await);
 

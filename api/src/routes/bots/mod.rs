@@ -3,6 +3,7 @@ pub mod get_all_bots;
 pub mod get_one_bot;
 use serde::{ Deserialize, Serialize };
 
+use crate::database::bots::Model as BotModel;
 #[derive(Deserialize)]
 pub struct RequestCreateBot {
     pub bot_id: String,
@@ -31,6 +32,20 @@ pub struct ResponseBot {
     pub discord_secret: String,
     pub discord_callback_url: String,
     pub premium_flags: i32,
+}
+
+impl From<BotModel> for ResponseBot {
+    fn from(model: BotModel) -> Self {
+        Self {
+            id: model.id,
+            bot_id: model.bot_id,
+            token: model.token,
+            theme_hex_color: model.theme_hex_color,
+            discord_callback_url: model.discord_callback_url,
+            discord_secret: model.discord_secret,
+            premium_flags: model.premium_flags,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]

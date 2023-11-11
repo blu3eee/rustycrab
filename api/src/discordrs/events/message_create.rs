@@ -2,7 +2,7 @@ use discord::model::{ Message, Channel };
 use crate::{
     utilities::app_error::AppError,
     queries::guild_config_queries,
-    discordrs::{ client::DiscordClient, commands::process_commands },
+    discordrs::{ client::DiscordClient, commands::process_context_commands },
 };
 
 pub async fn message_create(client: &mut DiscordClient, message: &Message) -> Result<(), AppError> {
@@ -45,7 +45,7 @@ async fn handle_public_text_channel(
     ).await?;
 
     if message.content.trim().starts_with(&config.prefix) {
-        let _ = process_commands(client, &config, message).await;
+        let _ = process_context_commands(client, &config, message).await;
     }
     Ok(())
 }

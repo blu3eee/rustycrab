@@ -10,7 +10,7 @@ pub async fn get_bot_from_discord_id(
     Extension(state): Extension<AppState>,
     Path(bot_id): Path<String>
 ) -> Result<Json<ResponseDataBot>, AppError> {
-    let bot_model = bot_queries::get_one_bot_from_discord_id(&state.db, &bot_id).await?;
+    let bot_model = bot_queries::get_bot_from_discord_id(&state.db, &bot_id).await?;
 
     let response = ResponseBot {
         id: bot_model.id,

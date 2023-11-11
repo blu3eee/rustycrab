@@ -27,7 +27,11 @@ use crate::{
     routes::guild_configs::{ RequestCreateConfig, RequestUpdateConfig },
 };
 
-use super::{ bot_queries::get_one_bot_from_discord_id, guild_queries::get_one_guild_or_create };
+use super::{
+    bot_queries::get_bot_from_discord_id,
+    guild_queries::get_one_guild_or_create,
+    save_active_model,
+};
 
 pub async fn get_all_bot_configs(
     db: &DatabaseConnection,
@@ -36,7 +40,7 @@ pub async fn get_all_bot_configs(
     // Find the configuration for the given bot_id and guild_id.
     GuildConfig::find()
         .join(LeftJoin, GuildConfigRelations::Bots.def())
-        .filter(Condition::all().add(bots::Column::BotId.eq(bot_id)))
+        .filter(bots::Column::BotId.eq(bot_id))
         .all(db).await
         .map_err(convert_seaorm_error)
 }
@@ -52,8 +56,11 @@ pub async fn get_one_config(
     let config = GuildConfig::find()
         .join(LeftJoin, GuildConfigRelations::Bots.def())
         .join(LeftJoin, GuildConfigRelations::GuildInfo.def())
-        .filter(Condition::all().add(bots::Column::BotId.eq(bot_id)))
-        .filter(Condition::all().add(guild_info::Column::GuildId.eq(guild_id)))
+        .filter(
+            Condition::all()
+                .add(bots::Column::BotId.eq(bot_id))
+                .add(guild_info::Column::GuildId.eq(guild_id))
+        )
         .one(db).await
         .map_err(convert_seaorm_error)?; // Convert the error to your application's error type
     // println!("{:?}", config);
@@ -73,8 +80,12 @@ pub async fn create_config(
 ) -> Result<GuildConfigModel, AppError> {
     if
         let Ok(Some(config)) = GuildConfig::find()
-            .filter(bots::Column::BotId.eq(&create_dto.guild_discord_id))
-            .filter(guild_info::Column::GuildId.eq(&create_dto.bot_discord_id))
+            .filter(
+                Condition::all()
+                    .add(bots::Column::BotId.eq(&create_dto.guild_discord_id))
+                    .add(guild_info::Column::GuildId.eq(&create_dto.bot_discord_id))
+            )
+
             .one(db).await
     {
         return Ok(config);
@@ -84,7 +95,7 @@ pub async fn create_config(
     // Either way, we proceed to create a new config.
 
     let guild = get_one_guild_or_create(db, &create_dto.guild_discord_id).await?;
-    let bot = get_one_bot_from_discord_id(db, &create_dto.bot_discord_id).await?;
+    let bot = get_bot_from_discord_id(db, &create_dto.bot_discord_id).await?;
 
     let new_config: bot_guild_configurations::ActiveModel = bot_guild_configurations::ActiveModel {
         bot_id: Set(Some(bot.id)),
@@ -92,19 +103,22 @@ pub async fn create_config(
         ..Default::default()
     };
 
-    new_config.insert(db).await.map_err(convert_seaorm_error)
+    save_active_model(db, new_config).await
 }
 
 pub async fn update_config(
     db: &DatabaseConnection,
-    bot_id: i32,
-    guild_id: i32,
+    bot_id: &i32,
+    guild_id: &i32,
     update_dto: RequestUpdateConfig
 ) -> Result<GuildConfigModel, AppError> {
     // Find the existing guild configuration
     let mut config: bot_guild_configurations::ActiveModel = GuildConfig::find()
-        .filter(bot_guild_configurations::Column::BotId.eq(bot_id))
-        .filter(bot_guild_configurations::Column::GuildId.eq(guild_id))
+        .filter(
+            Condition::all()
+                .add(bot_guild_configurations::Column::BotId.eq(*bot_id))
+                .add(bot_guild_configurations::Column::GuildId.eq(*guild_id))
+        )
         .one(db).await
         .map_err(convert_seaorm_error)?
         .ok_or_else(|| AppError::not_found("Guild configuration not found"))?

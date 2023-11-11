@@ -1,18 +1,25 @@
+mod general;
 mod music;
-mod ping;
+
+use std::collections::HashMap;
 
 use crate::{
     database::bot_guild_configurations::Model as GuildConfig,
     discordrs::client::DiscordClient,
 };
-use std::collections::HashMap;
+
 use discord::model::Message;
 use async_trait::async_trait;
 
-use self::ping::PingCommand;
+use self::general::ping::PingCommand;
+// use struct_iterable::Iterable;
 
 #[async_trait]
-trait CommandHandler: Send + Sync {
+pub trait ContextCommandHandler: Send + Sync {
+    fn name(&self) -> &'static str;
+
+    fn category(&self) -> &'static str;
+
     async fn handle_command(
         &self,
         client: &mut DiscordClient,
@@ -22,17 +29,19 @@ trait CommandHandler: Send + Sync {
     );
 }
 
-pub struct CommandDispatcher {
-    commands: HashMap<&'static str, Box<dyn CommandHandler>>,
+pub struct ContextCommandDispatcher {
+    commands: HashMap<String, Box<dyn ContextCommandHandler>>,
 }
 
-impl CommandDispatcher {
+impl ContextCommandDispatcher {
     pub fn new() -> Self {
-        let mut commands: HashMap<&'static str, Box<dyn CommandHandler>> = HashMap::new();
-        commands.insert("ping", Box::new(PingCommand));
-        // ... Add other commands here
+        let mut commands: HashMap<String, Box<dyn ContextCommandHandler>> = HashMap::new();
 
-        CommandDispatcher { commands }
+        // Add commands to the dispatcher
+        commands.insert("ping".to_string(), Box::new(PingCommand {}));
+        // ... other commands ...
+
+        ContextCommandDispatcher { commands }
     }
 
     pub async fn dispatch_command(

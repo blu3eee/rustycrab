@@ -8,13 +8,21 @@ use crate::{
     discordrs::client::DiscordClient,
 };
 
-use super::CommandHandler;
+use super::ContextCommandHandler;
 
 // Example implementation for a MusicCommand
 pub struct MusicCommand;
 
 #[async_trait]
-impl CommandHandler for MusicCommand {
+impl ContextCommandHandler for MusicCommand {
+    fn name(&self) -> &'static str {
+        "music"
+    }
+
+    fn category(&self) -> &'static str {
+        "music"
+    }
+
     async fn handle_command(
         &self,
         client: &mut DiscordClient,

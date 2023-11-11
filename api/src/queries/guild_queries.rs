@@ -7,7 +7,17 @@ use crate::database::guild_info::{
 };
 use crate::utilities::app_error::AppError;
 
-pub async fn get_one_guild(
+pub async fn get_one_guild(db: &DatabaseConnection, id: &i32) -> Result<GuildModel, AppError> {
+    Guild::find_by_id(*id)
+        .one(db).await
+        .map_err(|err| {
+            eprintln!("Error getting bot from discordId: {:?}", err);
+            AppError::internal_server_error("There was an error getting the bot")
+        })
+        .and_then(|bot| bot.ok_or_else(|| AppError::not_found("Guild not found")))
+}
+
+pub async fn get_one_guild_from_discord_id(
     db: &DatabaseConnection,
     discord_id: &str
 ) -> Result<GuildModel, AppError> {
