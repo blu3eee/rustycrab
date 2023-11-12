@@ -1,18 +1,21 @@
-pub mod ping;
+use self::{ ping::PingCommand, avatar::AvatarCommand };
 
-// pub struct GeneralCommands;
+use super::{ ContextCommandCategory, ContextCommand };
 
-// impl ContextCommandCategory for GeneralCommands {
-//     fn name(&self) -> &'static str {
-//         "General Information"
-//     }
+mod ping;
+mod avatar;
 
-//     fn collect_commands(&self) -> HashMap<&'static str, Box<dyn super::ContextCommandHandler>> {
-//         let mut commands: HashMap<&'static str, Box<dyn ContextCommandHandler>> = HashMap::new();
+pub struct GeneralCommands;
 
-//         let pingcommand = PingCommand {};
-//         commands.insert(pingcommand.name(), Box::new(PingCommand));
+impl ContextCommandCategory for GeneralCommands {
+    fn name(&self) -> &'static str {
+        "General Information"
+    }
 
-//         commands
-//     }
-// }
+    fn collect_commands(&self) -> Vec<Box<dyn ContextCommand>> {
+        Vec::from([
+            Box::new(PingCommand {}) as Box<dyn ContextCommand>,
+            Box::new(AvatarCommand {}) as Box<dyn ContextCommand>,
+        ])
+    }
+}

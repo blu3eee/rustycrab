@@ -1,7 +1,5 @@
 mod general;
-mod music;
-
-use std::collections::HashMap;
+pub mod dispatcher;
 
 use crate::{
     database::bot_guild_configurations::Model as GuildConfig,
@@ -11,14 +9,13 @@ use crate::{
 use discord::model::Message;
 use async_trait::async_trait;
 
-use self::general::ping::PingCommand;
-// use struct_iterable::Iterable;
-
 #[async_trait]
-pub trait ContextCommandHandler: Send + Sync {
+pub trait ContextCommand: Send + Sync {
     fn name(&self) -> &'static str;
 
-    fn category(&self) -> &'static str;
+    fn aliases(&self) -> Vec<&'static str> {
+        Vec::new()
+    }
 
     async fn handle_command(
         &self,
@@ -29,33 +26,13 @@ pub trait ContextCommandHandler: Send + Sync {
     );
 }
 
-pub struct ContextCommandDispatcher {
-    commands: HashMap<String, Box<dyn ContextCommandHandler>>,
+pub trait ContextCommandCategory {
+    fn name(&self) -> &'static str;
+    fn collect_commands(&self) -> Vec<Box<dyn ContextCommand>>;
 }
 
-impl ContextCommandDispatcher {
-    pub fn new() -> Self {
-        let mut commands: HashMap<String, Box<dyn ContextCommandHandler>> = HashMap::new();
-
-        // Add commands to the dispatcher
-        commands.insert("ping".to_string(), Box::new(PingCommand {}));
-        // ... other commands ...
-
-        ContextCommandDispatcher { commands }
-    }
-
-    pub async fn dispatch_command(
-        &self,
-        client: &mut DiscordClient,
-        command_name: &str,
-        config: &GuildConfig,
-        message: &Message,
-        args: &[&str]
-    ) {
-        if let Some(handler) = self.commands.get(command_name) {
-            handler.handle_command(client, config, message, args).await;
-        } else {
-            // Handle unknown command
-        }
-    }
+struct ContextCommandHandler {
+    command_name: &'static str,
+    category_name: &'static str,
+    command: Box<dyn ContextCommand>,
 }

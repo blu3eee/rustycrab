@@ -1,11 +1,11 @@
-use api::{ run, app_state::AppState, run_discord_bots, BotId, discordrs::client::DiscordClient };
+use api::{ app_state::AppState, run, running_bots };
 
 use dotenv::dotenv;
 use sea_orm::Database;
 use std::env;
-use std::collections::HashMap;
-use tokio::sync::RwLock;
-use std::sync::Arc;
+// use std::collections::HashMap;
+// use tokio::sync::RwLock;
+// use std::sync::Arc;
 
 #[tokio::main]
 async fn main() {
@@ -26,9 +26,10 @@ async fn main() {
     };
 
     // Retrieve all bots from the database and their running state
-    let running_bots: Arc<RwLock<HashMap<BotId, DiscordClient>>> = run_discord_bots(
-        &db
-    ).await.expect("Failed to run Discord bots");
+    // let running_bots: Arc<RwLock<HashMap<BotId, DiscordClient>>> = run_discord_bots(
+    //     &db
+    // ).await.expect("Failed to run Discord bots");
+    let running_bots = running_bots(&db).await.expect("Failed to run Discord bots");
 
     let app_state = AppState {
         db,

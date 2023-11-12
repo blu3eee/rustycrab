@@ -19,6 +19,7 @@ pub fn send_message(
         }
         MessageContent::Embed(embed) => {
             // Send an embed message
+            println!("sending embed");
             return client.discord
                 .send_embed(channel_id, "", |cur| build_embed(cur, embed))
                 .map_err(AppError::from);

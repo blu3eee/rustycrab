@@ -2,10 +2,17 @@ use discord::model::{ Message, Channel };
 use crate::{
     utilities::app_error::AppError,
     queries::guild_config_queries,
-    discordrs::{ client::DiscordClient, commands::process_context_commands },
+    discordrs::{
+        client::DiscordClient,
+        commands::{ process_context_commands, context::dispatcher::ContextCommandDispatcher },
+    },
 };
 
-pub async fn message_create(client: &mut DiscordClient, message: &Message) -> Result<(), AppError> {
+pub async fn message_create(
+    client: &mut DiscordClient,
+    message: &Message,
+    command_dispatcher: &ContextCommandDispatcher
+) -> Result<(), AppError> {
     if message.author.id.to_string() == client.bot_id {
         return Ok(());
     }
@@ -20,7 +27,12 @@ pub async fn message_create(client: &mut DiscordClient, message: &Message) -> Re
         Channel::Public(channel) if channel.kind == discord::model::ChannelType::Text => {
             // Handle only public text channels
             println!("Public text channel");
-            handle_public_text_channel(client, message, channel.server_id).await?;
+            handle_public_text_channel(
+                client,
+                message,
+                channel.server_id,
+                command_dispatcher
+            ).await?;
         }
         Channel::Private(_) => {
             // Handle private channels, if necessary
@@ -36,7 +48,8 @@ pub async fn message_create(client: &mut DiscordClient, message: &Message) -> Re
 async fn handle_public_text_channel(
     client: &mut DiscordClient,
     message: &Message,
-    server_id: discord::model::ServerId
+    server_id: discord::model::ServerId,
+    command_dispatcher: &ContextCommandDispatcher
 ) -> Result<(), AppError> {
     let config = guild_config_queries::get_one_config(
         &client.db,
@@ -45,7 +58,7 @@ async fn handle_public_text_channel(
     ).await?;
 
     if message.content.trim().starts_with(&config.prefix) {
-        let _ = process_context_commands(client, &config, message).await;
+        let _ = process_context_commands(client, &config, message, command_dispatcher).await;
     }
     Ok(())
 }
