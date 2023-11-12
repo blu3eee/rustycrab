@@ -2,20 +2,20 @@ use async_trait::async_trait;
 use discord::model::Message;
 use std::time::Instant;
 use crate::{
-    discordrs::{ client::DiscordClient, MessageContent, commands::context::ContextCommandHandler },
+    discordrs::{ client::DiscordClient, MessageContent, commands::context::ContextCommand },
     database::bot_guild_configurations::Model as GuildConfig,
 };
 
 pub struct PingCommand;
 
 #[async_trait]
-impl ContextCommandHandler for PingCommand {
+impl ContextCommand for PingCommand {
     fn name(&self) -> &'static str {
         "ping"
     }
 
-    fn category(&self) -> &'static str {
-        "General Information"
+    fn aliases(&self) -> Vec<&'static str> {
+        vec!["pong"]
     }
 
     async fn handle_command(

@@ -1,6 +1,8 @@
 // utilities/app_error.rs
 use axum::{ http::StatusCode, response::IntoResponse, Json };
 use serde::{ Deserialize, Serialize };
+use std::fmt;
+use std::error::Error;
 
 #[derive(Debug)]
 pub struct AppError {
@@ -56,16 +58,10 @@ struct ErrorResponse {
     error: String,
 }
 
-// Add DiscordError to the imports.
-use discord::Error as DiscordError;
-
-impl From<DiscordError> for AppError {
-    fn from(err: DiscordError) -> Self {
-        match err {
-            // Handle specific Discord errors if necessary
-            DiscordError::Other(msg) => AppError::internal_server_error(msg),
-            // Add cases for other specific Discord errors you want to handle differently
-            _ => AppError::internal_server_error("An error occurred with Discord operation."),
-        }
+impl fmt::Display for AppError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}: {}", self.code, self.message)
     }
 }
+
+impl Error for AppError {}

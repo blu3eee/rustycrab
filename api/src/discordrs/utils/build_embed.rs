@@ -19,9 +19,10 @@ pub fn build_embed(mut builder: EmbedBuilder, embed_data: DiscordEmbed) -> Embed
     }
 
     if let Some(text) = embed_data.footer_text {
-        builder = builder.footer(|f: EmbedFooterBuilder| f.text(&text));
         if let Some(url) = embed_data.footer_icon_url {
-            builder = builder.footer(|f| f.icon_url(&url));
+            builder = builder.footer(|f| f.text(&text).icon_url(&url));
+        } else {
+            builder = builder.footer(|f: EmbedFooterBuilder| f.text(&text));
         }
     }
 
@@ -34,9 +35,10 @@ pub fn build_embed(mut builder: EmbedBuilder, embed_data: DiscordEmbed) -> Embed
     }
 
     if let Some(name) = embed_data.author_name {
-        builder = builder.author(|a: EmbedAuthorBuilder| a.name(&name));
         if let Some(url) = embed_data.author_icon_url {
-            builder = builder.author(|f| f.icon_url(&url));
+            builder = builder.author(|a| a.name(&name).icon_url(&url));
+        } else {
+            builder = builder.author(|a: EmbedAuthorBuilder| a.name(&name));
         }
     }
 
