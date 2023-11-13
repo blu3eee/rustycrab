@@ -1,12 +1,10 @@
 use async_trait::async_trait;
-use sea_orm::DatabaseConnection;
-use twilight_http::Client as HttpClient;
-use twilight_model::{ channel::Message, gateway::payload::incoming::MessageCreate };
-use std::{ sync::Arc, error::Error, time::Instant };
+use twilight_model::gateway::payload::incoming::MessageCreate;
+use std::{ error::Error, time::Instant };
 
 use crate::{
     database::bot_guild_configurations,
-    twilightrs::{ commands::context::ContextCommand, client::DiscordClient },
+    twilightrs::{ commands::context::ContextCommand, client::{ DiscordClient, MessageContent } },
 };
 
 pub struct PingCommand;
@@ -25,30 +23,20 @@ impl ContextCommand for PingCommand {
         _: &[&str]
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
         let start_time = Instant::now();
-        // let reply = client
-        //     .send_message(message.channel_id, MessageContent::Text("Ping...".to_string()))
-        //     .unwrap();
-        let response: twilight_http::Response<Message> = client.http
-            .create_message(msg.channel_id)
-            .content("Ping!")?
-            .reply(msg.id).await?;
+
+        let response = client
+            .send_message(msg.channel_id, MessageContent::Text("Ping...".to_string())).await?
+            .model().await?;
 
         let duration = start_time.elapsed();
         let response_time = duration.as_millis(); // Convert duration to milliseconds
 
-        // let edit_content = format!("Pong! `{}` ms", response_time);
-        // let _ = client.edit_message(
-        //     message.channel_id,
-        //     reply.id,
-        //     MessageContent::Text(edit_content)
-        // ).await;
+        let _ = client.edit_message(
+            msg.channel_id,
+            response.id,
+            MessageContent::Text(format!("Pong!! `{} ms`", response_time))
+        ).await;
 
-        // Additional logic as needed
-        println!("{:?}", response);
         Ok(())
-    }
-
-    fn aliases(&self) -> Vec<&'static str> {
-        Vec::new()
     }
 }

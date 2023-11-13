@@ -1,8 +1,13 @@
 use std::collections::HashMap;
 
-use crate::twilightrs::{
-    commands::context::{ ContextCommandCategory, general::GeneralCommands },
-    client::DiscordClient,
+use twilight_model::gateway::payload::incoming::MessageCreate;
+
+use crate::{
+    twilightrs::{
+        commands::context::{ ContextCommandCategory, general::GeneralCommands },
+        client::DiscordClient,
+    },
+    database::bot_guild_configurations::Model as GuildConfigModel,
 };
 
 use super::ContextCommandHandler;
@@ -17,7 +22,7 @@ impl ContextCommandDispatcher {
         println!("creating new command dispatcher");
         let mut handlers: HashMap<String, ContextCommandHandler> = HashMap::new();
 
-        let categories: Vec<Box<dyn ContextCommandCategory>> = Vec::from([
+        let categories = Vec::from([
             Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>,
         ]);
 
@@ -26,8 +31,8 @@ impl ContextCommandDispatcher {
         for category in categories {
             let category_name = category.name();
             for command in category.collect_commands() {
-                let command_name = command.name();
-                let aliases = command.aliases();
+                let command_name: &str = command.name();
+                let aliases: Vec<&str> = command.aliases();
 
                 if let Some(_) = commands_aliases.get(command_name) {
                     println!("Command name conflicted, there are more than one command with name or alias {}", command_name);
@@ -57,20 +62,24 @@ impl ContextCommandDispatcher {
 
     pub async fn dispatch_command(
         &self,
-        client: &mut DiscordClient,
+        client: &DiscordClient,
+        config: &GuildConfigModel,
+        message: &MessageCreate,
         command_name: &str,
-        config: &GuildConfig,
-        message: &Message,
         args: &[&str]
     ) {
         // check commands
         if let Some(name) = self.commands_aliases.get(command_name) {
             // println!("dispatching commands");
             if let Some(handler) = self.handlers.get(name) {
-                handler.command.run(client, config, message, args).await;
+                let _ = handler.command.exec(client, config, message, args).await;
             } else {
                 // handler not mapped
             }
         }
+    }
+
+    pub async fn get_categories(&self) -> Vec<Box<dyn ContextCommandCategory>> {
+        Vec::from([Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>])
     }
 }

@@ -26,6 +26,21 @@ pub trait ContextCommand: Send + Sync {
         msg: &MessageCreate,
         cmd_args: &[&str]
     ) -> Result<(), Box<dyn Error + Send + Sync>>;
+
+    async fn exec(
+        &self,
+        client: &DiscordClient,
+        config: &GuildConfigModel,
+        msg: &MessageCreate,
+        cmd_args: &[&str]
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+        // preprocess command
+
+        // run command
+        self.run(client, config, msg, cmd_args).await
+
+        // action after command
+    }
 }
 
 pub trait ContextCommandCategory {

@@ -1,33 +1,43 @@
 // src/twilightrs/events/message_create.rs
 use twilight_model::gateway::payload::incoming::MessageCreate;
-use std::error::Error;
+use std::{ error::Error, sync::Arc };
 
-use crate::{ queries::guild_config_queries, twilightrs::{ commands, client::DiscordClient } };
+use crate::{
+    queries::guild_config_queries,
+    twilightrs::{ commands, client::DiscordClient, dispatchers::ClientDispatchers },
+};
 
 pub async fn handle_message_create(
     client: &DiscordClient,
+    dispatchers: Arc<ClientDispatchers>,
     msg: &MessageCreate
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     // Implement your logic for handling the message create event
     // For example, send a response message
     // check for commands
+
     if let Some(guild_id) = msg.guild_id {
-        let user_id: String = client.http.current_user().await?.model().await?.id.get().to_string();
+        let bot_id: String = client.http.current_user().await?.model().await?.id.get().to_string();
+        if bot_id == msg.author.id.get().to_string() {
+            return Ok(());
+        }
+
         let guild_id: String = guild_id.get().to_string();
 
-        let config = guild_config_queries::get_one_config(&client.db, &user_id, &guild_id).await?;
+        let config = guild_config_queries::get_one_config(&client.db, &bot_id, &guild_id).await?;
+        // println!("{}", config.prefix);
 
         let content = msg.content.trim().to_string();
 
-        let cmd_prefix = if content.starts_with(&config.prefix) {
+        let command_prefix = if content.starts_with(&config.prefix) {
             Some(config.prefix.clone())
-        } else if content.starts_with(&format!("<@{}>", user_id)) {
-            Some(format!("<@{}>", user_id))
+        } else if content.starts_with(&format!("<@{}>", bot_id)) {
+            Some(format!("<@{}>", bot_id))
         } else {
             None
         };
 
-        if let Some(prefix) = cmd_prefix {
+        if let Some(prefix) = command_prefix {
             if let Some(stripped) = content.strip_prefix(&prefix) {
                 let parts: Vec<&str> = stripped
                     .trim_start_matches(' ')
@@ -36,6 +46,7 @@ pub async fn handle_message_create(
                 if let Some((&cmd_name, cmd_args)) = parts.split_first() {
                     let _ = commands::context_commands_handler(
                         client,
+                        dispatchers,
                         &config,
                         msg,
                         cmd_name,
