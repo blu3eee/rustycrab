@@ -20,11 +20,15 @@ pub struct ContextCommandDispatcher {
 }
 
 impl ContextCommandDispatcher {
+    pub fn categories(&self) -> Vec<Box<dyn ContextCommandCategory>> {
+        Vec::from([Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>])
+    }
+
     pub fn new() -> Self {
         println!("creating new command dispatcher");
         let mut handlers: HashMap<String, ContextCommandHandler> = HashMap::new();
 
-        let categories = Vec::from([
+        let categories: Vec<Box<dyn ContextCommandCategory>> = Vec::from([
             Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>,
         ]);
 

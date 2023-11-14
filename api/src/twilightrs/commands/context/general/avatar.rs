@@ -43,22 +43,10 @@ impl ContextCommand for AvatarCommand {
             msg.author.clone()
         };
 
-        let sent_msg = client
-            .send_message(
-                msg.channel_id,
-                MessageContent::DiscordEmbeds(
-                    vec![DiscordEmbed {
-                        description: Some(format!("Getting <@{}> avatar..", user.id)),
-                        ..Default::default()
-                    }]
-                )
-            ).await?
-            .model().await?;
-
         if let Some(avatar_hash) = user.avatar {
-            let _ = client.edit_message(
+            let _ = client.reply_message(
                 msg.channel_id,
-                sent_msg.id,
+                msg.id,
                 MessageContent::DiscordEmbeds(
                     vec![DiscordEmbed {
                         title: Some(format!("{}'s avatar", &user.name)),

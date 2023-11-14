@@ -1,6 +1,5 @@
 use async_trait::async_trait;
-use twilight_cache_inmemory::model::CachedMessage;
-use twilight_model::{ gateway::payload::incoming::{ MessageCreate, MessageDelete }, user::User };
+use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
 use crate::{
@@ -53,8 +52,9 @@ impl ContextCommand for SnipeCommand {
         if let Some(message) = sniped_message {
             if let Some(message_author) = client.cache.user(message.author()) {
                 let message_user = message_author.value();
-                client.send_message(
+                client.reply_message(
                     msg.channel_id,
+                    msg.id,
                     MessageContent::DiscordEmbeds(
                         vec![DiscordEmbed {
                             description: if message.content().len() > 0 {

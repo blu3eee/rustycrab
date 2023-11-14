@@ -42,8 +42,9 @@ impl ContextCommand for BannerCommand {
         match client.get_user_banner_url(user.id).await {
             Ok(Some(banner_url)) => {
                 println!("{}", banner_url);
-                let _ = client.send_message(
+                let _ = client.reply_message(
                     msg.channel_id,
+                    msg.id,
                     MessageContent::DiscordEmbeds(
                         vec![DiscordEmbed {
                             title: Some(format!("{}'s banner", &user.name)),

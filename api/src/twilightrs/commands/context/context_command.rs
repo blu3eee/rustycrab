@@ -1,5 +1,5 @@
 use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
+    database::bot_guild_configurations,
     twilightrs::{
         discord_client::DiscordClient,
         utils::greedy::{ greedy_user, greedy_users, greedy_channel, greedy_channels },
@@ -18,6 +18,8 @@ use std::error::Error;
 use async_trait::async_trait;
 
 use super::{ ArgSpec, ParsedArg, ArgType };
+
+pub type GuildConfigModel = bot_guild_configurations::Model;
 
 /// Trait defining the structure and behavior of a context command.
 ///
@@ -200,12 +202,12 @@ pub trait ContextCommand: Send + Sync {
                     }
                     break; // Consume all remaining arguments
                 }
-                ArgType::String => {
+                ArgType::Text => {
                     if remaining_args.is_empty() && !arg_spec.optional {
                         return Err("Missing required string argument".into());
                     }
                     let concatenated_string: String = remaining_args.join(" ");
-                    parsed_args.push(ParsedArg::String(concatenated_string));
+                    parsed_args.push(ParsedArg::Text(concatenated_string));
                     break; // Consume all remaining arguments
                 }
                 ArgType::Number => {

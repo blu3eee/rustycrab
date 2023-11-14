@@ -30,7 +30,11 @@ impl ContextCommand for PingCommand {
 
         let start_time = Instant::now();
         let response = client
-            .send_message(msg.channel_id, MessageContent::Text("Ping...".to_string())).await?
+            .reply_message(
+                msg.channel_id,
+                msg.id,
+                MessageContent::Text("Ping...".to_string())
+            ).await?
             .model().await?;
         let duration = start_time.elapsed();
         let response_time = duration.as_millis();

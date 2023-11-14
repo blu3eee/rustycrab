@@ -78,6 +78,7 @@ impl HelpCommand {
                                     name: capitalized_category,
                                     value: command_names
                                         .into_iter()
+                                        .filter(|command_name| command_name != "help")
                                         .map(|command_name| format!("`{}` ", command_name))
                                         .collect(),
                                     inline: false,
@@ -156,7 +157,7 @@ impl HelpCommand {
                             inline: false,
                         });
                         // if command_handler.command.aliases
-                        if command_handler.command.aliases().len() > 0 {
+                        if command_aliases.len() > 0 {
                             discord_fields.push(DiscordEmbedField {
                                 name: "Aliases".to_string(),
                                 value: format!("{}", command_aliases.join(", ")),
@@ -180,19 +181,21 @@ impl HelpCommand {
                         }
                         discord_fields.push(DiscordEmbedField {
                             name: "Usage".to_string(),
-                            value: format!(
-                                "```{}{} {}```",
-                                config.prefix,
-                                command_handler.command_name,
-                                command_usage
-                            ),
+                            value: format!("```{}```", command_usage),
                             inline: false,
                         });
 
                         if subcommand_usage.len() > 0 {
                             discord_fields.push(DiscordEmbedField {
                                 name: "Subcommands".to_string(),
-                                value: format!("```{}```", subcommand_usage.join("\n")),
+                                value: format!(
+                                    "```{}```",
+                                    subcommand_usage
+                                        .into_iter()
+                                        .map(|sub| format!("{}{}", config.prefix, sub))
+                                        .collect::<Vec<String>>()
+                                        .join("\n")
+                                ),
                                 inline: false,
                             });
                         }

@@ -1,5 +1,6 @@
-pub mod context_command_dispatcher;
 pub mod general;
+pub mod voice;
+pub mod context_command_dispatcher;
 pub mod context_command;
 use twilight_model::{ user::User, channel::Channel };
 
@@ -10,7 +11,7 @@ use self::context_command::ContextCommand;
 pub enum ArgType {
     Word,
     Words,
-    String,
+    Text,
     Number,
     User,
     Channel,
@@ -44,7 +45,7 @@ pub enum ParsedArg {
     None,
     Word(String),
     Words(Vec<String>),
-    String(String),
+    Text(String),
     Number(i64),
     User(User),
     Users(Vec<User>),

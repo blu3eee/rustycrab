@@ -24,8 +24,12 @@ impl ContextCommand for MathCommand {
     }
 
     fn args(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::new(ArgType::String, false)]
+        vec![ArgSpec::new(ArgType::Text, false)]
     }
+
+    // fn subcommands(&self) -> Vec<Box<dyn ContextCommand>> {
+    //     vec![Box::new(LogicalCommand {}) as Box<dyn ContextCommand>]
+    // }
 
     async fn run(
         &self,
@@ -34,7 +38,7 @@ impl ContextCommand for MathCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
-        if let Some(ParsedArg::String(expression)) = command_args.first() {
+        if let Some(ParsedArg::Text(expression)) = command_args.first() {
             match meval::eval_str(expression) {
                 Ok(result) => {
                     let _ = client.reply_message(
@@ -72,3 +76,114 @@ impl ContextCommand for MathCommand {
         Ok(())
     }
 }
+
+// struct LogicalCommand {}
+
+// #[async_trait]
+// impl ContextCommand for LogicalCommand {
+//     fn name(&self) -> &'static str {
+//         "logical"
+//     }
+
+//     fn subcommands(&self) -> Vec<Box<dyn ContextCommand>> {
+//         vec![Box::new(LogicalNestCommand {}) as Box<dyn ContextCommand>]
+//     }
+
+//     async fn run(
+//         &self,
+//         client: &DiscordClient,
+//         _: &GuildConfigModel,
+//         msg: &MessageCreate,
+//         command_args: Vec<ParsedArg>
+//     ) -> Result<(), Box<dyn Error + Send + Sync>> {
+//         if let Some(ParsedArg::Text(expression)) = command_args.first() {
+//             match meval::eval_str(expression) {
+//                 Ok(result) => {
+//                     let _ = client.reply_message(
+//                         msg.channel_id,
+//                         msg.id,
+//                         MessageContent::Text(result.to_string())
+//                     ).await;
+//                 }
+//                 Err(_) => {
+//                     let _ = client.reply_message(
+//                         msg.channel_id,
+//                         msg.id,
+//                         MessageContent::DiscordEmbeds(
+//                             vec![DiscordEmbed {
+//                                 description: Some("Invalid math expression".to_string()),
+//                                 ..Default::default()
+//                             }]
+//                         )
+//                     ).await;
+//                 }
+//             }
+//         } else {
+//             let _ = client.reply_message(
+//                 msg.channel_id,
+//                 msg.id,
+//                 MessageContent::DiscordEmbeds(
+//                     vec![DiscordEmbed {
+//                         description: Some("No math expression provided".to_string()),
+//                         ..Default::default()
+//                     }]
+//                 )
+//             ).await;
+//         }
+
+//         Ok(())
+//     }
+// }
+
+// struct LogicalNestCommand {}
+
+// #[async_trait]
+// impl ContextCommand for LogicalNestCommand {
+//     fn name(&self) -> &'static str {
+//         "logical-nested"
+//     }
+//     async fn run(
+//         &self,
+//         client: &DiscordClient,
+//         _: &GuildConfigModel,
+//         msg: &MessageCreate,
+//         command_args: Vec<ParsedArg>
+//     ) -> Result<(), Box<dyn Error + Send + Sync>> {
+//         if let Some(ParsedArg::Text(expression)) = command_args.first() {
+//             match meval::eval_str(expression) {
+//                 Ok(result) => {
+//                     let _ = client.reply_message(
+//                         msg.channel_id,
+//                         msg.id,
+//                         MessageContent::Text(result.to_string())
+//                     ).await;
+//                 }
+//                 Err(_) => {
+//                     let _ = client.reply_message(
+//                         msg.channel_id,
+//                         msg.id,
+//                         MessageContent::DiscordEmbeds(
+//                             vec![DiscordEmbed {
+//                                 description: Some("Invalid math expression".to_string()),
+//                                 ..Default::default()
+//                             }]
+//                         )
+//                     ).await;
+//                 }
+//             }
+//         } else {
+//             let _ = client.reply_message(
+//                 msg.channel_id,
+//                 msg.id,
+//                 MessageContent::DiscordEmbeds(
+//                     vec![DiscordEmbed {
+//                         description: Some("No math expression provided".to_string()),
+//                         ..Default::default()
+//                     }]
+//                 )
+//             ).await;
+//         }
+
+//         Ok(())
+//     }
+// }

@@ -1,15 +1,16 @@
 // src/twilightrs/events/message_create.rs
 use twilight_model::gateway::payload::incoming::MessageCreate;
-use std::error::Error;
+use std::{ error::Error, sync::Arc };
 
 use crate::{
     queries::guild_config_queries,
-    twilightrs::{ commands, discord_client::DiscordClient },
+    twilightrs::{ commands, discord_client::DiscordClient, dispatchers::ClientDispatchers },
 };
 
 pub async fn handle_message_create(
-    client: &DiscordClient,
-    msg: &MessageCreate
+    client: &Arc<DiscordClient>,
+    msg: &MessageCreate,
+    dispatchers: &Arc<ClientDispatchers>
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     // Implement your logic for handling the message create event
     // For example, send a response message
@@ -46,6 +47,7 @@ pub async fn handle_message_create(
                     let _ = commands::context_commands_handler(
                         client,
                         &config,
+                        &dispatchers,
                         msg,
                         cmd_name,
                         cmd_args
