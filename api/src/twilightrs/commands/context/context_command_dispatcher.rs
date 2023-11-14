@@ -4,17 +4,19 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
     twilightrs::{
-        commands::context::{ ContextCommandCategory, general::GeneralCommands },
-        client::DiscordClient,
+        commands::context::{
+            ContextCommandCategory,
+            general::GeneralCommands,
+            ContextCommandHandler,
+        },
+        discord_client::DiscordClient,
     },
     database::bot_guild_configurations::Model as GuildConfigModel,
 };
 
-use super::ContextCommandHandler;
-
 pub struct ContextCommandDispatcher {
-    commands_aliases: HashMap<String, String>,
-    handlers: HashMap<String, ContextCommandHandler>,
+    pub commands_aliases: HashMap<String, String>,
+    pub handlers: HashMap<String, ContextCommandHandler>,
 }
 
 impl ContextCommandDispatcher {

@@ -5,9 +5,9 @@ use std::error::Error;
 use crate::{
     database::bot_guild_configurations,
     twilightrs::{
-        commands::context::ContextCommand,
-        client::{ DiscordClient, MessageContent, DiscordEmbed },
-        utils::greedy::greedy_user,
+        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
+        discord_client::{ DiscordClient, MessageContent },
+        embeds::DiscordEmbed,
     },
     cdn_avatar,
 };
@@ -24,19 +24,21 @@ impl ContextCommand for AvatarCommand {
         vec!["av"]
     }
 
+    fn args(&self) -> Vec<ArgSpec> {
+        vec![ArgSpec::new(ArgType::User, true)] // User argument is optional
+    }
+
     async fn run(
         &self,
         client: &DiscordClient,
         _: &bot_guild_configurations::Model,
         msg: &MessageCreate,
-        args: &[&str]
+        command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let bot = client.http.current_user().await?.model().await?;
+        let bot = client.get_bot().await?;
 
-        println!("bot {:?}", bot);
-
-        let user = if let (Some(u), _) = greedy_user(&client.http, args).await {
-            u.clone()
+        let user = if let Some(ParsedArg::User(user)) = command_args.get(0) {
+            user.clone()
         } else {
             msg.author.clone()
         };
@@ -77,6 +79,7 @@ impl ContextCommand for AvatarCommand {
                         } else {
                             None
                         },
+                        timestamp: Some(true),
                         ..Default::default()
                     }]
                 )

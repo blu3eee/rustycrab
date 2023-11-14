@@ -6,11 +6,12 @@ use std::{ error::Error, sync::Arc };
 
 use crate::database::bot_guild_configurations;
 
-use super::{ client::DiscordClient, dispatchers::ClientDispatchers };
+use self::context::context_command_dispatcher::ContextCommandDispatcher;
+
+use super::{ discord_client::DiscordClient, dispatchers::ClientDispatchers };
 
 pub async fn context_commands_handler(
     client: &DiscordClient,
-    dispatchers: Arc<ClientDispatchers>,
     config: &bot_guild_configurations::Model,
     msg: &MessageCreate,
     command_name: &str,
@@ -20,13 +21,7 @@ pub async fn context_commands_handler(
     //     "ping" => {}
     //     _ => {}
     // }
-    println!("context_commands_handler");
-    dispatchers.context_commands.dispatch_command(
-        client,
-        config,
-        msg,
-        command_name,
-        command_args
-    ).await;
+    let dispatcher = ContextCommandDispatcher::new();
+    dispatcher.dispatch_command(client, config, msg, command_name, command_args).await;
     Ok(())
 }

@@ -1,53 +1,64 @@
 pub mod context_command_dispatcher;
 pub mod general;
+pub mod context_command;
+use twilight_model::{ user::User, channel::Channel };
 
-use twilight_model::gateway::payload::incoming::MessageCreate;
-use std::error::Error;
+use self::context_command::ContextCommand;
 
-use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
-    twilightrs::client::DiscordClient,
-};
+/// Argument types for command parsing
+#[derive(Debug)]
+pub enum ArgType {
+    Word,
+    Words,
+    String,
+    Number,
+    User,
+    Channel,
+    Users, // List of user IDs
+    Channels, // List of channel IDs
+}
 
-use async_trait::async_trait;
+/// Specification for command arguments
+pub struct ArgSpec {
+    arg_type: ArgType,
+    optional: bool,
+}
 
-#[async_trait]
-pub trait ContextCommand: Send + Sync {
-    fn name(&self) -> &'static str;
-
-    fn aliases(&self) -> Vec<&'static str> {
-        Vec::new()
+impl ArgSpec {
+    /// Create a new argument specification
+    pub fn new(arg_type: ArgType, optional: bool) -> Self {
+        ArgSpec { arg_type, optional }
     }
 
-    async fn run(
-        &self,
-        client: &DiscordClient,
-        config: &GuildConfigModel,
-        msg: &MessageCreate,
-        cmd_args: &[&str]
-    ) -> Result<(), Box<dyn Error + Send + Sync>>;
-
-    async fn exec(
-        &self,
-        client: &DiscordClient,
-        config: &GuildConfigModel,
-        msg: &MessageCreate,
-        cmd_args: &[&str]
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
-        // preprocess command
-
-        // run command
-        self.run(client, config, msg, cmd_args).await
-
-        // action after command
+    pub fn to_string(&self) -> String {
+        if self.optional {
+            format!("[{:?}]", self.arg_type)
+        } else {
+            format!("<{:?}>", self.arg_type)
+        }
     }
 }
 
+/// Parsed command argument types
+pub enum ParsedArg {
+    None,
+    Word(String),
+    Words(Vec<String>),
+    String(String),
+    Number(i64),
+    User(User),
+    Users(Vec<User>),
+    Channel(Channel),
+    Channels(Vec<Channel>),
+}
+
+/// Trait defining a context command category
 pub trait ContextCommandCategory {
     fn name(&self) -> &'static str;
     fn collect_commands(&self) -> Vec<Box<dyn ContextCommand>>;
 }
 
+/// Handler for context commands
 pub struct ContextCommandHandler {
     pub command_name: &'static str,
     pub category_name: &'static str,

@@ -4,6 +4,15 @@ pub mod get_one_bot;
 use serde::{ Deserialize, Serialize };
 
 use crate::database::bots::Model as BotModel;
+
+use axum::{ Router, routing::get };
+
+pub fn bots_router() -> Router {
+    Router::new()
+        .route("/", get(get_all_bots::get_all_bots))
+        .route("/:botId", get(get_one_bot::get_bot_from_discord_id))
+}
+
 #[derive(Deserialize)]
 pub struct RequestCreateBot {
     pub bot_id: String,
