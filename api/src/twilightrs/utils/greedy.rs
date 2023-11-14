@@ -1,5 +1,9 @@
 use twilight_http::Client as HttpClient;
-use twilight_model::{ user::User, id::{ Id, marker::UserMarker } };
+use twilight_model::{
+    user::User,
+    id::{ Id, marker::{ UserMarker, ChannelMarker } },
+    channel::Channel,
+};
 
 use crate::utilities::app_error::AppError;
 
@@ -134,4 +138,53 @@ pub fn greedy_emojis<'a>(args: &'a [&'a str]) -> (Vec<u64>, &'a [&'a str]) {
 
     let remaining_args = &args[last_index + 1..];
     (emoji_ids, remaining_args)
+}
+
+// Function to parse a single channel mention or ID
+pub async fn greedy_channel<'a>(
+    http: &'a HttpClient,
+    args: &'a [&'a str]
+) -> (Option<Channel>, &'a [&'a str]) {
+    if let Some(&first_arg) = args.first() {
+        if let Some(id) = extract_id(first_arg) {
+            let channel_id: Id<ChannelMarker> = Id::new(id);
+            match http.channel(channel_id).await {
+                Ok(response) =>
+                    match response.model().await {
+                        Ok(channel) => {
+                            return (Some(channel), &args[1..]);
+                        }
+                        Err(_) => (),
+                    }
+                Err(_) => (),
+            }
+        }
+    }
+    (None, args)
+}
+
+// Function to parse multiple channel mentions or IDs
+pub async fn greedy_channels<'a>(
+    http: &'a HttpClient,
+    args: &'a [&'a str]
+) -> (Vec<Channel>, &'a [&'a str]) {
+    let mut channels = Vec::new();
+    let mut last_index = 0;
+
+    for (index, &arg) in args.iter().enumerate() {
+        if let Some(id) = extract_id(arg) {
+            let channel_id: Id<ChannelMarker> = Id::new(id);
+            if let Ok(response) = http.channel(channel_id).await {
+                if let Ok(channel) = response.model().await {
+                    channels.push(channel);
+                    last_index = index;
+                }
+            }
+        } else {
+            break;
+        }
+    }
+
+    let remaining_args = &args[last_index + 1..];
+    (channels, remaining_args)
 }

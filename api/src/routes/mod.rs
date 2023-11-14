@@ -6,6 +6,7 @@ pub mod discord_client;
 pub mod bot_users;
 pub mod guild_welcomes;
 pub mod guilds;
+pub mod bot_logs;
 
 use crate::database::{ embed_info::Model as EmbedModel, buttons::Model as ButtonModel };
 use serde::{ Deserialize, Serialize };

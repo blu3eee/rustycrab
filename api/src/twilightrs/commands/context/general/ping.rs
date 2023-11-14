@@ -3,8 +3,11 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::{ error::Error, time::Instant };
 
 use crate::{
-    database::bot_guild_configurations,
-    twilightrs::{ commands::context::ContextCommand, client::{ DiscordClient, MessageContent } },
+    database::bot_guild_configurations::Model as GuildConfigModel,
+    twilightrs::{
+        commands::context::{ ContextCommand, ParsedArg },
+        discord_client::{ DiscordClient, MessageContent },
+    },
 };
 
 pub struct PingCommand;
@@ -18,24 +21,25 @@ impl ContextCommand for PingCommand {
     async fn run(
         &self,
         client: &DiscordClient,
-        _: &bot_guild_configurations::Model,
+        _: &GuildConfigModel,
         msg: &MessageCreate,
-        _: &[&str]
+        _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let start_time = Instant::now();
+        // Example: Use command_args if needed for the logic
+        // If PingCommand doesn't need arguments, this part can remain unchanged
 
+        let start_time = Instant::now();
         let response = client
             .send_message(msg.channel_id, MessageContent::Text("Ping...".to_string())).await?
             .model().await?;
-
         let duration = start_time.elapsed();
-        let response_time = duration.as_millis(); // Convert duration to milliseconds
+        let response_time = duration.as_millis();
 
-        let _ = client.edit_message(
+        client.edit_message(
             msg.channel_id,
             response.id,
             MessageContent::Text(format!("Pong!! `{} ms`", response_time))
-        ).await;
+        ).await?;
 
         Ok(())
     }
