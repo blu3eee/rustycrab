@@ -298,6 +298,7 @@ dependencies = [
  "twilight-gateway",
  "twilight-http",
  "twilight-model",
+ "unic-langid",
  "validator",
 ]
 

@@ -13,12 +13,13 @@ use crate::{
             ArgType,
             ContextCommandHandler,
         },
-        discord_client::{ DiscordClient, MessageContent, ColorTypes },
+        discord_client::{ DiscordClient, MessageContent },
         embeds::{ DiscordEmbed, DiscordEmbedField },
     },
     cdn_guild_icon,
     cdn_avatar,
     queries::bot_queries,
+    utilities::utils::{ convert_color_u64, ColorTypes },
 };
 
 pub struct HelpCommand;
@@ -100,7 +101,7 @@ impl HelpCommand {
                     timestamp: Some(true),
                     color: if let Ok(info) = bot_info {
                         Some(
-                            client.convert_color_u64(
+                            convert_color_u64(
                                 ColorTypes::String(format!("{}", &info.theme_hex_color))
                             )
                         )
@@ -132,15 +133,14 @@ impl HelpCommand {
         let bot = client.get_bot().await?;
         let bot_info = bot_queries::get_bot_from_discord_id(&client.db, &bot.id.to_string()).await;
 
-        let (command_usage, command_aliases, subcommand_usage) = command_handler.command.get_help(
-            config.prefix.to_string(),
-            args
-        );
+        let (command_usage, command_aliases, subcommand_usage, command_description) =
+            command_handler.command.get_help(&config.locale, config.prefix.to_string(), args);
 
         let _ = client.send_message(
             msg.channel_id,
             MessageContent::DiscordEmbeds(
                 vec![DiscordEmbed {
+                    description: command_description,
                     timestamp: Some(true),
                     fields: {
                         let mut discord_fields: Vec<DiscordEmbedField> = Vec::new();
@@ -203,7 +203,7 @@ impl HelpCommand {
                     },
                     color: if let Ok(info) = bot_info {
                         Some(
-                            client.convert_color_u64(
+                            convert_color_u64(
                                 ColorTypes::String(format!("{}", &info.theme_hex_color))
                             )
                         )
@@ -263,18 +263,9 @@ impl ContextCommand for HelpCommand {
                         ).await?;
                         return Ok(());
                     }
-                    // Specific command help logic
-                    // Retrieve information about the command and display it
-                    // For example: usage, description, examples, etc.
-                    // let help_message =
-                    //     format!("Help for command '{}': [Command specific help]", command_name);
-
-                    // client.send_message(msg.channel_id, MessageContent::Text(help_message)).await?;
                 }
             }
-            _ => {
-                // No arguments or not a valid command, display general help
-            }
+            _ => {}
         }
 
         self.display_general_help(client, config, msg, dispatcher).await?;
