@@ -4,6 +4,7 @@ use crate::{
         discord_client::DiscordClient,
         utils::greedy::{ greedy_user, greedy_users, greedy_channel, greedy_channels },
     },
+    locales::{ load_localization, get_localized_string },
 };
 
 use twilight_http::Client as HttpClient;
@@ -58,12 +59,21 @@ pub trait ContextCommand: Send + Sync {
         Vec::new()
     }
 
+    fn description(&self, locale: &str) -> Option<String> {
+        let bundle = load_localization(&locale);
+        get_localized_string(&bundle, &format!("command-{}", self.name()), None)
+    }
+
     fn args(&self) -> Vec<ArgSpec> {
         Vec::new()
     }
 
     fn subcommands(&self) -> Vec<Box<dyn ContextCommand>> {
         Vec::new()
+    }
+
+    fn parent_command(&self) -> Option<Box<dyn ContextCommand>> {
+        None
     }
 
     async fn run(
@@ -152,12 +162,20 @@ pub trait ContextCommand: Send + Sync {
                     args
                 ).await;
             }
-            Err(e) => {
+            Err(_) => {
                 let _ = client.reply_message(
                     msg.channel_id,
                     msg.id,
                     crate::twilightrs::discord_client::MessageContent::Text(
-                        format!("Error: {:?}", e)
+                        format!(
+                            "```{}```",
+                            self
+                                .get_full_command()
+                                .into_iter()
+                                .map(|usage| format!("{}{}", config.prefix, usage))
+                                .collect::<Vec<String>>()
+                                .join("\n")
+                        )
                     )
                 ).await;
             }
@@ -265,44 +283,14 @@ pub trait ContextCommand: Send + Sync {
         Ok(parsed_args)
     }
 
-    fn get_usage(&self) -> Vec<String> {
-        let mut usages: Vec<String> = Vec::new();
-        let arguments = self
-            .args()
-            .into_iter()
-            .map(|arg| format!("{}", arg.to_string()))
-            .collect::<Vec<String>>()
-            .join(" ");
-
-        usages.push(format!("{} {}", self.name(), arguments));
-        for subcommand in self.subcommands() {
-            for usage in subcommand.get_usage() {
-                usages.push(format!("{} {}", self.name(), usage));
-            }
-        }
-
-        usages
-    }
-
-    fn get_subcommand_usage(&self) -> Vec<String> {
-        let mut usages: Vec<String> = Vec::new();
-        for subcommand in self.subcommands() {
-            for usage in subcommand.get_usage() {
-                usages.push(format!("{} {}", self.name(), usage));
-            }
-        }
-
-        usages
-    }
-
     fn get_help(
         &self,
+        locale: &str,
         parent_prefix: String,
         args: &[String]
-    ) -> (String, Vec<String>, Vec<String>) {
+    ) -> (String, Vec<String>, Vec<String>, Option<String>) {
         let subcommands = self.subcommands();
-        if subcommands.len() > 0 && args.len() > 0 {
-            let arg = args.first().unwrap();
+        if let Some(arg) = args.first() {
             if
                 let Some(subcommand) = subcommands
                     .iter()
@@ -311,26 +299,73 @@ pub trait ContextCommand: Send + Sync {
                     )
             {
                 return subcommand.get_help(
+                    locale,
                     format!("{}{} ", parent_prefix, self.name()),
                     &args[1..]
                 );
             }
         }
-        let arguments = self
-            .args()
-            .into_iter()
-            .map(|arg| format!("{}", arg.to_string()))
-            .collect::<Vec<String>>()
-            .join(" ");
 
         (
-            format!("{}{} {}", parent_prefix, self.name(), arguments),
+            format!("{}{} {}", parent_prefix, self.name(), self.get_args_string()),
             self
                 .aliases()
                 .into_iter()
                 .map(|a| a.to_string())
-                .collect::<Vec<String>>(),
-            self.get_subcommand_usage(),
+                .collect(),
+            self.get_full_command(),
+            self.description(locale),
         )
+    }
+
+    fn get_args_string(&self) -> String {
+        self.args()
+            .into_iter()
+            .map(|arg| arg.to_string())
+            .collect::<Vec<String>>()
+            .join(" ")
+    }
+
+    fn get_root_command(&self) -> String {
+        if let Some(parent_command) = self.parent_command() {
+            return format!("{} {}", parent_command.get_root_command(), self.name());
+        }
+
+        self.name().to_string()
+    }
+
+    fn get_full_command(&self) -> Vec<String> {
+        let root_command = self.get_root_command();
+        let mut result: Vec<String> = vec![format!("{} {}", root_command, self.get_args_string())];
+
+        if !root_command.is_empty() {
+            for subcommand in self.subcommands() {
+                result.extend(
+                    subcommand
+                        .get_usage()
+                        .into_iter()
+                        .map(|usage| format!("{} {}", root_command, usage))
+                );
+            }
+        } else {
+            for subcommand_usage in self.get_usage() {
+                result.push(subcommand_usage.to_string());
+            }
+        }
+
+        result
+    }
+
+    fn get_usage(&self) -> Vec<String> {
+        let mut usages: Vec<String> = vec![format!("{} {}", self.name(), self.get_args_string())];
+        for subcommand in self.subcommands() {
+            usages.extend(
+                subcommand
+                    .get_usage()
+                    .into_iter()
+                    .map(|usage| format!("{} {}", self.name(), usage))
+            );
+        }
+        usages
     }
 }
