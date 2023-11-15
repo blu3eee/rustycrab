@@ -1,16 +1,21 @@
+use fluent_bundle::FluentArgs;
 use sea_orm::DatabaseConnection;
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
     channel::{ Message, message::embed::Embed },
-    id::{ Id, marker::{ ChannelMarker, MessageMarker, UserMarker } },
+    id::{ Id, marker::{ ChannelMarker, MessageMarker, UserMarker, GuildMarker } },
     user::{ CurrentUser, User },
 };
 use twilight_http::{ Client as HttpClient, Response, request::channel::message::CreateMessage };
 use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap };
 
-use crate::database::embed_info::Model as EmbedModel;
+use crate::{
+    database::embed_info::Model as EmbedModel,
+    locales::{ get_localized_string, load_localization },
+    queries::guild_config_queries,
+};
 
-use super::embeds::DiscordEmbed;
+use super::{ embeds::DiscordEmbed, commands::context::context_command::GuildConfigModel };
 pub enum MessageContent {
     Text(String),
     EmbedModels(Vec<EmbedModel>),
@@ -27,11 +32,45 @@ pub struct DiscordClient {
     pub deleted_messages: RwLock<HashMap<Id<ChannelMarker>, Vec<CachedMessage>>>,
 }
 
-pub enum ColorTypes {
-    String(String),
+pub enum GuildIdentifier {
+    GuildId(Id<GuildMarker>),
+    Config(GuildConfigModel),
 }
 
 impl DiscordClient {
+    pub async fn get_guild_config(
+        &self,
+        guild_id: &Id<GuildMarker>
+    ) -> Result<GuildConfigModel, Box<dyn Error + Send + Sync>> {
+        let bot_id: String = self.http.current_user().await?.model().await?.id.get().to_string();
+        let guild_id: String = guild_id.get().to_string();
+
+        Ok(guild_config_queries::get_one_config(&self.db, &bot_id, &guild_id).await?)
+    }
+
+    pub fn get_locale_string(
+        &self,
+        locale: &str,
+        key: &str,
+        args: Option<&FluentArgs> // Use the same lifetime 'a here
+    ) -> Option<String> {
+        let bundle = load_localization(&locale);
+        get_localized_string(&bundle, key, args)
+    }
+
+    pub async fn get_locale(&self, guild_identifier: GuildIdentifier) -> String {
+        match guild_identifier {
+            GuildIdentifier::Config(config) => config.locale.clone(),
+            GuildIdentifier::GuildId(guild_id) => {
+                if let Ok(config) = self.get_guild_config(&guild_id).await {
+                    config.locale
+                } else {
+                    "en".to_string()
+                }
+            }
+        }
+    }
+
     pub async fn get_user_banner_url(
         &self,
         user_id: Id<UserMarker>
@@ -54,26 +93,8 @@ impl DiscordClient {
         }
     }
 
-    pub fn convert_color_u64(&self, color: ColorTypes) -> u32 {
-        match color {
-            ColorTypes::String(color_string) => {
-                u32::from_str_radix(color_string.trim_start_matches("#"), 16).unwrap_or_else(|_|
-                    u32::from_str_radix("2B2D31", 16).unwrap()
-                )
-            }
-        }
-    }
-
     pub async fn get_bot(&self) -> Result<CurrentUser, Box<dyn Error + Send + Sync>> {
         Ok(self.http.current_user().await?.model().await?)
-    }
-
-    fn convert_embed_models(&self, embed_models: Vec<EmbedModel>) -> Vec<Embed> {
-        embed_models.into_iter().map(Embed::from).collect()
-    }
-
-    fn convert_discord_embeds(&self, discord_embeds: Vec<DiscordEmbed>) -> Vec<Embed> {
-        discord_embeds.into_iter().map(Embed::from).collect()
     }
 
     async fn send_discord_message(
@@ -84,24 +105,16 @@ impl DiscordClient {
         match message_content {
             MessageContent::Text(text) => { Ok(create_message.content(&text)?.await?) }
             MessageContent::EmbedModels(embeds) => {
-                Ok(create_message.embeds(&self.convert_embed_models(embeds))?.await?)
+                Ok(create_message.embeds(&convert_embed_models(embeds))?.await?)
             }
             MessageContent::TextAndEmbedModels(text, embeds) => {
-                Ok(
-                    create_message
-                        .content(&text)?
-                        .embeds(&self.convert_embed_models(embeds))?.await?
-                )
+                Ok(create_message.content(&text)?.embeds(&convert_embed_models(embeds))?.await?)
             }
             MessageContent::DiscordEmbeds(embeds) => {
-                Ok(create_message.embeds(&self.convert_discord_embeds(embeds))?.await?)
+                Ok(create_message.embeds(&convert_discord_embeds(embeds))?.await?)
             }
             MessageContent::TextAndDiscordEmbeds(text, embeds) => {
-                Ok(
-                    create_message
-                        .content(&text)?
-                        .embeds(&self.convert_discord_embeds(embeds))?.await?
-                )
+                Ok(create_message.content(&text)?.embeds(&convert_discord_embeds(embeds))?.await?)
             }
             MessageContent::None => {
                 // Handle case where no content is provided (might do nothing or give an error)
@@ -141,23 +154,23 @@ impl DiscordClient {
         match message_content {
             MessageContent::Text(text) => { Ok(message_update.content(Some(&text))?.await?) }
             MessageContent::EmbedModels(embeds) => {
-                Ok(message_update.embeds(Some(&self.convert_embed_models(embeds)))?.await?)
+                Ok(message_update.embeds(Some(&convert_embed_models(embeds)))?.await?)
             }
             MessageContent::TextAndEmbedModels(text, embeds) => {
                 Ok(
                     message_update
                         .content(Some(&text))?
-                        .embeds(Some(&self.convert_embed_models(embeds)))?.await?
+                        .embeds(Some(&convert_embed_models(embeds)))?.await?
                 )
             }
             MessageContent::DiscordEmbeds(embeds) => {
-                Ok(message_update.embeds(Some(&self.convert_discord_embeds(embeds)))?.await?)
+                Ok(message_update.embeds(Some(&convert_discord_embeds(embeds)))?.await?)
             }
             MessageContent::TextAndDiscordEmbeds(text, embeds) => {
                 Ok(
                     message_update
                         .content(Some(&text))?
-                        .embeds(Some(&self.convert_discord_embeds(embeds)))?.await?
+                        .embeds(Some(&convert_discord_embeds(embeds)))?.await?
                 )
             }
             MessageContent::None => {
@@ -166,4 +179,12 @@ impl DiscordClient {
             }
         }
     }
+}
+
+fn convert_embed_models(embed_models: Vec<EmbedModel>) -> Vec<Embed> {
+    embed_models.into_iter().map(Embed::from).collect()
+}
+
+fn convert_discord_embeds(discord_embeds: Vec<DiscordEmbed>) -> Vec<Embed> {
+    discord_embeds.into_iter().map(Embed::from).collect()
 }
