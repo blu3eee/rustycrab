@@ -2,12 +2,14 @@ pub mod general;
 pub mod voice;
 pub mod context_command_dispatcher;
 pub mod context_command;
+use std::fmt;
+
 use twilight_model::{ user::User, channel::Channel };
 
 use self::context_command::ContextCommand;
 
 /// Argument types for command parsing
-#[derive(Debug)]
+// #[derive(Debug)]
 pub enum ArgType {
     Word,
     Words,
@@ -17,6 +19,21 @@ pub enum ArgType {
     Channel,
     Users, // List of user IDs
     Channels, // List of channel IDs
+}
+
+impl fmt::Debug for ArgType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ArgType::Word => write!(f, "argument"),
+            ArgType::Words => write!(f, "arguments"),
+            ArgType::Text => write!(f, "text"),
+            ArgType::Number => write!(f, "number"),
+            ArgType::User => write!(f, "@user/userid"),
+            ArgType::Channel => write!(f, "#channel/channel id"),
+            ArgType::Users => write!(f, "@users/userids"),
+            ArgType::Channels => write!(f, "#channels/channel ids"),
+        }
+    }
 }
 
 /// Specification for command arguments
