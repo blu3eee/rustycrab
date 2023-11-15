@@ -1,10 +1,10 @@
-permission-missing = Missing permission(s) to use the command
+permission-missing = Bạn không đủ quyền để sử dụng lệnh này.
 
 # Common Errors
-commonError-noUserInfo = Can't find { $user } information.
-commonError-noBotGuildConfig = Not Guild Configuration found.
-commonError-noTag = Tag at least one person.
-commonError-tag1 = Tag one person
+commonError-noUserInfo = Không tìm thấy thông tin của { $user }.
+commonError-noBotGuildConfig = Không tìm thấy setting của bot ở server này.
+commonError-noTag = Hãy tag ít nhất một người.
+commonError-tag1 = Hãy tag một người.
 
 # Bot Owner Commands
 command-botowner = Manage BotOwner permission
@@ -25,13 +25,13 @@ command-botadmin-listEmpty = empty...
 command-botadmin-listTitle = Users with BotAdmin permission
 
 # Language Command
-command-language = Change bot's language
-command-language-invalidLocale = Invalid language. Available languages: { $locales }
-command-language-localeChanged = Bot's language switched to `{ $locale }`
+command-language = Đổi ngôn ngữ của bot
+command-language-invalidLocale = Ngôn ngữ không hợp lệ. Những ngôn ngữ hiện có là: { $locales}
+command-language-localeChanged = Ngôn ngữ của bot đã được chuyển thành `{ $locale }`
 
 # Avatar Command
-command-avatar = Check user avatar
+command-avatar = Check avatar của người dùng
 
 # Math Command
-command-math = Calculate basic math expressions
-command-math-invalid = Invalid Math Expression
+command-math = Thực hiện các phép tính đơn giản
+command-math-invalid = Phép tính không hợp lệ

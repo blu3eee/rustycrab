@@ -5,6 +5,7 @@ pub mod database;
 pub mod utilities;
 pub mod queries;
 pub mod twilightrs;
+pub mod locales;
 
 use app_state::AppState;
 use axum::Router;
