@@ -1,3 +1,9 @@
+//! Main module for the Discord bot application.
+//!
+//! This module sets up and runs the application, initializing all necessary components like
+//! the Axum web server, database connections, and Discord bot clients. It also defines several
+//! utility macros for constructing Discord CDN URLs.
+
 pub mod app_state;
 pub mod router;
 pub mod routes;
@@ -34,6 +40,7 @@ use crate::database::bots::Model as BotModel;
 use twilight_gateway::{ Intents, ShardId, Shard, Config };
 use twilight_http::Client as HttpClient;
 
+/// Creates a URL to a user's avatar on Discord's CDN.
 #[macro_export]
 macro_rules! cdn_avatar {
     // https://cdn.discordapp.com/avatars/{user}/{avatar}.jpg
@@ -42,6 +49,7 @@ macro_rules! cdn_avatar {
     };
 }
 
+/// Creates a URL to a Discord emoji on Discord's CDN.
 #[macro_export]
 macro_rules! cdn_emoji {
     ($emoji_id:expr) => {
@@ -49,6 +57,7 @@ macro_rules! cdn_emoji {
     };
 }
 
+/// Creates a URL to a guild's icon on Discord's CDN.
 #[macro_export]
 macro_rules! cdn_guild_icon {
     // https://cdn.discordapp.com/avatars/{user}/{avatar}.jpg
@@ -57,6 +66,10 @@ macro_rules! cdn_guild_icon {
     };
 }
 
+/// Starts the Axum web server and sets up routing.
+///
+/// This function initializes the Axum router with the provided application state,
+/// then binds and serves the application on a specified address.
 pub async fn run(app_state: AppState) {
     let app: Router = Router::new().nest("/api", create_router(app_state).await);
 
@@ -66,6 +79,10 @@ pub async fn run(app_state: AppState) {
     axum::Server::bind(&address).serve(app.into_make_service()).await.unwrap();
 }
 
+/// Initializes and runs all bots present in the database.
+///
+/// For each bot found in the database, this function sets up the necessary Discord client,
+/// including its configuration, HTTP client, and event handling.
 pub async fn running_bots(
     db: &DatabaseConnection
 ) -> Result<HashMap<String, Arc<DiscordClient>>, AppError> {

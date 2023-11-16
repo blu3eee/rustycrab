@@ -3,6 +3,7 @@ use twilight_model::{ user::User, guild::Guild };
 
 use crate::{ twilightrs::embeds::DiscordEmbed, cdn_avatar, cdn_guild_icon };
 
+#[allow(dead_code)]
 pub struct DiscordEmbedBuilder<'a> {
     http: &'a HttpClient,
     embed: DiscordEmbed,

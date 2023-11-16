@@ -26,9 +26,6 @@ async fn main() {
     };
 
     // Retrieve all bots from the database and their running state
-    // let running_bots: Arc<RwLock<HashMap<BotId, DiscordClient>>> = run_discord_bots(
-    //     &db
-    // ).await.expect("Failed to run Discord bots");
     let running_bots = running_bots(&db).await.expect("Failed to run Discord bots");
 
     let app_state = AppState {
@@ -37,7 +34,4 @@ async fn main() {
     };
 
     run(app_state).await;
-
-    // Run Discord bots
-    //    run_discord_bots(bots).await;
 }

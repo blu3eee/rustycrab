@@ -12,9 +12,25 @@ use sea_orm::{
 
 use super::default_queries::DefaultSeaQueries;
 
+/// `BotGuildEntityQueries` is an extension of `DefaultSeaQueries` tailored for entities
+/// that are associated with both a bot and a guild in Discord. It provides methods
+/// for finding and updating these entities based on bot and guild Discord IDs.
+#[async_trait]
 #[async_trait]
 pub trait BotGuildEntityQueries: DefaultSeaQueries {
-    // Assumes that the implementing entity has `BotId` and `GuildId` columns.
+    /// Finds an entity based on both the bot's and guild's Discord IDs.
+    ///
+    /// This method assumes that the implementing entity has columns `BotId` and `GuildId`,
+    /// and it performs a query to retrieve the entity that matches both IDs.
+    ///
+    /// # Parameters
+    /// - `db`: The database connection.
+    /// - `bot_discord_id`: The Discord ID of the bot.
+    /// - `guild_discord_id`: The Discord ID of the guild.
+    ///
+    /// # Returns
+    /// A result containing either the entity model if found, or an `AppError` if not found
+    /// or if an error occurs during the query.
     async fn find_by_discord_ids(
         db: &DatabaseConnection,
         bot_discord_id: &str,
@@ -32,6 +48,20 @@ pub trait BotGuildEntityQueries: DefaultSeaQueries {
             .ok_or_else(|| AppError::not_found("Record not found"))
     }
 
+    /// Updates an entity based on both the bot's and guild's Discord IDs with the provided data.
+    ///
+    /// This method first finds the entity matching the provided Discord IDs and then
+    /// applies updates based on the given DTO. It's a convenient way to update entities
+    /// that are identified by a combination of bot and guild IDs.
+    ///
+    /// # Parameters
+    /// - `db`: The database connection.
+    /// - `bot_discord_id`: The Discord ID of the bot.
+    /// - `guild_discord_id`: The Discord ID of the guild.
+    /// - `update_data`: Data transfer object containing the update information.
+    ///
+    /// # Returns
+    /// A result containing either the updated entity model or an `AppError` if an error occurs.
     async fn update_by_discord_ids(
         db: &DatabaseConnection,
         bot_discord_id: &str,
