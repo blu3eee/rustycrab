@@ -5,6 +5,8 @@ mod message_delete;
 use std::{ error::Error, sync::Arc };
 use twilight_gateway::{ Event, Shard };
 
+use crate::queries::guild_logs::DiscordLogsCategories;
+
 use self::{ message_create::handle_message_create, message_delete::handle_message_delete };
 
 use super::{ discord_client::DiscordClient, dispatchers::ClientDispatchers };
@@ -49,6 +51,7 @@ async fn handle_event(
             if let Err(e) = handle_message_create(&client, &message_create, &dispatchers).await {
                 eprintln!("Error handling MessageCreate event: {}", e);
             }
+            println!("{:?}", DiscordLogsCategories::Channel);
         }
         Event::Ready(ready) => {
             println!("[{}#{:04}] Shard is ready", ready.user.name, ready.user.discriminator);

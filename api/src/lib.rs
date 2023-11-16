@@ -6,10 +6,13 @@ pub mod utilities;
 pub mod queries;
 pub mod twilightrs;
 pub mod locales;
+pub mod bot_guild_entity_queries;
+pub mod default_queries;
 
 use app_state::AppState;
 use axum::Router;
-use queries::bot_queries;
+use default_queries::DefaultSeaQueries;
+use queries::bot_queries::BotQueries;
 use sea_orm::DatabaseConnection;
 
 use twilight_cache_inmemory::{ ResourceType, InMemoryCache };
@@ -66,7 +69,7 @@ pub async fn run(app_state: AppState) {
 pub async fn running_bots(
     db: &DatabaseConnection
 ) -> Result<HashMap<String, Arc<DiscordClient>>, AppError> {
-    let bots: Vec<BotModel> = bot_queries::get_all_bots(&db).await?;
+    let bots: Vec<BotModel> = BotQueries::find_all(&db).await?;
     let mut discord_clients = HashMap::new();
     for bot in bots {
         let config = Config::builder(bot.token.clone(), Intents::all())

@@ -15,3 +15,11 @@ impl From<GuildModel> for ResponseGuild {
         }
     }
 }
+
+#[derive(Deserialize)]
+pub struct RequestCreateGuild {
+    pub guild_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RequestUpdateGuild {}

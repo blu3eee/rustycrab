@@ -18,7 +18,7 @@ use crate::{
     },
     cdn_guild_icon,
     cdn_avatar,
-    queries::bot_queries,
+    queries::bot_queries::BotQueries,
     utilities::utils::{ convert_color_u64, ColorTypes },
 };
 
@@ -32,14 +32,10 @@ impl HelpCommand {
         msg: &MessageCreate,
         dispatcher: ContextCommandDispatcher
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let guild = if let Some(guild_id) = msg.guild_id {
-            Some(client.http.guild(guild_id).await?.model().await?)
-        } else {
-            None
-        };
+        let guild = client.get_guild(msg.guild_id).await?;
         let bot = client.get_bot().await?;
         let bot_id = bot.id.to_string();
-        let bot_info = bot_queries::get_bot_from_discord_id(&client.db, &bot_id).await;
+        let bot_info = BotQueries::find_by_discord_id(&client.db, &bot_id).await;
         // General help logic
         // Display a list of commands with brief descriptions
         let mut categories: HashMap<String, Vec<String>> = HashMap::new();
@@ -124,14 +120,10 @@ impl HelpCommand {
         command_handler: &ContextCommandHandler,
         args: &[String]
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let guild = if let Some(guild_id) = msg.guild_id {
-            Some(client.http.guild(guild_id).await?.model().await?)
-        } else {
-            None
-        };
+        let guild = client.get_guild(msg.guild_id).await?;
 
         let bot = client.get_bot().await?;
-        let bot_info = bot_queries::get_bot_from_discord_id(&client.db, &bot.id.to_string()).await;
+        let bot_info = BotQueries::find_by_discord_id(&client.db, &bot.id.to_string()).await;
 
         let (command_usage, command_aliases, subcommand_usage, command_description) =
             command_handler.command.get_help(&config.locale, config.prefix.to_string(), args);

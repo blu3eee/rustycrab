@@ -10,7 +10,7 @@ pub struct RequestCreateBotUser {
     pub user_id: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RequestUpdateBotUser {
     pub balance: Option<i32>,
     pub pray_points: Option<i32>,

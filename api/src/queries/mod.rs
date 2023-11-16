@@ -7,6 +7,7 @@ pub mod guild_welcome_queries;
 pub mod message_button_queries;
 pub mod message_embed_queries;
 pub mod message_queries;
+pub mod guild_logs;
 
 use crate::utilities::app_error::AppError;
 use axum::http::StatusCode;

@@ -23,13 +23,14 @@ use crate::{
         RequestUpdateWelcome,
     },
     utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error },
+    default_queries::DefaultSeaQueries,
 };
 
 use super::{
-    guild_queries::{ get_one_guild_or_create, get_one_guild },
-    bot_queries::{ get_bot_from_discord_id, get_bot },
     save_active_model,
     message_queries::{ create_message, fetch_message_response, update_message },
+    bot_queries::BotQueries,
+    guild_queries::GuildQueries,
 };
 
 pub async fn create_welcome(
@@ -48,8 +49,11 @@ pub async fn create_welcome(
     {
         return Ok(welcome);
     }
-    let guild: guild_info::Model = get_one_guild_or_create(db, &create_dto.guild_discord_id).await?;
-    let bot: bots::Model = get_bot_from_discord_id(db, &create_dto.bot_discord_id).await?;
+    let guild: guild_info::Model = GuildQueries::find_one_or_create(
+        db,
+        &create_dto.guild_discord_id
+    ).await?;
+    let bot: bots::Model = BotQueries::find_by_discord_id(db, &create_dto.bot_discord_id).await?;
     let message: Option<crate::routes::ResponseMessage> = if
         let Some(message_data) = create_dto.message_data
     {
@@ -98,12 +102,12 @@ pub async fn get_welcome_response(
 ) -> Result<ResponseGuildWelcomeDetails, AppError> {
     let welcome: GuildWelcomeModel = get_welcome(db, id).await?;
 
-    let guild: crate::routes::guilds::ResponseGuild = get_one_guild(
+    let guild: crate::routes::guilds::ResponseGuild = GuildQueries::find_by_id(
         db,
-        &welcome.guild_id.unwrap()
+        welcome.guild_id.unwrap()
     ).await?.into();
 
-    let bot: crate::routes::bots::ResponseBot = get_bot(db, &welcome.bot_id.unwrap()).await?.into();
+    let bot = BotQueries::find_by_id(db, welcome.bot_id.unwrap()).await?.into();
 
     let message = fetch_message_response(db, &welcome.message_id).await?;
 

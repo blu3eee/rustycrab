@@ -3,8 +3,9 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::{ error::Error, sync::Arc };
 
 use crate::{
-    queries::guild_config_queries,
+    queries::guild_config_queries::GuildConfigQueries,
     twilightrs::{ commands, discord_client::DiscordClient, dispatchers::ClientDispatchers },
+    bot_guild_entity_queries::BotGuildEntityQueries,
 };
 
 pub async fn handle_message_create(
@@ -24,7 +25,7 @@ pub async fn handle_message_create(
 
         let guild_id: String = guild_id.get().to_string();
 
-        let config = guild_config_queries::get_one_config(&client.db, &bot_id, &guild_id).await?;
+        let config = GuildConfigQueries::find_by_discord_ids(&client.db, &bot_id, &guild_id).await?;
         // println!("{}", config.prefix);
 
         let content = msg.content.trim().to_string();

@@ -1,5 +1,9 @@
 // routes/bot/get_all_bots.rs
-use crate::{ queries::bot_queries, utilities::app_error::AppError, app_state::AppState };
+use crate::{
+    queries::bot_queries::BotQueries,
+    utilities::app_error::AppError,
+    app_state::AppState,
+};
 use axum::{ extract::{ Extension, Path }, Json };
 
 use super::{ ResponseBot, ResponseDataBot };
@@ -8,9 +12,9 @@ use super::{ ResponseBot, ResponseDataBot };
 
 pub async fn get_bot_from_discord_id(
     Extension(state): Extension<AppState>,
-    Path(bot_id): Path<String>
+    Path(bot_discord_id): Path<String>
 ) -> Result<Json<ResponseDataBot>, AppError> {
-    let bot_model = bot_queries::get_bot_from_discord_id(&state.db, &bot_id).await?;
+    let bot_model = BotQueries::find_by_discord_id(&state.db, &bot_discord_id).await?;
 
     let response = ResponseBot {
         id: bot_model.id,

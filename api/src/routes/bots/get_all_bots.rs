@@ -1,5 +1,10 @@
 // routes/bot/get_all_bots.rs
-use crate::{ queries::bot_queries, utilities::app_error::AppError, app_state::AppState };
+use crate::{
+    queries::bot_queries::BotQueries,
+    utilities::app_error::AppError,
+    app_state::AppState,
+    default_queries::DefaultSeaQueries,
+};
 use axum::{ extract::Extension, Json };
 
 use super::{ ResponseDataBots, ResponseBot };
@@ -10,8 +15,7 @@ pub async fn get_all_bots(Extension(state): Extension<AppState>) -> Result<
     Json<ResponseDataBots>,
     AppError
 > {
-    let bots = bot_queries
-        ::get_all_bots(&state.db).await?
+    let bots = BotQueries::find_all(&state.db).await?
         .into_iter()
         .map(|bot_model| ResponseBot {
             id: bot_model.id,

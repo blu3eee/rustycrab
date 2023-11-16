@@ -22,7 +22,7 @@ pub struct RequestCreateBot {
     pub discord_callback_url: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RequestUpdateBot {
     pub bot_id: Option<String>,
     pub token: Option<String>,

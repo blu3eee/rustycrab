@@ -12,7 +12,8 @@ use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap };
 use crate::{
     database::embed_info::Model as EmbedModel,
     locales::{ get_localized_string, load_localization },
-    queries::guild_config_queries,
+    queries::guild_config_queries::GuildConfigQueries,
+    bot_guild_entity_queries::BotGuildEntityQueries,
 };
 
 use super::{ embeds::DiscordEmbed, commands::context::context_command::GuildConfigModel };
@@ -38,6 +39,17 @@ pub enum GuildIdentifier {
 }
 
 impl DiscordClient {
+    pub async fn get_guild(
+        &self,
+        guild_id: Option<Id<GuildMarker>>
+    ) -> Result<Option<twilight_model::guild::Guild>, Box<dyn Error + Send + Sync>> {
+        if let Some(id) = guild_id {
+            Ok(Some(self.http.guild(id).await?.model().await?))
+        } else {
+            Ok(None)
+        }
+    }
+
     pub async fn get_guild_config(
         &self,
         guild_id: &Id<GuildMarker>
@@ -45,7 +57,7 @@ impl DiscordClient {
         let bot_id: String = self.http.current_user().await?.model().await?.id.get().to_string();
         let guild_id: String = guild_id.get().to_string();
 
-        Ok(guild_config_queries::get_one_config(&self.db, &bot_id, &guild_id).await?)
+        Ok(GuildConfigQueries::find_by_discord_ids(&self.db, &bot_id, &guild_id).await?)
     }
 
     pub fn get_locale_string(
