@@ -5,11 +5,8 @@ use std::{ collections::HashMap, sync::Arc };
 
 use crate::twilightrs::discord_client::DiscordClient;
 
-// use crate::BotId;
-
 #[derive(Clone, FromRef)]
 pub struct AppState {
     pub db: DatabaseConnection,
     pub running_bots: HashMap<String, Arc<DiscordClient>>,
 }
-// unsafe impl Send for AppState {}

@@ -1,4 +1,4 @@
-use crate::utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error };
+use crate::utilities::{ app_error::AppError, utils::convert_seaorm_error };
 use async_trait::async_trait;
 
 use sea_orm::{

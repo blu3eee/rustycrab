@@ -18,22 +18,19 @@ impl ActionLogsRoutes {
         Extension(state): Extension<AppState>,
         Path((bot_discord_id, guild_discord_id)): Path<(String, String)>
     )
-        -> Result<
-            Json<ResponseDataList<<ActionLogsRoutes as DefaultRoutes>::ResponseJson>>,
-            AppError
-        >
+        -> Result<Json<ResponseDataList<<Self as DefaultRoutes>::ResponseJson>>, AppError>
         where
-            <<<<ActionLogsRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
-            <<<ActionLogsRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<<ActionLogsRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::ActiveModel>
+            <<<<Self as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
+            <<<Self as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::Model: IntoActiveModel<<<Self as DefaultRoutes>::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let models = <ActionLogsRoutes as DefaultRoutes>::Queries::find_guild_action_logs(
+        let models = <Self as DefaultRoutes>::Queries::find_guild_action_logs(
             &state.db,
             &bot_discord_id,
             &guild_discord_id
         ).await?;
-        let response: Vec<<ActionLogsRoutes as DefaultRoutes>::ResponseJson> = models
+        let response: Vec<<Self as DefaultRoutes>::ResponseJson> = models
             .into_iter()
-            .map(<ActionLogsRoutes as DefaultRoutes>::ResponseJson::from)
+            .map(<Self as DefaultRoutes>::ResponseJson::from)
             .collect();
 
         Ok(Json(ResponseDataList { data: response }))
@@ -43,21 +40,18 @@ impl ActionLogsRoutes {
         Extension(state): Extension<AppState>,
         Path((bot_discord_id, guild_discord_id, channel_discord_id)): Path<(String, String, String)>
     )
-        -> Result<
-            Json<ResponseDataJson<<ActionLogsRoutes as DefaultRoutes>::ResponseJson>>,
-            AppError
-        >
+        -> Result<Json<ResponseDataJson<<Self as DefaultRoutes>::ResponseJson>>, AppError>
         where
-            <<<<ActionLogsRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
-            <<<ActionLogsRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<<ActionLogsRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::ActiveModel>
+            <<<<Self as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
+            <<<Self as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::Model: IntoActiveModel<<<Self as DefaultRoutes>::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let model: <<<ActionLogsRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::Model = <ActionLogsRoutes as DefaultRoutes>::Queries::find_unique(
+        let model: <<<Self as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::Model = <Self as DefaultRoutes>::Queries::find_unique(
             &state.db,
             &bot_discord_id,
             &guild_discord_id,
             &channel_discord_id
         ).await?;
-        let response: <ActionLogsRoutes as DefaultRoutes>::ResponseJson = <ActionLogsRoutes as DefaultRoutes>::ResponseJson::from(
+        let response: <Self as DefaultRoutes>::ResponseJson = <Self as DefaultRoutes>::ResponseJson::from(
             model
         );
 

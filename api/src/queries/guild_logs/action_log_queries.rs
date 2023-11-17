@@ -19,7 +19,7 @@ use crate::{
         Relation as ActionLogsRelations,
     },
     router::routes::bot_logs::action_logs::{ RequestCreateLogAction, RequestUpdateActionLog },
-    utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error },
+    utilities::{ app_error::AppError, utils::convert_seaorm_error },
     queries::{ bot_queries::BotQueries, guild_queries::GuildQueries },
 };
 

@@ -4,7 +4,7 @@ use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 
 use crate::{
     database::bots::{ self, Model as BotModel },
-    utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error },
+    utilities::{ app_error::AppError, utils::convert_seaorm_error },
     default_queries::DefaultSeaQueries,
     router::routes::bots::{ RequestCreateBot, RequestUpdateBot },
 };

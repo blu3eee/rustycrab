@@ -22,13 +22,6 @@ use default_queries::DefaultSeaQueries;
 use queries::bot_queries::BotQueries;
 use sea_orm::DatabaseConnection;
 
-use twilight_cache_inmemory::{ ResourceType, InMemoryCache };
-use twilight_model::gateway::{
-    payload::outgoing::update_presence::UpdatePresencePayload,
-    presence::{ MinimalActivity, ActivityType, Status },
-};
-use twilightrs::discord_client::DiscordClient;
-use twilightrs::events::handle_bot_events;
 use utilities::app_error::AppError;
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -40,6 +33,13 @@ use crate::database::bots::Model as BotModel;
 // discord
 use twilight_gateway::{ Intents, ShardId, Shard, Config };
 use twilight_http::Client as HttpClient;
+use twilight_cache_inmemory::{ ResourceType, InMemoryCache };
+use twilight_model::gateway::{
+    payload::outgoing::update_presence::UpdatePresencePayload,
+    presence::{ MinimalActivity, ActivityType, Status },
+};
+use twilightrs::discord_client::DiscordClient;
+use twilightrs::events::handle_bot_events;
 
 /// Creates a URL to a user's avatar on Discord's CDN.
 #[macro_export]

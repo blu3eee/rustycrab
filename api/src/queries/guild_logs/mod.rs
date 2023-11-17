@@ -1,5 +1,7 @@
 pub mod log_setting_queries;
 pub mod action_log_queries;
+pub mod log_ignore_channel_queries;
+pub mod log_ignore_role_queries;
 
 use enum_primitive_derive::Primitive;
 

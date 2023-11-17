@@ -10,7 +10,7 @@ use sea_orm::{
 };
 
 use crate::{
-    utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error },
+    utilities::{ app_error::AppError, utils::convert_seaorm_error },
     database::{ bots, bot_users::{ Entity as BotUser, Model as BotUserModel, self }, users },
     router::routes::bot_users::{ RequestUpdateBotUser, RequestCreateBotUser },
     default_queries::DefaultSeaQueries,

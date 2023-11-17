@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set, RelationTrait };
 
 use crate::{
-    utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error },
+    utilities::{ app_error::AppError, utils::convert_seaorm_error },
     database::{
         bot_guild_configurations::{
             self,
@@ -33,30 +33,6 @@ impl GuildConfigQueries {
             .all(db).await
             .map_err(convert_seaorm_error)
     }
-
-    // pub async fn test_find_by_discord_ids(
-    //     db: &DatabaseConnection,
-    //     bot_discord_id: &str,
-    //     guild_discord_id: &str
-    // ) -> Result<GuildConfigModel, AppError> {
-    //     println!(
-    //         "BotGuildEntityQueries find_by_discord_ids {} {}",
-    //         bot_discord_id,
-    //         guild_discord_id
-    //     );
-
-    //     GuildConfigs::find()
-    //         .join(sea_orm::JoinType::LeftJoin, bot_guild_configurations::Relation::Bots.def())
-    //         .join(sea_orm::JoinType::LeftJoin, bot_guild_configurations::Relation::GuildInfo.def())
-    //         .filter(
-    //             Condition::all()
-    //                 .add(crate::database::bots::Column::BotId.eq(bot_discord_id)) // Adjust 'BotId' if necessary
-    //                 .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id)) // Adjust 'GuildId' if necessary
-    //         )
-    //         .one(db).await
-    //         .map_err(convert_seaorm_error)?
-    //         .ok_or_else(|| AppError::not_found("Record not found"))
-    // }
 }
 
 impl BotGuildEntityQueries for GuildConfigQueries {
