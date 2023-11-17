@@ -65,12 +65,12 @@ impl DefaultSeaQueries for UserQueries {
     type Entity = Users;
     type ActiveModel = UserActiveModel;
 
-    type CreateDto = RequestCreateUser;
-    type UpdateDto = RequestUpdateUser;
+    type CreateData = RequestCreateUser;
+    type UpdateData = RequestUpdateUser;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         if let Ok(user) = Self::find_by_discord_id(db, &create_data.discord_id).await {
             Ok(user)
@@ -86,7 +86,7 @@ impl DefaultSeaQueries for UserQueries {
     async fn apply_updates(
         db: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         // Apply updates from the DTO
 

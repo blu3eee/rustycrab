@@ -73,12 +73,12 @@ impl DefaultSeaQueries for GuildConfigQueries {
     type Entity = GuildConfigs;
     type ActiveModel = GuildConfigActiveModel;
 
-    type CreateDto = RequestCreateConfig;
-    type UpdateDto = RequestUpdateConfig;
+    type CreateData = RequestCreateConfig;
+    type UpdateData = RequestUpdateConfig;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         if
             let Ok(model) = Self::find_by_discord_ids(
@@ -105,7 +105,7 @@ impl DefaultSeaQueries for GuildConfigQueries {
     async fn apply_updates(
         _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         if let Some(value) = update_data.locale {
             active_model.locale = Set(value);

@@ -31,12 +31,12 @@ impl DefaultSeaQueries for LogSettingQueries {
     type Entity = LogSettings;
     type ActiveModel = LogSettingActiveModel;
 
-    type CreateDto = RequestCreateLogSetting;
-    type UpdateDto = RequestUpdateLogSetting;
+    type CreateData = RequestCreateLogSetting;
+    type UpdateData = RequestUpdateLogSetting;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<LogSettingModel, AppError> {
         if
             let Ok(model) = Self::find_by_discord_ids(
@@ -63,7 +63,7 @@ impl DefaultSeaQueries for LogSettingQueries {
     async fn apply_updates(
         _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         if let Some(value) = update_data.specify_channels {
             active_model.specify_channels = Set(value);

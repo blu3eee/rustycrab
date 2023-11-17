@@ -44,12 +44,12 @@ impl DefaultSeaQueries for BotQueries {
     type Entity = bots::Entity;
     type ActiveModel = bots::ActiveModel;
 
-    type CreateDto = RequestCreateBot;
-    type UpdateDto = RequestUpdateBot;
+    type CreateData = RequestCreateBot;
+    type UpdateData = RequestUpdateBot;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         if let Ok(model) = Self::find_by_discord_id(db, &create_data.bot_id).await {
             return Ok(model);
@@ -70,7 +70,7 @@ impl DefaultSeaQueries for BotQueries {
     async fn apply_updates(
         _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         // Apply updates from the DTO
         if let Some(token) = update_data.token {

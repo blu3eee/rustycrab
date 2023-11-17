@@ -41,12 +41,12 @@ impl MessageQueries {
 impl DefaultSeaQueries for MessageQueries {
     type Entity = Messages;
     type ActiveModel = MessageActiveModel;
-    type CreateDto = RequestCreateUpdateMessage;
-    type UpdateDto = RequestCreateUpdateMessage;
+    type CreateData = RequestCreateUpdateMessage;
+    type UpdateData = RequestCreateUpdateMessage;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         // First, handle the embed creation if it's present in the DTO
         let embed_model: Option<EmbedModel> = if let Some(embed_data) = create_data.embed {
@@ -78,7 +78,7 @@ impl DefaultSeaQueries for MessageQueries {
     async fn apply_updates(
         db: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         // Update the fields from the DTO
         if let Some(r#type) = update_data.r#type {

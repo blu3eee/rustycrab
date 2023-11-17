@@ -136,7 +136,7 @@ pub trait DefaultRoutes: 'static {
     /// - AppError: on failure, returns an `AppError`.
     async fn create_one(
         Extension(state): Extension<AppState>,
-        Json(create_dto): Json<<Self::Queries as DefaultSeaQueries>::CreateDto>
+        Json(create_dto): Json<<Self::Queries as DefaultSeaQueries>::CreateData>
     ) -> Result<Json<ResponseDataJson<Self::ResponseJson>>, AppError> {
         let model: <<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::Model = Self::Queries::create_entity(
             &state.db,
@@ -169,7 +169,7 @@ pub trait DefaultRoutes: 'static {
     async fn update_by_id(
         Extension(state): Extension<AppState>,
         Path(id): Path<PrimaryKey>,
-        Json(update_dto): Json<<Self::Queries as DefaultSeaQueries>::UpdateDto>
+        Json(update_dto): Json<<Self::Queries as DefaultSeaQueries>::UpdateData>
     )
         -> Result<Json<ResponseDataJson<Self::ResponseJson>>, AppError>
         where

@@ -15,12 +15,12 @@ impl DefaultSeaQueries for MessageButtonQueries {
     type Entity = Buttons;
     type ActiveModel = ButtonActiveModel;
 
-    type CreateDto = RequestCreateButton;
-    type UpdateDto = RequestUpdateButton;
+    type CreateData = RequestCreateButton;
+    type UpdateData = RequestUpdateButton;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         let active_model: ButtonActiveModel = ButtonActiveModel {
             text: Set(create_data.text),
@@ -34,7 +34,7 @@ impl DefaultSeaQueries for MessageButtonQueries {
     async fn apply_updates(
         _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         if let Some(text) = update_data.text {
             active_model.text = Set(text);

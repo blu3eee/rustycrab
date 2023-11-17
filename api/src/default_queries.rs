@@ -31,9 +31,9 @@ pub trait DefaultSeaQueries {
         Sync;
 
     /// Data transfer object (DTO) type for creating entities.
-    type CreateDto: DeserializeOwned + Send + Sync;
+    type CreateData: DeserializeOwned + Send + Sync;
     /// DTO type for updating entities.
-    type UpdateDto: DeserializeOwned + Send + Sync;
+    type UpdateData: DeserializeOwned + Send + Sync;
 
     /// Retrieves all instances of the entity from the database.
     ///
@@ -81,7 +81,7 @@ pub trait DefaultSeaQueries {
     /// - `Err(AppError)`: An error if the creation fails.
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError>;
 
     /// Applies updates to an active model instance based on the provided DTO data.
@@ -96,7 +96,7 @@ pub trait DefaultSeaQueries {
     async fn apply_updates(
         db: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError>;
 
     /// Updates an entity in the database by its primary key with the provided DTO data.
@@ -112,7 +112,7 @@ pub trait DefaultSeaQueries {
     async fn update_by_id(
         db: &DatabaseConnection,
         id: i32,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     )
         -> Result<<Self::Entity as EntityTrait>::Model, AppError>
         where

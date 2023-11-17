@@ -31,7 +31,7 @@ impl UsersRoutes {
         Path(bot_discord_id): Path<String>,
         Json(
             update_dto,
-        ): Json<<<UsersRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::UpdateDto>
+        ): Json<<<UsersRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::UpdateData>
     )
         -> Result<Json<ResponseDataJson<ResponseUser>>, AppError>
         where

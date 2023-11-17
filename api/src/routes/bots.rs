@@ -29,7 +29,7 @@ impl BotsRouter {
         Path(bot_discord_id): Path<String>,
         Json(
             update_dto,
-        ): Json<<<BotsRouter as DefaultRoutes>::Queries as DefaultSeaQueries>::UpdateDto>
+        ): Json<<<BotsRouter as DefaultRoutes>::Queries as DefaultSeaQueries>::UpdateData>
     )
         -> Result<Json<ResponseDataJson<ResponseBot>>, AppError>
         where

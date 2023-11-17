@@ -17,12 +17,12 @@ impl DefaultSeaQueries for MessageEmbedQueries {
     type Entity = Embeds;
     type ActiveModel = EmbedActiveModel;
 
-    type CreateDto = RequestCreateUpdateEmbed;
-    type UpdateDto = RequestCreateUpdateEmbed;
+    type CreateData = RequestCreateUpdateEmbed;
+    type UpdateData = RequestCreateUpdateEmbed;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         save_active_model(db, EmbedActiveModel {
             title: Set(create_data.title),
@@ -43,7 +43,7 @@ impl DefaultSeaQueries for MessageEmbedQueries {
     async fn apply_updates(
         _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         // Update the fields from the DTO
         if let Some(title) = update_data.title {

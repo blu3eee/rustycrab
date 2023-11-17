@@ -82,12 +82,12 @@ impl DefaultSeaQueries for BotUserQueries {
     type Entity = bot_users::Entity;
     type ActiveModel = bot_users::ActiveModel;
 
-    type CreateDto = RequestCreateBotUser;
-    type UpdateDto = RequestUpdateBotUser;
+    type CreateData = RequestCreateBotUser;
+    type UpdateData = RequestUpdateBotUser;
     async fn apply_updates(
         _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         if let Some(value) = update_data.balance {
             active_model.balance = Set(value);
@@ -102,7 +102,7 @@ impl DefaultSeaQueries for BotUserQueries {
     }
     async fn create_entity(
         db: &DatabaseConnection,
-        create_dto: Self::CreateDto
+        create_dto: Self::CreateData
     ) -> Result<BotUserModel, AppError> {
         if
             let Ok(Some(bot_user)) = BotUser::find()

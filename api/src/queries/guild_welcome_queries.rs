@@ -41,12 +41,12 @@ impl DefaultSeaQueries for GuildWelcomeQueries {
     type Entity = GuildWelcomes;
     type ActiveModel = GuildWelcomeActiveModel;
 
-    type CreateDto = RequestCreateWelcome;
-    type UpdateDto = RequestUpdateWelcome;
+    type CreateData = RequestCreateWelcome;
+    type UpdateData = RequestUpdateWelcome;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         if
             let Ok(welcome) = Self::find_by_discord_ids(
@@ -85,7 +85,7 @@ impl DefaultSeaQueries for GuildWelcomeQueries {
     async fn apply_updates(
         db: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         // Update channel_id if provided
         if let Some(channel_id) = update_data.channel_id {

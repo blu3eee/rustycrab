@@ -77,7 +77,7 @@ pub trait BotGuildEntityRoutes: DefaultRoutes where Self::Queries: BotGuildEntit
     async fn update_by_discord_ids(
         Extension(state): Extension<AppState>,
         Path((bot_discord_id, guild_discord_id)): Path<(String, String)>,
-        Json(update_dto): Json<<Self::Queries as DefaultSeaQueries>::UpdateDto>
+        Json(update_dto): Json<<Self::Queries as DefaultSeaQueries>::UpdateData>
     )
         -> Result<Json<ResponseDataJson<Self::ResponseJson>>, AppError>
         where

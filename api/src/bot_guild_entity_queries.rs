@@ -75,7 +75,7 @@ pub trait BotGuildEntityQueries: DefaultSeaQueries {
         db: &DatabaseConnection,
         bot_discord_id: &str,
         guild_discord_id: &str,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError>
         where <Self::Entity as EntityTrait>::Model: IntoActiveModel<Self::ActiveModel>
     {

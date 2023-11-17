@@ -56,12 +56,12 @@ impl DefaultSeaQueries for GuildQueries {
     type Entity = guild_info::Entity;
     type ActiveModel = guild_info::ActiveModel;
 
-    type CreateDto = RequestCreateGuild;
-    type UpdateDto = RequestUpdateGuild;
+    type CreateData = RequestCreateGuild;
+    type UpdateData = RequestUpdateGuild;
 
     async fn create_entity(
         db: &DatabaseConnection,
-        create_data: Self::CreateDto
+        create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
         if let Ok(model) = Self::find_by_discord_id(db, &create_data.guild_id).await {
             return Ok(model);
@@ -79,7 +79,7 @@ impl DefaultSeaQueries for GuildQueries {
     async fn apply_updates(
         _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
-        update_data: Self::UpdateDto
+        update_data: Self::UpdateData
     ) -> Result<(), AppError> {
         // Apply updates from the DTO
 
