@@ -32,7 +32,7 @@ pub trait DefaultSeaQueries {
 
     /// Data transfer object (DTO) type for creating entities.
     type CreateData: DeserializeOwned + Send + Sync;
-    /// DTO type for updating entities.
+    /// Data transfer object (DTO) type for updating entities.
     type UpdateData: DeserializeOwned + Send + Sync;
 
     /// Retrieves all instances of the entity from the database.
