@@ -60,59 +60,6 @@ pub trait DefaultRoutes: 'static {
         Sync +
         From<<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::Model>;
 
-    /// Returns a string representing the base path for the routes associated with the entity.
-    fn path() -> String;
-
-    /// Constructs a default router for CRUD operations on a specific entity.
-    /// This function generates routes for standard CRUD operations including list, retrieve,
-    /// create, update, and delete, and associates them with their respective handler functions.
-    ///
-    /// ### Parameters
-    /// - `state`: The shared application state, typically including a database connection and other shared resources.
-    ///
-    /// ### Returns
-    /// Returns an `axum::Router` instance configured with the standard set of CRUD routes.
-    ///
-    /// ### Constraints
-    /// The associated `Entity` type for the queries must have a primary key that can be converted from an `i32`.
-    /// Additionally, the `Entity`'s model must be convertible into its corresponding active model.
-    ///
-    /// ### Routes
-    /// - `GET /{path}`: Retrieves a list of all entities. Maps to `get_all`.
-    /// - `GET /{path}/:id`: Retrieves a single entity by its ID. Maps to `get_one`.
-    /// - `POST /{path}`: Creates a new entity from the provided JSON body. Maps to `create_one`.
-    /// - `PATCH /{path}/:id`: Updates an existing entity by ID based on the provided JSON body. Maps to `update_by_id`.
-    /// - `DELETE /{path}/:id`: Deletes an entity by its ID. Maps to `delete_by_id`.
-    ///
-    /// ### Example Usage
-    /// This function is typically called within a specific route implementation to generate
-    /// a router instance with all the necessary routes for an entity.
-    ///
-    /// ### Notes
-    /// - The `AppState` type should be a shared type across the application, containing
-    ///   global data such as database connections.
-    /// - The `path` method of the implementing struct defines the base path for the routes.
-    /// - Custom routes can be added to the router in addition to the default ones.
-    ///
-    /// ### Advantages
-    /// - **Standardization**: Ensures a consistent routing structure across different parts of the application.
-    /// - **Ease of Use**: Simplifies the creation of a fully functional router with minimal boilerplate.
-    /// - **Flexibility**: Allows for easy extension and customization of routes.
-    async fn default_router(state: AppState) -> Router
-        where
-            <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
-            <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
-    {
-        let path = Self::path();
-        Router::new()
-            .route(&path, get(Self::get_all))
-            .route(&format!("{}/:id", &path), get(Self::get_one))
-            .route(&path, post(Self::create_one))
-            .route(&format!("{}/:id", &path), patch(Self::update_by_id))
-            .route(&format!("{}/:id", &path), delete(Self::delete_by_id))
-            .layer(Extension(state))
-    }
-
     /// Retrieves all instances of the associated entity from the database and
     /// returns them as a JSON response.
     ///
@@ -265,5 +212,117 @@ pub trait DefaultRoutes: 'static {
         let result: DeleteResult = Self::Queries::delete_by_id(&state.db, id).await?;
         let message: String = format!("{} row(s) deleted", result.rows_affected);
         Ok(Json(ResponseMessage { message }))
+    }
+
+    /// Returns a string representing the base path for the routes associated with the entity.
+    fn path() -> String;
+
+    /// Constructs a default router for CRUD operations on a specific entity.
+    /// This function generates routes for standard CRUD operations including list, retrieve,
+    /// create, update, and delete, and associates them with their respective handler functions.
+    ///
+    /// ### Parameters
+    /// - `state`: The shared application state, typically including a database connection and other shared resources.
+    ///
+    /// ### Returns
+    /// Returns an `axum::Router` instance configured with the standard set of CRUD routes.
+    ///
+    /// ### Constraints
+    /// The associated `Entity` type for the queries must have a primary key that can be converted from an `i32`.
+    /// Additionally, the `Entity`'s model must be convertible into its corresponding active model.
+    ///
+    /// ### Routes
+    /// - `GET /{path}`: Retrieves a list of all entities. Maps to `get_all`.
+    /// - `GET /{path}/:id`: Retrieves a single entity by its ID. Maps to `get_one`.
+    /// - `POST /{path}`: Creates a new entity from the provided JSON body. Maps to `create_one`.
+    /// - `PATCH /{path}/:id`: Updates an existing entity by ID based on the provided JSON body. Maps to `update_by_id`.
+    /// - `DELETE /{path}/:id`: Deletes an entity by its ID. Maps to `delete_by_id`.
+    ///
+    /// ### Example Usage
+    /// This function is typically called within a specific route implementation to generate
+    /// a router instance with all the necessary routes for an entity.
+    ///
+    /// ### Notes
+    /// - The `AppState` type should be a shared type across the application, containing
+    ///   global data such as database connections.
+    /// - The `path` method of the implementing struct defines the base path for the routes.
+    /// - Custom routes can be added to the router in addition to the default ones.
+    ///
+    /// ### Advantages
+    /// - **Standardization**: Ensures a consistent routing structure across different parts of the application.
+    /// - **Ease of Use**: Simplifies the creation of a fully functional router with minimal boilerplate.
+    /// - **Flexibility**: Allows for easy extension and customization of routes.
+    async fn default_router(state: AppState) -> Router
+        where
+            <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
+            <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
+    {
+        let path = Self::path();
+        Router::new()
+            .route(&format!("/{}", &path), get(Self::get_all))
+            .route(&format!("/{}/:id", &path), get(Self::get_one))
+            .route(&format!("/{}", &path), post(Self::create_one))
+            .route(&format!("/{}/:id", &path), patch(Self::update_by_id))
+            .route(&format!("/{}/:id", &path), delete(Self::delete_by_id))
+            .layer(Extension(state))
+    }
+
+    /// Provides a way for implementers to add more routes to the router.
+    /// By default, this returns an empty router. Implementers can override
+    /// this method to add custom routes.
+    ///
+    /// ### Returns
+    /// - `Router`: A router with custom routes defined by the implementer.
+    ///
+    /// ### Example Usage
+    /// ```norun
+    /// struct MyCustomRoutes;
+    ///
+    /// #[async_trait]
+    /// impl DefaultRoutes for MyCustomRoutes {
+    ///     // ... other trait methods ...
+    ///
+    ///     async fn more_routes() -> Router {
+    ///         Router::new()
+    ///             .route("/custom", axum::routing::get(custom_handler))
+    ///     }
+    /// }
+    ///
+    /// async fn custom_handler() -> &'static str {
+    ///     "This is a custom route"
+    /// }
+    /// ```
+    #[allow(unused_variables)]
+    async fn more_routes(state: AppState) -> Router
+        where
+            <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
+            <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
+    {
+        Router::new()
+    }
+
+    /// Creates the complete router combining the default routes and any additional
+    /// custom routes provided by `more_routes`.
+    ///
+    /// ### Parameters
+    /// - `state`: The shared application state, typically including a database connection and other shared resources.
+    ///
+    /// ### Returns
+    /// - `Router`: A router combining the default CRUD routes with any additional custom routes.
+    ///
+    /// ### Example Usage
+    /// ```norun
+    /// let app_state = //... initialize AppState ...
+    /// let router = MyCustomRoutes::router(app_state).await;
+    /// ```
+    async fn router(state: AppState) -> Router
+        where
+            <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
+            <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
+    {
+        let default_routes = Self::default_router(state.clone()).await;
+        let custom_routes = Self::more_routes(state.clone()).await;
+
+        default_routes.merge(custom_routes)
     }
 }

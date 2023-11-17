@@ -1,4 +1,4 @@
-use sea_orm::{ DatabaseConnection, Set };
+use sea_orm::{ DatabaseConnection, Set, RelationTrait };
 use async_trait::async_trait;
 
 use crate::bot_guild_entity_queries::BotGuildEntityQueries;
@@ -6,6 +6,7 @@ use crate::default_queries::DefaultSeaQueries;
 use crate::queries::bot_queries::BotQueries;
 use crate::{
     database::log_settings::{
+        self,
         Model as LogSettingModel,
         Entity as LogSettings,
         ActiveModel as LogSettingActiveModel,
@@ -16,7 +17,14 @@ use crate::{
 
 pub struct LogSettingQueries;
 
-impl BotGuildEntityQueries for LogSettingQueries {}
+impl BotGuildEntityQueries for LogSettingQueries {
+    fn bot_relation() -> sea_orm::entity::RelationDef {
+        log_settings::Relation::Bots.def()
+    }
+    fn guild_relation() -> sea_orm::entity::RelationDef {
+        log_settings::Relation::GuildInfo.def()
+    }
+}
 
 #[async_trait]
 impl DefaultSeaQueries for LogSettingQueries {

@@ -29,6 +29,7 @@ pub trait DefaultSeaQueries {
         TryIntoModel<<Self::Entity as EntityTrait>::Model> +
         Send +
         Sync;
+
     /// Data transfer object (DTO) type for creating entities.
     type CreateDto: DeserializeOwned + Send + Sync;
     /// DTO type for updating entities.

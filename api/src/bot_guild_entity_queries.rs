@@ -8,6 +8,7 @@ use sea_orm::{
     Condition,
     QueryFilter,
     ColumnTrait,
+    QuerySelect,
 };
 
 use super::default_queries::DefaultSeaQueries;
@@ -17,6 +18,8 @@ use super::default_queries::DefaultSeaQueries;
 /// for finding and updating these entities based on bot and guild Discord IDs.
 #[async_trait]
 pub trait BotGuildEntityQueries: DefaultSeaQueries {
+    fn bot_relation() -> sea_orm::entity::RelationDef;
+    fn guild_relation() -> sea_orm::entity::RelationDef;
     /// Finds an entity based on both the bot's and guild's Discord IDs.
     ///
     /// This method assumes that the implementing entity has columns `BotId` and `GuildId`,
@@ -35,12 +38,19 @@ pub trait BotGuildEntityQueries: DefaultSeaQueries {
         bot_discord_id: &str,
         guild_discord_id: &str
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
-        // This is a generic implementation. Specific column names should be defined in the actual entity.
+        println!(
+            "BotGuildEntityQueries find_by_discord_ids {} {}",
+            bot_discord_id,
+            guild_discord_id
+        );
+
         Self::Entity::find()
+            .join(sea_orm::JoinType::LeftJoin, Self::bot_relation())
+            .join(sea_orm::JoinType::LeftJoin, Self::guild_relation())
             .filter(
                 Condition::all()
-                    .add(crate::database::bots::Column::BotId.eq(bot_discord_id))
-                    .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id))
+                    .add(crate::database::bots::Column::BotId.eq(bot_discord_id)) // Adjust 'BotId' if necessary
+                    .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id)) // Adjust 'GuildId' if necessary
             )
             .one(db).await
             .map_err(convert_seaorm_error)?

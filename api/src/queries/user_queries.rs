@@ -2,12 +2,14 @@ use async_trait::async_trait;
 use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 
 use crate::default_queries::DefaultSeaQueries;
-use crate::routes::users::RequestUpdateUser;
+use crate::routes::users_routes::{ RequestCreateUser, RequestUpdateUser };
 use crate::utilities::app_error::AppError;
 use crate::utilities::convert_seaorm_error::convert_seaorm_error;
-use crate::{
-    routes::users::RequestCreateUser,
-    database::users::{ self, Entity as Users, Model as UserModel, ActiveModel as UserActiveModel },
+use crate::database::users::{
+    self,
+    Entity as Users,
+    Model as UserModel,
+    ActiveModel as UserActiveModel,
 };
 
 use super::save_active_model;
@@ -41,6 +43,20 @@ impl UserQueries {
                 }).await
             }
         }
+    }
+
+    pub async fn update_by_discord_id(
+        db: &DatabaseConnection,
+        bot_discord_id: &str,
+        update_data: RequestUpdateUser
+    ) -> Result<UserModel, AppError> {
+        // Fetch the bot by bot_id to update
+        let model = Self::find_by_discord_id(db, bot_discord_id).await?;
+        let mut active_model: users::ActiveModel = model.into();
+
+        Self::apply_updates(db, &mut active_model, update_data).await?;
+
+        Self::save_active_model(db, active_model).await
     }
 }
 

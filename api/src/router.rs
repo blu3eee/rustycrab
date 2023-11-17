@@ -1,10 +1,12 @@
 use crate::{
     routes::{
         hello_world::hello_world,
-        guild_configs::get_one_config::get_one_config_by_discord_id,
-        bots,
+        bots::BotsRouter,
+        bot_guild_configs::BotGuildConfigsRoutes,
     },
     app_state::AppState,
+    default_router::DefaultRoutes,
+    bot_guild_entity_router::BotGuildEntityRoutes,
 };
 
 use axum::{ routing::get, Router, Extension };
@@ -16,7 +18,8 @@ pub async fn create_router(app_state: AppState) -> Router {
             get(|| async { "Hello, World!" })
         )
         .route("/hello", get(hello_world))
-        .nest("/bots", bots::bots_router())
-        .route("/guild-configs/:botId/:guildId", get(get_one_config_by_discord_id))
+        // .nest("/bots", bots::bots_router())
+        .merge(BotsRouter::router(app_state.clone()).await)
+        .merge(<BotGuildConfigsRoutes as BotGuildEntityRoutes>::router(app_state.clone()).await)
         .layer(Extension(app_state)) // Apply the app_state to all routes
 }

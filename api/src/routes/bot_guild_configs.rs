@@ -1,12 +1,37 @@
-// routes/bot_guild_configurations/mod.rs
-pub mod get_one_config;
-pub mod create_config_extractor;
-pub mod create_config;
+use async_trait::async_trait;
+use axum::Router;
 use serde::{ Deserialize, Serialize };
 
-use crate::database::bot_guild_configurations::Model as GuildConfig;
+use crate::{
+    database::bot_guild_configurations::Model as GuildConfig,
+    default_router::DefaultRoutes,
+    queries::guild_config_queries::GuildConfigQueries,
+    bot_guild_entity_router::BotGuildEntityRoutes,
+    app_state::AppState,
+};
 
-use super::bots::ResponseBot;
+use super::{ bots::ResponseBot, guilds::ResponseGuild };
+
+pub struct BotGuildConfigsRoutes {}
+
+impl BotGuildConfigsRoutes {}
+
+#[async_trait]
+impl DefaultRoutes for BotGuildConfigsRoutes {
+    type Queries = GuildConfigQueries;
+
+    type ResponseJson = ResponseGuildConfig;
+
+    fn path() -> String {
+        format!("configs")
+    }
+
+    async fn more_routes(_: AppState) -> Router {
+        Router::new()
+    }
+}
+
+impl BotGuildEntityRoutes for BotGuildConfigsRoutes {}
 
 #[derive(Deserialize)]
 pub struct RequestCreateConfig {
@@ -40,15 +65,10 @@ pub struct ResponseGuildConfigWithBotInfo {
     pub id: i32,
     pub prefix: String,
     pub locale: String,
-    pub bot: ResponseBot,
-    pub guild_id: Option<i32>,
+    pub bot: Option<ResponseBot>,
+    pub guild_id: Option<ResponseGuild>,
     pub module_flags: i32,
     pub premium_flags: i32,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ResponseDataGuildConfig {
-    pub data: ResponseGuildConfig,
 }
 
 impl From<GuildConfig> for ResponseGuildConfig {
@@ -64,10 +84,3 @@ impl From<GuildConfig> for ResponseGuildConfig {
         }
     }
 }
-
-#[derive(Serialize, Deserialize)]
-pub struct ResponseDataGuildConfigs {
-    pub data: Vec<ResponseGuildConfig>,
-}
-
-// Function to convert from SeaORM Model to you

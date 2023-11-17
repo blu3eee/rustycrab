@@ -1,8 +1,12 @@
 use async_trait::async_trait;
-use sea_orm::{ DatabaseConnection, EntityTrait, Set, ActiveValue };
+use sea_orm::{ DatabaseConnection, EntityTrait, Set, ActiveValue, RelationTrait };
 use crate::{
     database::{
-        bot_guild_welcomes::{ Entity as GuildWelcomes, ActiveModel as GuildWelcomeActiveModel },
+        bot_guild_welcomes::{
+            self,
+            Entity as GuildWelcomes,
+            ActiveModel as GuildWelcomeActiveModel,
+        },
         bots,
         guild_info,
     },
@@ -23,7 +27,14 @@ pub struct GuildWelcomeQueries {}
 
 impl GuildWelcomeQueries {}
 
-impl BotGuildEntityQueries for GuildWelcomeQueries {}
+impl BotGuildEntityQueries for GuildWelcomeQueries {
+    fn bot_relation() -> sea_orm::entity::RelationDef {
+        bot_guild_welcomes::Relation::Bots.def()
+    }
+    fn guild_relation() -> sea_orm::entity::RelationDef {
+        bot_guild_welcomes::Relation::GuildInfo.def()
+    }
+}
 
 #[async_trait]
 impl DefaultSeaQueries for GuildWelcomeQueries {

@@ -5,8 +5,8 @@ use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 use crate::{
     database::bots::{ self, Model as BotModel },
     utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error },
-    routes::bots::{ RequestUpdateBot, RequestCreateBot },
     default_queries::DefaultSeaQueries,
+    routes::bots::{ RequestCreateBot, RequestUpdateBot },
 };
 
 pub struct BotQueries {}
@@ -24,7 +24,7 @@ impl BotQueries {
             .ok_or_else(|| AppError::not_found("Bot not found"))
     }
 
-    pub async fn update_bot_from_discord_id(
+    pub async fn update_by_discord_id(
         db: &DatabaseConnection,
         bot_discord_id: &str,
         update_data: RequestUpdateBot
