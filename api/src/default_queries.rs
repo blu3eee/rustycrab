@@ -57,16 +57,13 @@ pub trait DefaultSeaQueries {
     /// ### Returns
     /// - `Ok(Entity::Model)`: The found entity model if successful.
     /// - `Err(AppError)`: An error if the entity is not found or the query fails.
-    async fn find_by_id<K>(
+    async fn find_by_id(
         db: &DatabaseConnection,
-        id: K
+        id: i32
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError>
-        where
-            K: Into<<<Self::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType> +
-                Send +
-                Sync
+        where <<Self::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>
     {
-        Self::Entity::find_by_id(id.into())
+        Self::Entity::find_by_id(id)
             .one(db).await
             .map_err(convert_seaorm_error)?
             .ok_or_else(|| AppError::not_found("Record not found"))
@@ -95,7 +92,8 @@ pub trait DefaultSeaQueries {
     /// ### Returns
     /// - `Ok(())`: If updates are applied successfully.
     /// - `Err(AppError)`: An error if the update fails.
-    fn apply_updates(
+    async fn apply_updates(
+        db: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
         update_data: Self::UpdateDto
     ) -> Result<(), AppError>;
@@ -110,16 +108,14 @@ pub trait DefaultSeaQueries {
     /// ### Returns
     /// - `Ok(Entity::Model)`: The updated entity model if successful.
     /// - `Err(AppError)`: An error if the update fails.
-    async fn update_by_id<K>(
+    async fn update_by_id(
         db: &DatabaseConnection,
-        id: K,
+        id: i32,
         update_data: Self::UpdateDto
     )
         -> Result<<Self::Entity as EntityTrait>::Model, AppError>
         where
-            K: Into<<<Self::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType> +
-                Send +
-                Sync,
+            <<Self::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <Self::Entity as EntityTrait>::Model: IntoActiveModel<Self::ActiveModel>
     {
         let model: <<Self as DefaultSeaQueries>::Entity as EntityTrait>::Model = Self::find_by_id(
@@ -129,7 +125,7 @@ pub trait DefaultSeaQueries {
 
         let mut active_model: <Self as DefaultSeaQueries>::ActiveModel = model.into_active_model();
 
-        Self::apply_updates(&mut active_model, update_data)?;
+        Self::apply_updates(db, &mut active_model, update_data).await?;
 
         Self::save_active_model(db, active_model).await
     }

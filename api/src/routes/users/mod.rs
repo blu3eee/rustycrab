@@ -8,6 +8,12 @@ pub struct RequestCreateUser {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct RequestUpdateUser {
+    pub access_token: Option<String>,
+    pub refresh_token: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct ResponseUser {
     pub id: i32,
     pub discord_id: String,

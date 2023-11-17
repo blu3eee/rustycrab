@@ -1,103 +1,84 @@
-use sea_orm::{ DatabaseConnection, Set, ColumnTrait, EntityTrait, QueryFilter };
+use async_trait::async_trait;
+use sea_orm::{ DatabaseConnection, Set, EntityTrait };
 
 use crate::{
-    database::embed_info::{
-        self,
-        Entity as Embeds,
-        Model as EmbedModel,
-        ActiveModel as EmbedActiveModel,
-    },
+    database::embed_info::{ Entity as Embeds, ActiveModel as EmbedActiveModel },
     routes::RequestCreateUpdateEmbed,
-    utilities::{ app_error::AppError, convert_seaorm_error::convert_seaorm_error },
+    utilities::app_error::AppError,
+    default_queries::DefaultSeaQueries,
 };
 
 use super::save_active_model;
 
-pub async fn create_embed(
-    db: &DatabaseConnection,
-    create_dto: RequestCreateUpdateEmbed
-) -> Result<EmbedModel, AppError> {
-    save_active_model(db, EmbedActiveModel {
-        title: Set(create_dto.title),
-        url: Set(create_dto.url),
-        timestamp: Set(create_dto.timestamp),
-        color: Set(create_dto.color),
-        footer: Set(create_dto.footer),
-        image: Set(create_dto.image),
-        thumbnail: Set(create_dto.thumbnail),
-        author: Set(create_dto.author),
-        description: Set(create_dto.description),
-        footer_url: Set(create_dto.footer_url),
-        author_url: Set(create_dto.author_url),
-        ..Default::default()
-    }).await
-}
+pub struct MessageEmbedQueries {}
 
-pub async fn update_embed(
-    db: &DatabaseConnection,
-    id: &i32,
-    update_dto: RequestCreateUpdateEmbed
-) -> Result<EmbedModel, AppError> {
-    let mut active_model: EmbedActiveModel = Embeds::find()
-        .filter(embed_info::Column::Id.eq(*id))
-        .one(db).await
-        .map_err(convert_seaorm_error)?
-        .ok_or_else(|| AppError::not_found("Embed not found"))?
-        .into();
+#[async_trait]
+impl DefaultSeaQueries for MessageEmbedQueries {
+    type Entity = Embeds;
+    type ActiveModel = EmbedActiveModel;
 
-    // Update the fields from the DTO
-    if let Some(title) = update_dto.title {
-        active_model.title = Set(Some(title));
-    }
-    if let Some(url) = update_dto.url {
-        active_model.url = Set(Some(url));
-    }
-    if let Some(timestamp) = update_dto.timestamp {
-        active_model.timestamp = Set(Some(timestamp));
-    }
-    if let Some(color) = update_dto.color {
-        active_model.color = Set(Some(color));
-    }
-    if let Some(footer) = update_dto.footer {
-        active_model.footer = Set(Some(footer));
-    }
-    if let Some(image) = update_dto.image {
-        active_model.image = Set(Some(image));
-    }
-    if let Some(thumbnail) = update_dto.thumbnail {
-        active_model.thumbnail = Set(Some(thumbnail));
-    }
-    if let Some(author) = update_dto.author {
-        active_model.author = Set(Some(author));
-    }
-    if let Some(description) = update_dto.description {
-        active_model.description = Set(Some(description));
-    }
-    if let Some(footer_url) = update_dto.footer_url {
-        active_model.footer_url = Set(Some(footer_url));
-    }
-    if let Some(author_url) = update_dto.author_url {
-        active_model.author_url = Set(Some(author_url));
+    type CreateDto = RequestCreateUpdateEmbed;
+    type UpdateDto = RequestCreateUpdateEmbed;
+
+    async fn create_entity(
+        db: &DatabaseConnection,
+        create_data: Self::CreateDto
+    ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
+        save_active_model(db, EmbedActiveModel {
+            title: Set(create_data.title),
+            url: Set(create_data.url),
+            timestamp: Set(create_data.timestamp),
+            color: Set(create_data.color),
+            footer: Set(create_data.footer),
+            image: Set(create_data.image),
+            thumbnail: Set(create_data.thumbnail),
+            author: Set(create_data.author),
+            description: Set(create_data.description),
+            footer_url: Set(create_data.footer_url),
+            author_url: Set(create_data.author_url),
+            ..Default::default()
+        }).await
     }
 
-    save_active_model(db, active_model).await
-}
-
-pub async fn get_embed(db: &DatabaseConnection, id: &i32) -> Result<EmbedModel, AppError> {
-    Embeds::find()
-        .filter(embed_info::Column::Id.eq(*id))
-        .one(db).await
-        .map_err(convert_seaorm_error)
-        .and_then(|embed| embed.ok_or_else(|| AppError::not_found("Embed not found")))
-}
-
-pub async fn delete_embed(db: &DatabaseConnection, id: &i32) -> Result<(), AppError> {
-    Embeds::delete_by_id(*id)
-        .exec(db).await
-        .map_err(|err| {
-            eprintln!("Error deleting embed with id {}: {:?}", id, err);
-            AppError::internal_server_error("There was an error deleting the embed")
-        })?;
-
-    Ok(())
+    async fn apply_updates(
+        _: &DatabaseConnection,
+        active_model: &mut Self::ActiveModel,
+        update_data: Self::UpdateDto
+    ) -> Result<(), AppError> {
+        // Update the fields from the DTO
+        if let Some(title) = update_data.title {
+            active_model.title = Set(Some(title));
+        }
+        if let Some(url) = update_data.url {
+            active_model.url = Set(Some(url));
+        }
+        if let Some(timestamp) = update_data.timestamp {
+            active_model.timestamp = Set(Some(timestamp));
+        }
+        if let Some(color) = update_data.color {
+            active_model.color = Set(Some(color));
+        }
+        if let Some(footer) = update_data.footer {
+            active_model.footer = Set(Some(footer));
+        }
+        if let Some(image) = update_data.image {
+            active_model.image = Set(Some(image));
+        }
+        if let Some(thumbnail) = update_data.thumbnail {
+            active_model.thumbnail = Set(Some(thumbnail));
+        }
+        if let Some(author) = update_data.author {
+            active_model.author = Set(Some(author));
+        }
+        if let Some(description) = update_data.description {
+            active_model.description = Set(Some(description));
+        }
+        if let Some(footer_url) = update_data.footer_url {
+            active_model.footer_url = Set(Some(footer_url));
+        }
+        if let Some(author_url) = update_data.author_url {
+            active_model.author_url = Set(Some(author_url));
+        }
+        Ok(())
+    }
 }

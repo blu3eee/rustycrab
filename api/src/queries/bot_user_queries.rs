@@ -16,7 +16,7 @@ use crate::{
     default_queries::DefaultSeaQueries,
 };
 
-use super::{ user_queries::get_user_or_create, bot_queries::BotQueries };
+use super::{ bot_queries::BotQueries, user_queries::UserQueries };
 
 pub struct BotUserQueries {}
 
@@ -46,7 +46,7 @@ impl BotUserQueries {
         let model = Self::find_by_discord_ids(db, bot_id, user_id).await?;
         let mut active_model: bot_users::ActiveModel = model.into();
 
-        Self::apply_updates(&mut active_model, update_data)?;
+        Self::apply_updates(db, &mut active_model, update_data).await?;
 
         Self::save_active_model(db, active_model).await
     }
@@ -84,7 +84,8 @@ impl DefaultSeaQueries for BotUserQueries {
 
     type CreateDto = RequestCreateBotUser;
     type UpdateDto = RequestUpdateBotUser;
-    fn apply_updates(
+    async fn apply_updates(
+        _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
         update_data: Self::UpdateDto
     ) -> Result<(), AppError> {
@@ -113,7 +114,7 @@ impl DefaultSeaQueries for BotUserQueries {
         }
 
         let bot = BotQueries::find_by_discord_id(db, &create_dto.bot_id).await?;
-        let user = get_user_or_create(db, &create_dto.user_id).await?;
+        let user = UserQueries::find_user_or_create(db, &create_dto.user_id).await?;
 
         let bot_user: bot_users::ActiveModel = bot_users::ActiveModel {
             bot_id: Set(Some(bot.id)),

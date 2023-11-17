@@ -1,66 +1,79 @@
-use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, ActiveModelTrait, Set };
+use async_trait::async_trait;
+use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 
+use crate::default_queries::DefaultSeaQueries;
+use crate::routes::users::RequestUpdateUser;
 use crate::utilities::app_error::AppError;
+use crate::utilities::convert_seaorm_error::convert_seaorm_error;
 use crate::{
     routes::users::RequestCreateUser,
-    database::users::{ self, Entity as User, Model as UserModel },
+    database::users::{ self, Entity as Users, Model as UserModel, ActiveModel as UserActiveModel },
 };
 
-// Assuming CreateUserDto exists and has the necessary fields
-pub async fn create_user(
-    db: &DatabaseConnection,
-    dto: RequestCreateUser // Define this DTO to match the required input fields
-) -> Result<UserModel, sea_orm::DbErr> {
-    let active_model = users::ActiveModel {
-        discord_id: Set(dto.discord_id),
-        ..Default::default() // Use default values for other fields
-    };
+use super::save_active_model;
 
-    active_model.insert(db).await
-}
+pub struct UserQueries {}
 
-pub async fn get_user(
-    db: &DatabaseConnection,
-    id: &i32
-) -> Result<Option<UserModel>, sea_orm::DbErr> {
-    users::Entity::find_by_id(*id).one(db).await
-}
+impl UserQueries {
+    pub async fn find_by_discord_id(
+        db: &DatabaseConnection,
+        user_discord_id: &str
+    ) -> Result<UserModel, AppError> {
+        Users::find()
+            .filter(users::Column::DiscordId.eq(user_discord_id))
+            .one(db).await
+            .map_err(convert_seaorm_error)?
+            .ok_or_else(|| AppError::not_found("User not found"))
+    }
 
-pub async fn get_user_by_discord_id(
-    db: &DatabaseConnection,
-    user_discord_id: &str
-) -> Result<Option<UserModel>, sea_orm::DbErr> {
-    users::Entity::find().filter(users::Column::DiscordId.eq(user_discord_id)).one(db).await
-}
-
-pub async fn get_user_or_create(
-    db: &DatabaseConnection,
-    user_discord_id: &str
-) -> Result<UserModel, AppError> {
-    match User::find().filter(users::Column::DiscordId.eq(user_discord_id)).one(db).await {
-        Ok(Some(guild)) => {
-            // If the guild is found, return it
-            Ok(guild)
-        }
-        Ok(None) => {
-            // If the guild is not found, create a new one
-            let new_guild = users::ActiveModel {
-                discord_id: Set(user_discord_id.to_owned()),
-                // Set other fields as needed, for example:
-                // ... other fields ...
-                ..Default::default() // Use default values for the rest of the fields
-            };
-
-            new_guild.insert(db).await.map_err(|err| {
-                eprintln!("Error creating new user: {:?}", err);
-                AppError::internal_server_error("There was an error creating the user")
-            })
-        }
-        Err(err) => {
-            // If there's an error querying the database, return an error
-            eprintln!("Error getting user from discord id: {:?}", err);
-            Err(AppError::internal_server_error("There was an error getting the user"))
+    pub async fn find_user_or_create(
+        db: &DatabaseConnection,
+        user_discord_id: &str
+    ) -> Result<UserModel, AppError> {
+        match Self::find_by_discord_id(db, user_discord_id).await {
+            Ok(model) => {
+                // If the guild is found, return it
+                Ok(model)
+            }
+            Err(_) => {
+                Self::create_entity(db, RequestCreateUser {
+                    discord_id: user_discord_id.to_string(),
+                }).await
+            }
         }
     }
 }
-// pub async fn update_user(db: &DatabaseConnection) {}
+
+#[async_trait]
+impl DefaultSeaQueries for UserQueries {
+    type Entity = Users;
+    type ActiveModel = UserActiveModel;
+
+    type CreateDto = RequestCreateUser;
+    type UpdateDto = RequestUpdateUser;
+
+    async fn create_entity(
+        db: &DatabaseConnection,
+        create_data: Self::CreateDto
+    ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
+        if let Ok(user) = Self::find_by_discord_id(db, &create_data.discord_id).await {
+            Ok(user)
+        } else {
+            save_active_model(db, UserActiveModel {
+                discord_id: Set(create_data.discord_id),
+                ..Default::default() // Use default values for other fields
+            }).await
+        }
+    }
+
+    #[allow(unused_variables)]
+    async fn apply_updates(
+        db: &DatabaseConnection,
+        active_model: &mut Self::ActiveModel,
+        update_data: Self::UpdateDto
+    ) -> Result<(), AppError> {
+        // Apply updates from the DTO
+
+        Ok(())
+    }
+}

@@ -1,4 +1,5 @@
 pub mod hello_world;
+pub mod bots_routes;
 pub mod bots;
 pub mod guild_configs;
 pub mod users;

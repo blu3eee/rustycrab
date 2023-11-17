@@ -52,7 +52,8 @@ impl DefaultSeaQueries for LogSettingQueries {
         Self::save_active_model(db, active_model).await
     }
 
-    fn apply_updates(
+    async fn apply_updates(
+        _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
         update_data: Self::UpdateDto
     ) -> Result<(), AppError> {

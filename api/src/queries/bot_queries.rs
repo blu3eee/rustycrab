@@ -33,7 +33,7 @@ impl BotQueries {
         let model = Self::find_by_discord_id(db, bot_discord_id).await?;
         let mut active_model: bots::ActiveModel = model.into();
 
-        Self::apply_updates(&mut active_model, update_data)?;
+        Self::apply_updates(db, &mut active_model, update_data).await?;
 
         Self::save_active_model(db, active_model).await
     }
@@ -67,7 +67,8 @@ impl DefaultSeaQueries for BotQueries {
         Self::save_active_model(db, active_model).await
     }
 
-    fn apply_updates(
+    async fn apply_updates(
+        _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
         update_data: Self::UpdateDto
     ) -> Result<(), AppError> {

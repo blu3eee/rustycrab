@@ -12,3 +12,4 @@ pub struct AppState {
     pub db: DatabaseConnection,
     pub running_bots: HashMap<String, Arc<DiscordClient>>,
 }
+// unsafe impl Send for AppState {}

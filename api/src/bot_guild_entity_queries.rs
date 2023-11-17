@@ -16,19 +16,18 @@ use super::default_queries::DefaultSeaQueries;
 /// that are associated with both a bot and a guild in Discord. It provides methods
 /// for finding and updating these entities based on bot and guild Discord IDs.
 #[async_trait]
-#[async_trait]
 pub trait BotGuildEntityQueries: DefaultSeaQueries {
     /// Finds an entity based on both the bot's and guild's Discord IDs.
     ///
     /// This method assumes that the implementing entity has columns `BotId` and `GuildId`,
     /// and it performs a query to retrieve the entity that matches both IDs.
     ///
-    /// # Parameters
+    /// ### Parameters
     /// - `db`: The database connection.
     /// - `bot_discord_id`: The Discord ID of the bot.
     /// - `guild_discord_id`: The Discord ID of the guild.
     ///
-    /// # Returns
+    /// ### Returns
     /// A result containing either the entity model if found, or an `AppError` if not found
     /// or if an error occurs during the query.
     async fn find_by_discord_ids(
@@ -54,13 +53,13 @@ pub trait BotGuildEntityQueries: DefaultSeaQueries {
     /// applies updates based on the given DTO. It's a convenient way to update entities
     /// that are identified by a combination of bot and guild IDs.
     ///
-    /// # Parameters
+    /// ### Parameters
     /// - `db`: The database connection.
     /// - `bot_discord_id`: The Discord ID of the bot.
     /// - `guild_discord_id`: The Discord ID of the guild.
     /// - `update_data`: Data transfer object containing the update information.
     ///
-    /// # Returns
+    /// ### Returns
     /// A result containing either the updated entity model or an `AppError` if an error occurs.
     async fn update_by_discord_ids(
         db: &DatabaseConnection,
@@ -78,7 +77,7 @@ pub trait BotGuildEntityQueries: DefaultSeaQueries {
 
         let mut active_model: <Self as DefaultSeaQueries>::ActiveModel = model.into_active_model();
 
-        Self::apply_updates(&mut active_model, update_data)?;
+        Self::apply_updates(db, &mut active_model, update_data).await?;
 
         Self::save_active_model(db, active_model).await
     }

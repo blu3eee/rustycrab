@@ -1,6 +1,6 @@
 // routes/bot/mod.rs
-pub mod get_all_bots;
-pub mod get_one_bot;
+mod get_all_bots;
+mod get_one_bot;
 use serde::{ Deserialize, Serialize };
 
 use crate::database::bots::Model as BotModel;

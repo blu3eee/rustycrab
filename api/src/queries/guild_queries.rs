@@ -76,7 +76,8 @@ impl DefaultSeaQueries for GuildQueries {
     }
 
     #[allow(unused_variables)]
-    fn apply_updates(
+    async fn apply_updates(
+        _: &DatabaseConnection,
         active_model: &mut Self::ActiveModel,
         update_data: Self::UpdateDto
     ) -> Result<(), AppError> {
