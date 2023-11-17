@@ -10,7 +10,7 @@ use crate::{
         bots,
         guild_info,
     },
-    routes::guild_welcomes::{ RequestCreateWelcome, RequestUpdateWelcome },
+    routes::bot_guild_welcomes::{ RequestCreateWelcome, RequestUpdateWelcome },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
     bot_guild_entity_queries::BotGuildEntityQueries,

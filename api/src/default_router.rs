@@ -275,7 +275,7 @@ pub trait DefaultRoutes: 'static {
     /// - `Router`: A router with custom routes defined by the implementer.
     ///
     /// ### Example Usage
-    /// ```norun
+    /// ```rust,ignore
     /// struct MyCustomRoutes;
     ///
     /// #[async_trait]
@@ -311,7 +311,7 @@ pub trait DefaultRoutes: 'static {
     /// - `Router`: A router combining the default CRUD routes with any additional custom routes.
     ///
     /// ### Example Usage
-    /// ```norun
+    /// ```rust,ignore
     /// let app_state = //... initialize AppState ...
     /// let router = MyCustomRoutes::router(app_state).await;
     /// ```

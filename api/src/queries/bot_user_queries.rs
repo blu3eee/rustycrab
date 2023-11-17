@@ -37,7 +37,7 @@ impl BotUserQueries {
             .and_then(|bot_user| bot_user.ok_or_else(|| AppError::not_found("Bot User not found")))
     }
 
-    pub async fn update_bot_user(
+    pub async fn update_by_discord_ids(
         db: &DatabaseConnection,
         bot_id: &str,
         user_id: &str,
@@ -51,7 +51,7 @@ impl BotUserQueries {
         Self::save_active_model(db, active_model).await
     }
 
-    pub async fn get_bot_user_or_create(
+    pub async fn get_one_or_create(
         db: &DatabaseConnection,
         bot_id: &str,
         user_id: &str

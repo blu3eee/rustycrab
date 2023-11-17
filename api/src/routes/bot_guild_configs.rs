@@ -61,7 +61,7 @@ pub struct ResponseGuildConfig {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct ResponseGuildConfigWithBotInfo {
+pub struct ResponseGuildConfigDetails {
     pub id: i32,
     pub prefix: String,
     pub locale: String,

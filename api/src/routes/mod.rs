@@ -2,11 +2,10 @@ pub mod hello_world;
 pub mod bots;
 pub mod users_routes;
 pub mod guilds;
-
 pub mod bot_guild_configs;
-pub mod discord_client;
 pub mod bot_users;
-pub mod guild_welcomes;
+pub mod bot_guild_welcomes;
+
 pub mod bot_logs;
 
 use crate::database::{ embed_info::Model as EmbedModel, buttons::Model as ButtonModel };

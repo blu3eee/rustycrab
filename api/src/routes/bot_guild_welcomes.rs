@@ -1,10 +1,37 @@
+use crate::app_state::AppState;
+use crate::bot_guild_entity_router::BotGuildEntityRoutes;
 use crate::database::bot_guild_welcomes::Model as WelcomeModel;
+use crate::default_router::DefaultRoutes;
+use crate::queries::guild_welcome_queries::GuildWelcomeQueries;
 
+use async_trait::async_trait;
+use axum::Router;
 use serde::{ Deserialize, Serialize };
 use super::bots::ResponseBot;
 
 use super::guilds::ResponseGuild;
 use super::{ RequestCreateUpdateMessage, ResponseMessage };
+
+pub struct BotGuildWelcomesRoutes {}
+
+impl BotGuildWelcomesRoutes {}
+
+#[async_trait]
+impl DefaultRoutes for BotGuildWelcomesRoutes {
+    type Queries = GuildWelcomeQueries;
+
+    type ResponseJson = ResponseGuildWelcome;
+
+    fn path() -> String {
+        format!("welcomes")
+    }
+
+    async fn more_routes(_: AppState) -> Router {
+        Router::new()
+    }
+}
+
+impl BotGuildEntityRoutes for BotGuildWelcomesRoutes {}
 
 #[derive(Deserialize)]
 pub struct RequestCreateWelcome {
@@ -40,11 +67,6 @@ pub struct ResponseGuildWelcomeDetails {
     pub message: Option<ResponseMessage>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct ResponseDataGuildWelcome {
-    pub data: ResponseGuildWelcome,
-}
-
 impl From<WelcomeModel> for ResponseGuildWelcome {
     fn from(model: WelcomeModel) -> Self {
         Self {
@@ -57,10 +79,3 @@ impl From<WelcomeModel> for ResponseGuildWelcome {
         }
     }
 }
-
-#[derive(Serialize, Deserialize)]
-pub struct ResponseDataGuildWelcomes {
-    pub data: Vec<ResponseGuildWelcome>,
-}
-
-// Function to convert from SeaORM Model to you

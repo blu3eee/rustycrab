@@ -3,6 +3,7 @@ use crate::{
         hello_world::hello_world,
         bots::BotsRouter,
         bot_guild_configs::BotGuildConfigsRoutes,
+        bot_guild_welcomes::BotGuildWelcomesRoutes,
     },
     app_state::AppState,
     default_router::DefaultRoutes,
@@ -21,5 +22,6 @@ pub async fn create_router(app_state: AppState) -> Router {
         // .nest("/bots", bots::bots_router())
         .merge(BotsRouter::router(app_state.clone()).await)
         .merge(<BotGuildConfigsRoutes as BotGuildEntityRoutes>::router(app_state.clone()).await)
+        .merge(<BotGuildWelcomesRoutes as BotGuildEntityRoutes>::router(app_state.clone()).await)
         .layer(Extension(app_state)) // Apply the app_state to all routes
 }
