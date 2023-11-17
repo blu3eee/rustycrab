@@ -90,8 +90,8 @@ pub trait BotGuildEntityQueries: DefaultSeaQueries {
             .join(sea_orm::JoinType::LeftJoin, Self::guild_relation())
             .filter(
                 Condition::all()
-                    .add(crate::database::bots::Column::BotId.eq(bot_discord_id)) // Adjust 'BotId' if necessary
-                    .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id)) // Adjust 'GuildId' if necessary
+                    .add(crate::database::bots::Column::BotId.eq(bot_discord_id))
+                    .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id))
             )
             .one(db).await
             .map_err(convert_seaorm_error)?

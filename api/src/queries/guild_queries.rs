@@ -7,7 +7,7 @@ use crate::database::guild_info::{
     self,
 };
 use crate::default_queries::DefaultSeaQueries;
-use crate::routes::guilds::{ RequestCreateGuild, RequestUpdateGuild };
+use crate::router::routes::guilds::{ RequestCreateGuild, RequestUpdateGuild };
 use crate::utilities::app_error::AppError;
 
 pub struct GuildQueries {}

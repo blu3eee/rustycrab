@@ -1,16 +1,12 @@
 use async_trait::async_trait;
 use sea_orm::{ DatabaseConnection, EntityTrait, Set, ActiveValue, RelationTrait };
 use crate::{
-    database::{
-        bot_guild_welcomes::{
-            self,
-            Entity as GuildWelcomes,
-            ActiveModel as GuildWelcomeActiveModel,
-        },
-        bots,
-        guild_info,
+    database::bot_guild_welcomes::{
+        self,
+        Entity as GuildWelcomes,
+        ActiveModel as GuildWelcomeActiveModel,
     },
-    routes::bot_guild_welcomes::{ RequestCreateWelcome, RequestUpdateWelcome },
+    router::routes::bot_guild_welcomes::{ RequestCreateWelcome, RequestUpdateWelcome },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
     bot_guild_entity_queries::BotGuildEntityQueries,
@@ -57,14 +53,9 @@ impl DefaultSeaQueries for GuildWelcomeQueries {
         {
             return Ok(welcome);
         }
-        let guild: guild_info::Model = GuildQueries::find_one_or_create(
-            db,
-            &create_data.guild_discord_id
-        ).await?;
-        let bot: bots::Model = BotQueries::find_by_discord_id(
-            db,
-            &create_data.bot_discord_id
-        ).await?;
+        let bot = BotQueries::find_by_discord_id(db, &create_data.bot_discord_id).await?;
+        let guild = GuildQueries::find_one_or_create(db, &create_data.guild_discord_id).await?;
+
         let message = if let Some(message_data) = create_data.message_data {
             Some(MessageQueries::create_entity(db, message_data).await?)
         } else {

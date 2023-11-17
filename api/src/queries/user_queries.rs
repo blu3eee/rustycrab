@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 
 use crate::default_queries::DefaultSeaQueries;
-use crate::routes::users_routes::{ RequestCreateUser, RequestUpdateUser };
+use crate::router::routes::users_routes::{ RequestCreateUser, RequestUpdateUser };
 use crate::utilities::app_error::AppError;
 use crate::utilities::convert_seaorm_error::convert_seaorm_error;
 use crate::database::users::{

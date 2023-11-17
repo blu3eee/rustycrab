@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use crate::bot_guild_entity_queries::BotGuildEntityQueries;
 use crate::default_queries::DefaultSeaQueries;
 use crate::queries::bot_queries::BotQueries;
+use crate::queries::guild_queries::GuildQueries;
 use crate::{
     database::log_settings::{
         self,
@@ -11,7 +12,7 @@ use crate::{
         Entity as LogSettings,
         ActiveModel as LogSettingActiveModel,
     },
-    routes::bot_logs::{ RequestCreateLogSetting, RequestUpdateLogSetting },
+    router::routes::bot_logs::log_settings::{ RequestCreateLogSetting, RequestUpdateLogSetting },
     utilities::app_error::AppError,
 };
 
@@ -47,9 +48,9 @@ impl DefaultSeaQueries for LogSettingQueries {
         {
             return Ok(model);
         }
-        let guild = BotQueries::find_by_discord_id(db, &create_data.bot_discord_id).await?;
 
         let bot = BotQueries::find_by_discord_id(db, &create_data.bot_discord_id).await?;
+        let guild = GuildQueries::find_one_or_create(db, &create_data.bot_discord_id).await?;
 
         let active_model = LogSettingActiveModel {
             bot_id: Set(Some(bot.id)),

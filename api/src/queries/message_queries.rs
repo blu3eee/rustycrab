@@ -6,7 +6,7 @@ use crate::{
         messages::{ Entity as Messages, ActiveModel as MessageActiveModel },
         embed_info::Model as EmbedModel,
     },
-    routes::{ RequestCreateUpdateMessage, ResponseMessage, ResponseEmbed },
+    router::routes::{ RequestCreateUpdateMessage, ResponseMessage, ResponseEmbed },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
 };

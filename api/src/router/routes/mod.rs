@@ -1,6 +1,7 @@
 pub mod hello_world;
-pub mod bots;
+
 pub mod users_routes;
+pub mod bots;
 pub mod guilds;
 pub mod bot_guild_configs;
 pub mod bot_users;

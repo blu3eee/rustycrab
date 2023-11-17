@@ -3,7 +3,7 @@ use sea_orm::{ DatabaseConnection, EntityTrait, Set };
 
 use crate::{
     database::buttons::{ Entity as Buttons, ActiveModel as ButtonActiveModel },
-    routes::{ RequestCreateButton, RequestUpdateButton },
+    router::routes::{ RequestCreateButton, RequestUpdateButton },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
 };

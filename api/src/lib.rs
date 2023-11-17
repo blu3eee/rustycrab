@@ -6,7 +6,6 @@
 
 pub mod app_state;
 pub mod router;
-pub mod routes;
 pub mod database;
 pub mod utilities;
 pub mod queries;
@@ -35,7 +34,7 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use crate::router::create_router;
+use crate::router::create_router::create_router;
 use crate::database::bots::Model as BotModel;
 
 // discord

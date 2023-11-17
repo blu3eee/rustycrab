@@ -1,6 +1,35 @@
-use crate::database::log_settings::Model as LogSettingModel;
+use crate::{
+    database::log_settings::Model as LogSettingModel,
+    default_router::DefaultRoutes,
+    queries::guild_logs::log_setting_queries::LogSettingQueries,
+    app_state::AppState,
+    bot_guild_entity_router::BotGuildEntityRoutes,
+};
 
+use async_trait::async_trait;
+use axum::Router;
 use serde::{ Deserialize, Serialize };
+
+pub struct BotGuildLogSettingsRoutes {}
+
+impl BotGuildLogSettingsRoutes {}
+
+#[async_trait]
+impl DefaultRoutes for BotGuildLogSettingsRoutes {
+    type Queries = LogSettingQueries;
+
+    type ResponseJson = ResponseLogSetting;
+
+    fn path() -> String {
+        format!("settings")
+    }
+
+    async fn more_routes(_: AppState) -> Router {
+        Router::new()
+    }
+}
+
+impl BotGuildEntityRoutes for BotGuildLogSettingsRoutes {}
 
 #[derive(Deserialize)]
 pub struct RequestCreateLogSetting {
@@ -21,16 +50,6 @@ pub struct ResponseLogSetting {
     pub new_account_age: i32,
     pub bot_id: Option<i32>,
     pub guild_id: Option<i32>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ResponseDataLogSetting {
-    pub data: ResponseLogSetting,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ResponseDataLogSettings {
-    pub data: Vec<ResponseLogSetting>,
 }
 
 impl From<LogSettingModel> for ResponseLogSetting {

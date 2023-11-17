@@ -1,3 +1,6 @@
+pub mod log_setting_queries;
+pub mod action_log_queries;
+
 use enum_primitive_derive::Primitive;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Primitive)]
@@ -72,6 +75,3 @@ pub enum BotLogs {
     ContextCommand = 0,
     SlashCommand = 1,
 }
-
-// pub mod log_settings_queries;
-pub mod log_setting_queries;

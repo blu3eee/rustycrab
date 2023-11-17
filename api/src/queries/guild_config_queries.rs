@@ -15,10 +15,10 @@ use crate::{
     },
     bot_guild_entity_queries::BotGuildEntityQueries,
     default_queries::DefaultSeaQueries,
-    routes::bot_guild_configs::{ RequestCreateConfig, RequestUpdateConfig },
+    router::routes::bot_guild_configs::{ RequestCreateConfig, RequestUpdateConfig },
 };
 
-use super::bot_queries::BotQueries;
+use super::{ bot_queries::BotQueries, guild_queries::GuildQueries };
 
 pub struct GuildConfigQueries {}
 
@@ -89,9 +89,9 @@ impl DefaultSeaQueries for GuildConfigQueries {
         {
             return Ok(model);
         }
-        let guild = BotQueries::find_by_discord_id(db, &create_data.bot_discord_id).await?;
 
         let bot = BotQueries::find_by_discord_id(db, &create_data.bot_discord_id).await?;
+        let guild = GuildQueries::find_one_or_create(db, &create_data.bot_discord_id).await?;
 
         let active_model = Self::ActiveModel {
             bot_id: Set(Some(bot.id)),

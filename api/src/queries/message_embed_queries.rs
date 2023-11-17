@@ -3,7 +3,7 @@ use sea_orm::{ DatabaseConnection, Set, EntityTrait };
 
 use crate::{
     database::embed_info::{ Entity as Embeds, ActiveModel as EmbedActiveModel },
-    routes::RequestCreateUpdateEmbed,
+    router::routes::RequestCreateUpdateEmbed,
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
 };
