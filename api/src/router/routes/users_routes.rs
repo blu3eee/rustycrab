@@ -78,18 +78,18 @@ impl DefaultRoutes for UsersRoutes {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateUser {
     pub discord_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateUser {
     pub access_token: Option<String>,
     pub refresh_token: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseUser {
     pub id: i32,
     pub discord_id: String,

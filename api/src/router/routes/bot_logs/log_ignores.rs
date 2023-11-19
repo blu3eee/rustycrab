@@ -3,7 +3,7 @@ use crate::{
         log_ignore_channels::Model as LogIgnoreChannelModel,
         log_ignore_roles::Model as LogIgnoreRoleModel,
     },
-    default_router::{ DefaultRoutes, ResponseDataList },
+    default_router::{ DefaultRoutes, ResponseDataList, ResponseDataJson },
     queries::guild_logs::{
         log_ignore_channel_queries::LogIgnoreChannelQueries,
         log_ignore_role_queries::LogIgnoreRoleQueries,
@@ -18,12 +18,52 @@ use axum::{ Extension, extract::Path, Json, Router, routing::get };
 use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait };
 use serde::{ Deserialize, Serialize };
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseAllGuildIgnores {
+    channels: Vec<ResponseLogIgnoreChannel>,
+    roles: Vec<ResponseLogIgnoreRole>,
+}
+
+async fn get_all_guild_ignores(
+    Extension(state): Extension<AppState>,
+    Path((bot_discord_id, guild_discord_id)): Path<(String, String)>
+) -> Result<Json<ResponseDataJson<ResponseAllGuildIgnores>>, AppError> {
+    let channels: Vec<ResponseLogIgnoreChannel> =
+        LogIgnoreChannelQueries::get_guild_ignores_by_discord_ids(
+            &state.db,
+            &bot_discord_id,
+            &guild_discord_id
+        ).await?
+            .into_iter()
+            .map(ResponseLogIgnoreChannel::from)
+            .collect();
+
+    let roles: Vec<ResponseLogIgnoreRole> = LogIgnoreRoleQueries::get_guild_ignores_by_discord_ids(
+        &state.db,
+        &bot_discord_id,
+        &guild_discord_id
+    ).await?
+        .into_iter()
+        .map(ResponseLogIgnoreRole::from)
+        .collect();
+
+    Ok(
+        Json(ResponseDataJson {
+            data: ResponseAllGuildIgnores {
+                channels,
+                roles,
+            },
+        })
+    )
+}
+
 pub async fn ignore_routes(state: AppState) -> Router {
     Router::new().nest(
         "/ignores",
         Router::new()
             .merge(BotGuildLogIgnoresChannelRoutes::router(state.clone()).await)
             .merge(BotGuildLogIgnoresRoleRoutes::router(state.clone()).await)
+            .route("/:bot_discord_id/:guild_discord_id", get(get_all_guild_ignores))
     )
 }
 
@@ -80,10 +120,15 @@ impl DefaultRoutes for BotGuildLogIgnoresChannelRoutes {
 
     async fn more_routes(_: AppState) -> Router {
         let path = Self::path();
-        Router::new().route(
-            &format!("/{}/:bot_discord_id/:guild_discord_id", &path),
-            get(Self::get_guild_ignores_by_discord_ids)
-        )
+        Router::new()
+            .route(
+                &format!("/:bot_discord_id/:guild_discord_id/{}", &path),
+                get(Self::get_guild_ignores_by_discord_ids)
+            )
+            .route(
+                &format!("/:bot_discord_id/:guild_discord_id/{}/:channel_discord_id", &path),
+                get(Self::check_ignored)
+            )
     }
 }
 
@@ -141,23 +186,28 @@ impl DefaultRoutes for BotGuildLogIgnoresRoleRoutes {
 
     async fn more_routes(_: AppState) -> Router {
         let path = Self::path();
-        Router::new().route(
-            &format!("/{}/:bot_discord_id/:guild_discord_id", &path),
-            get(Self::get_guild_ignores_by_discord_ids)
-        )
+        Router::new()
+            .route(
+                &format!("/:bot_discord_id/:guild_discord_id/{}", &path),
+                get(Self::get_guild_ignores_by_discord_ids)
+            )
+            .route(
+                &format!("/:bot_discord_id/:guild_discord_id/{}/:role_discord_id", &path),
+                get(Self::check_ignored)
+            )
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateLogIgnoreChannel {
     pub log_setting_id: i32,
     pub channel_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateLogIgnoreChannel {}
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseLogIgnoreChannel {
     pub id: i32,
     pub log_setting_id: Option<i32>,
@@ -174,16 +224,16 @@ impl From<LogIgnoreChannelModel> for ResponseLogIgnoreChannel {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateLogIgnoreRole {
     pub log_setting_id: i32,
     pub role_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateLogIgnoreRole {}
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseLogIgnoreRole {
     pub id: i32,
     pub log_setting_id: Option<i32>,

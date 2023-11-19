@@ -10,7 +10,7 @@ use serde::{ Deserialize, Serialize };
 use super::bots::ResponseBot;
 
 use super::guilds::ResponseGuild;
-use super::{ RequestCreateUpdateMessage, ResponseMessage };
+use super::{ RequestCreateUpdateMessage, ResponseMessageDetails };
 
 pub struct BotGuildWelcomesRoutes {}
 
@@ -33,7 +33,7 @@ impl DefaultRoutes for BotGuildWelcomesRoutes {
 
 impl BotGuildEntityRoutes for BotGuildWelcomesRoutes {}
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateWelcome {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
@@ -41,13 +41,13 @@ pub struct RequestCreateWelcome {
     pub channel_id: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateWelcome {
     pub channel_id: Option<String>,
     pub message_data: Option<RequestCreateUpdateMessage>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseGuildWelcome {
     pub id: i32,
     pub enabled: i8,
@@ -57,14 +57,14 @@ pub struct ResponseGuildWelcome {
     pub message_id: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseGuildWelcomeDetails {
     pub id: i32,
     pub enabled: i8,
     pub channel_id: Option<String>,
     pub bot: Option<ResponseBot>,
     pub guild: Option<ResponseGuild>,
-    pub message: Option<ResponseMessage>,
+    pub message: Option<ResponseMessageDetails>,
 }
 
 impl From<WelcomeModel> for ResponseGuildWelcome {

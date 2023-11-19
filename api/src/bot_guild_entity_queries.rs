@@ -1,4 +1,4 @@
-use crate::utilities::{ app_error::AppError, utils::convert_seaorm_error };
+use crate::utilities::app_error::AppError;
 use async_trait::async_trait;
 
 use sea_orm::{
@@ -94,7 +94,7 @@ pub trait BotGuildEntityQueries: DefaultSeaQueries {
                     .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id))
             )
             .one(db).await
-            .map_err(convert_seaorm_error)?
+            .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("Record not found"))
     }
 

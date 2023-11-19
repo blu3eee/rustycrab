@@ -2,7 +2,7 @@ pub enum ColorTypes {
     String(String),
 }
 
-pub fn convert_color_u64(color: ColorTypes) -> u32 {
+pub fn convert_color_u32(color: ColorTypes) -> u32 {
     match color {
         ColorTypes::String(color_string) => {
             u32::from_str_radix(color_string.trim_start_matches("#"), 16).unwrap_or_else(|_|
@@ -13,6 +13,7 @@ pub fn convert_color_u64(color: ColorTypes) -> u32 {
 }
 
 use sea_orm::DbErr;
+
 use super::app_error::AppError;
 
 /// Converts a SeaORM database error into an application-specific error.
@@ -38,5 +39,18 @@ pub fn convert_seaorm_error(err: DbErr) -> AppError {
                 "An internal error occurred while accessing the database."
             )
         }
+    }
+}
+
+use twilight_model::channel::message::component::ButtonStyle;
+
+pub fn color_to_button_style(color: &str) -> ButtonStyle {
+    match color.to_lowercase().as_str() {
+        "red" => ButtonStyle::Danger,
+        "green" => ButtonStyle::Success,
+        "blue" => ButtonStyle::Primary,
+        "gray" | "grey" => ButtonStyle::Secondary,
+        "link" => ButtonStyle::Link,
+        _ => ButtonStyle::Secondary, // Default case
     }
 }

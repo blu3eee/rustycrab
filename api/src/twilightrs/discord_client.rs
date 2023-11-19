@@ -16,7 +16,7 @@ use crate::{
     bot_guild_entity_queries::BotGuildEntityQueries,
 };
 
-use super::{ embeds::DiscordEmbed, commands::context::context_command::GuildConfigModel };
+use super::{ messages::DiscordEmbed, commands::context::context_command::GuildConfigModel };
 pub enum MessageContent {
     Text(String),
     EmbedModels(Vec<EmbedModel>),

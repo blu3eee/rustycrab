@@ -7,7 +7,7 @@ use crate::{
     twilightrs::{
         commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
         discord_client::{ DiscordClient, MessageContent },
-        embeds::DiscordEmbed,
+        messages::DiscordEmbed,
     },
 };
 

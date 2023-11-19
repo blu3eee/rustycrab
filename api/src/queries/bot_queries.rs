@@ -4,7 +4,7 @@ use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 
 use crate::{
     database::bots::{ self, Model as BotModel },
-    utilities::{ app_error::AppError, utils::convert_seaorm_error },
+    utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
     router::routes::bots::{ RequestCreateBot, RequestUpdateBot },
 };
@@ -20,7 +20,7 @@ impl BotQueries {
             ::find()
             .filter(bots::Column::BotId.eq(bot_discord_id))
             .one(db).await
-            .map_err(convert_seaorm_error)?
+            .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("Bot not found"))
     }
 

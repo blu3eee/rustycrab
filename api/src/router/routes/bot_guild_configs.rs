@@ -33,13 +33,13 @@ impl DefaultRoutes for BotGuildConfigsRoutes {
 
 impl BotGuildEntityRoutes for BotGuildConfigsRoutes {}
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateConfig {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateConfig {
     pub prefix: Option<String>,
     pub locale: Option<String>,
@@ -49,7 +49,7 @@ pub struct RequestUpdateConfig {
     pub premium_flags: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseGuildConfig {
     pub id: i32,
     pub prefix: String,
@@ -60,7 +60,7 @@ pub struct ResponseGuildConfig {
     pub premium_flags: i32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseGuildConfigDetails {
     pub id: i32,
     pub prefix: String,

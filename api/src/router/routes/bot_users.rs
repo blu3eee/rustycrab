@@ -85,20 +85,20 @@ impl DefaultRoutes for BotUsersRoutes {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateBotUser {
     pub bot_id: String,
     pub user_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateBotUser {
     pub balance: Option<i32>,
     pub pray_points: Option<i32>,
     pub inventory: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseBotUser {
     pub id: i32,
     pub balance: i32,

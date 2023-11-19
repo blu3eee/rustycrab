@@ -25,7 +25,7 @@ use crate::{
         RequestCreateLogIgnoreChannel,
         RequestUpdateLogIgnoreChannel,
     },
-    utilities::{ app_error::AppError, utils::convert_seaorm_error },
+    utilities::app_error::AppError,
 };
 use super::log_setting_queries::LogSettingQueries;
 
@@ -74,7 +74,7 @@ impl LogIgnoreChannelQueries {
                     .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id))
             )
             .all(db).await
-            .map_err(convert_seaorm_error)
+            .map_err(AppError::from)
     }
 
     pub async fn get_guild_ignores(
@@ -89,7 +89,7 @@ impl LogIgnoreChannelQueries {
                 )
             )
             .all(db).await
-            .map_err(convert_seaorm_error)
+            .map_err(AppError::from)
     }
 }
 

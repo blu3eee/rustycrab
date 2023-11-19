@@ -31,19 +31,19 @@ impl DefaultRoutes for BotGuildLogSettingsRoutes {
 
 impl BotGuildEntityRoutes for BotGuildLogSettingsRoutes {}
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateLogSetting {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateLogSetting {
     pub specify_channels: Option<i8>,
     pub new_account_age: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseLogSetting {
     pub id: i32,
     pub specify_channels: i8,

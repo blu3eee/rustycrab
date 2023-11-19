@@ -135,7 +135,6 @@ impl From<EmbedModel> for DiscordEmbed {
             thumbnail: model.thumbnail,
             author_name: model.author,
             author_icon_url: model.author_url,
-            // Assuming `fields` in `EmbedModel` can be converted to `Vec<DiscordEmbedField>`
             fields: None,
             timestamp: model.timestamp.map(|_| true), // Adjust this based on your timestamp logic
         }

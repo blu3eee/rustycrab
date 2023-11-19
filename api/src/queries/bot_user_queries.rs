@@ -10,7 +10,7 @@ use sea_orm::{
 };
 
 use crate::{
-    utilities::{ app_error::AppError, utils::convert_seaorm_error },
+    utilities::app_error::AppError,
     database::{ bots, bot_users::{ Entity as BotUser, Model as BotUserModel, self }, users },
     router::routes::bot_users::{ RequestUpdateBotUser, RequestCreateBotUser },
     default_queries::DefaultSeaQueries,
@@ -33,7 +33,7 @@ impl BotUserQueries {
                     .add(users::Column::DiscordId.eq(user_id))
             )
             .one(db).await
-            .map_err(convert_seaorm_error)
+            .map_err(AppError::from)
             .and_then(|bot_user| bot_user.ok_or_else(|| AppError::not_found("Bot User not found")))
     }
 
@@ -73,7 +73,7 @@ impl BotUserQueries {
         BotUser::find()
             .filter(Condition::all().add(bots::Column::BotId.eq(bot_id)))
             .all(db).await
-            .map_err(convert_seaorm_error)
+            .map_err(AppError::from)
     }
 }
 
@@ -122,6 +122,6 @@ impl DefaultSeaQueries for BotUserQueries {
             ..Default::default()
         };
 
-        bot_user.insert(db).await.map_err(convert_seaorm_error)
+        bot_user.insert(db).await.map_err(AppError::from)
     }
 }

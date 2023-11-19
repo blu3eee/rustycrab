@@ -19,7 +19,7 @@ use crate::{
         Relation as ActionLogsRelations,
     },
     router::routes::bot_logs::action_logs::{ RequestCreateLogAction, RequestUpdateActionLog },
-    utilities::{ app_error::AppError, utils::convert_seaorm_error },
+    utilities::app_error::AppError,
     queries::{ bot_queries::BotQueries, guild_queries::GuildQueries },
 };
 
@@ -43,7 +43,7 @@ impl ActionLogsQueries {
                     .add(guild_action_logs::Column::ChannelId.eq(channel_discord_id))
             )
             .one(db).await
-            .map_err(convert_seaorm_error)?
+            .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("Record not found"))
     }
 
@@ -62,7 +62,7 @@ impl ActionLogsQueries {
                     .add(crate::database::guild_info::Column::GuildId.eq(guild_discord_id))
             )
             .all(db).await
-            .map_err(convert_seaorm_error)
+            .map_err(AppError::from)
     }
 }
 

@@ -1,5 +1,6 @@
 // utilities/app_error.rs
 use axum::{ http::StatusCode, response::IntoResponse, Json };
+use sea_orm::DbErr;
 use serde::{ Deserialize, Serialize };
 use std::fmt;
 use std::error::Error;
@@ -53,7 +54,7 @@ impl IntoResponse for AppError {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct ErrorResponse {
     error: String,
 }
@@ -65,3 +66,30 @@ impl fmt::Display for AppError {
 }
 
 impl Error for AppError {}
+
+impl From<DbErr> for AppError {
+    fn from(err: DbErr) -> Self {
+        eprintln!("Database error: {:?}", err); // Make sure to use the log crate to log the error.
+
+        // You can add specific matches for different error types if needed.
+        // For example, if you have unique constraint violations that might be caused by client input,
+        // you can return a 400 error instead.
+        match err {
+            DbErr::Query(query_error) => {
+                // Handle specific query errors if necessary
+                AppError::internal_server_error(format!("Database query error: {}", query_error))
+            }
+            DbErr::RecordNotFound(_) => {
+                // This might happen due to a client error, if they reference a non-existent record
+                AppError::not_found("The requested record does not exist.")
+            }
+            // Add more matches as necessary for different kinds of errors
+            _ => {
+                // For any other database error, return a 500 internal server error
+                AppError::internal_server_error(
+                    "An internal error occurred while accessing the database."
+                )
+            }
+        }
+    }
+}

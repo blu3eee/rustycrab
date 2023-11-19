@@ -1,5 +1,5 @@
 pub mod discord_client;
-pub mod embeds;
+pub mod messages;
 pub mod events;
 pub mod utils;
 pub mod commands;

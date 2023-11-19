@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set, RelationTrait };
 
 use crate::{
-    utilities::{ app_error::AppError, utils::convert_seaorm_error },
+    utilities::app_error::AppError,
     database::{
         bot_guild_configurations::{
             self,
@@ -31,7 +31,7 @@ impl GuildConfigQueries {
         GuildConfigs::find()
             .filter(bots::Column::BotId.eq(bot_id))
             .all(db).await
-            .map_err(convert_seaorm_error)
+            .map_err(AppError::from)
     }
 }
 

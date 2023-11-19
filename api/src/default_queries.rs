@@ -1,4 +1,6 @@
-use crate::utilities::{ app_error::AppError, utils::convert_seaorm_error };
+use std::fmt::Debug;
+
+use crate::utilities::app_error::AppError;
 use async_trait::async_trait;
 
 use sea_orm::{
@@ -31,9 +33,9 @@ pub trait DefaultSeaQueries {
         Sync;
 
     /// Data transfer object (DTO) type for creating entities.
-    type CreateData: DeserializeOwned + Send + Sync;
+    type CreateData: DeserializeOwned + Send + Sync + Debug;
     /// Data transfer object (DTO) type for updating entities.
-    type UpdateData: DeserializeOwned + Send + Sync;
+    type UpdateData: DeserializeOwned + Send + Sync + Debug;
 
     /// Retrieves all instances of the entity from the database.
     ///
@@ -46,7 +48,7 @@ pub trait DefaultSeaQueries {
     async fn find_all(
         db: &DatabaseConnection
     ) -> Result<Vec<<Self::Entity as EntityTrait>::Model>, AppError> {
-        Self::Entity::find().all(db).await.map_err(convert_seaorm_error)
+        Self::Entity::find().all(db).await.map_err(AppError::from)
     }
 
     /// Finds a single instance of the entity by its primary key.
@@ -66,7 +68,7 @@ pub trait DefaultSeaQueries {
     {
         Self::Entity::find_by_id(id)
             .one(db).await
-            .map_err(convert_seaorm_error)?
+            .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("Record not found"))
     }
 
@@ -146,7 +148,7 @@ pub trait DefaultSeaQueries {
                 Send +
                 Sync
     {
-        Ok(Self::Entity::delete_by_id(id.into()).exec(db).await.map_err(convert_seaorm_error)?)
+        Ok(Self::Entity::delete_by_id(id.into()).exec(db).await.map_err(AppError::from)?)
     }
 
     /// Saves changes in an active model to the database and returns the updated model.

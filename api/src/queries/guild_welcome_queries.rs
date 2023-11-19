@@ -1,5 +1,13 @@
 use async_trait::async_trait;
-use sea_orm::{ DatabaseConnection, EntityTrait, Set, ActiveValue, RelationTrait };
+use sea_orm::{
+    DatabaseConnection,
+    EntityTrait,
+    Set,
+    ActiveValue,
+    RelationTrait,
+    PrimaryKeyTrait,
+    DeleteResult,
+};
 use crate::{
     database::bot_guild_welcomes::{
         self,
@@ -13,7 +21,6 @@ use crate::{
 };
 
 use super::{
-    save_active_model,
     bot_queries::BotQueries,
     guild_queries::GuildQueries,
     message_queries::MessageQueries,
@@ -70,7 +77,7 @@ impl DefaultSeaQueries for GuildWelcomeQueries {
             ..Default::default()
         };
 
-        save_active_model(db, active_model).await
+        Self::save_active_model(db, active_model).await
     }
 
     async fn apply_updates(
@@ -85,7 +92,7 @@ impl DefaultSeaQueries for GuildWelcomeQueries {
 
         // Handle message_data update
         if let Some(message_data) = update_data.message_data {
-            if let ActiveValue::Set(Some(message_id)) = active_model.message_id {
+            if let ActiveValue::Unchanged(Some(message_id)) = active_model.message_id {
                 let _ = MessageQueries::update_by_id(db, message_id, message_data).await?;
             } else {
                 let message = MessageQueries::create_entity(db, message_data).await?;
@@ -94,5 +101,24 @@ impl DefaultSeaQueries for GuildWelcomeQueries {
         }
 
         Ok(())
+    }
+
+    async fn delete_by_id<K>(db: &DatabaseConnection, id: K) -> Result<DeleteResult, AppError>
+        where
+            K: Into<<<Self::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType> +
+                Send +
+                Sync
+    {
+        let model = Self::Entity::find_by_id(id.into())
+            .one(db).await
+            .map_err(AppError::from)?
+            .ok_or_else(|| AppError::not_found("Guild welcome not found"))?;
+
+        // Delete related message
+        if let Some(message_id) = model.message_id {
+            MessageQueries::delete_by_id(db, message_id).await?;
+        }
+
+        Self::Entity::delete_by_id(model.id).exec(db).await.map_err(AppError::from)
     }
 }

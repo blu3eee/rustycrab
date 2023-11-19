@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize };
 use crate::database::guild_info::Model as GuildModel;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseGuild {
     pub id: i32,
     pub guild_id: String,
@@ -16,10 +16,10 @@ impl From<GuildModel> for ResponseGuild {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateGuild {
     pub guild_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateGuild {}

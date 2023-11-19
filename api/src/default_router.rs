@@ -9,18 +9,18 @@ use crate::{
     utilities::app_error::AppError,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseDataJson<T> where T: Serialize {
     pub data: T,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseDataList<T> where T: Serialize {
     pub data: Vec<T>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct ResponseMessage {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseDataMessage {
     pub message: String,
 }
 
@@ -205,13 +205,13 @@ pub trait DefaultRoutes: 'static {
     async fn delete_by_id(
         Extension(state): Extension<AppState>,
         Path(id): Path<PrimaryKey>
-    ) -> Result<Json<ResponseMessage>, AppError>
+    ) -> Result<Json<ResponseDataMessage>, AppError>
         where
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>
     {
         let result: DeleteResult = Self::Queries::delete_by_id(&state.db, id).await?;
         let message: String = format!("{} row(s) deleted", result.rows_affected);
-        Ok(Json(ResponseMessage { message }))
+        Ok(Json(ResponseDataMessage { message }))
     }
 
     /// Returns a string representing the base path for the routes associated with the entity.

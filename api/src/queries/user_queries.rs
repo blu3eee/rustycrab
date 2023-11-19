@@ -4,15 +4,12 @@ use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 use crate::default_queries::DefaultSeaQueries;
 use crate::router::routes::users_routes::{ RequestCreateUser, RequestUpdateUser };
 use crate::utilities::app_error::AppError;
-use crate::utilities::utils::convert_seaorm_error;
 use crate::database::users::{
     self,
     Entity as Users,
     Model as UserModel,
     ActiveModel as UserActiveModel,
 };
-
-use super::save_active_model;
 
 pub struct UserQueries {}
 
@@ -24,7 +21,7 @@ impl UserQueries {
         Users::find()
             .filter(users::Column::DiscordId.eq(user_discord_id))
             .one(db).await
-            .map_err(convert_seaorm_error)?
+            .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("User not found"))
     }
 
@@ -75,7 +72,7 @@ impl DefaultSeaQueries for UserQueries {
         if let Ok(user) = Self::find_by_discord_id(db, &create_data.discord_id).await {
             Ok(user)
         } else {
-            save_active_model(db, UserActiveModel {
+            Self::save_active_model(db, UserActiveModel {
                 discord_id: Set(create_data.discord_id),
                 ..Default::default() // Use default values for other fields
             }).await

@@ -14,12 +14,12 @@ use crate::{
             ContextCommandHandler,
         },
         discord_client::{ DiscordClient, MessageContent },
-        embeds::{ DiscordEmbed, DiscordEmbedField },
+        messages::{ DiscordEmbed, DiscordEmbedField },
     },
     cdn_guild_icon,
     cdn_avatar,
     queries::bot_queries::BotQueries,
-    utilities::utils::{ convert_color_u64, ColorTypes },
+    utilities::utils::{ convert_color_u32, ColorTypes },
 };
 
 pub struct HelpCommand;
@@ -97,7 +97,7 @@ impl HelpCommand {
                     timestamp: Some(true),
                     color: if let Ok(info) = bot_info {
                         Some(
-                            convert_color_u64(
+                            convert_color_u32(
                                 ColorTypes::String(format!("{}", &info.theme_hex_color))
                             )
                         )
@@ -195,7 +195,7 @@ impl HelpCommand {
                     },
                     color: if let Ok(info) = bot_info {
                         Some(
-                            convert_color_u64(
+                            convert_color_u32(
                                 ColorTypes::String(format!("{}", &info.theme_hex_color))
                             )
                         )

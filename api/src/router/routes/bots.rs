@@ -76,7 +76,7 @@ impl DefaultRoutes for BotsRouter {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateBot {
     pub bot_id: String,
     pub token: String,
@@ -85,7 +85,7 @@ pub struct RequestCreateBot {
     pub discord_callback_url: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUpdateBot {
     pub bot_id: Option<String>,
     pub token: Option<String>,
@@ -95,7 +95,7 @@ pub struct RequestUpdateBot {
     pub premium_flags: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseBot {
     pub id: i32,
     pub bot_id: String,

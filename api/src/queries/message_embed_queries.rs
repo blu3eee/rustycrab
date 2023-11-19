@@ -8,8 +8,6 @@ use crate::{
     default_queries::DefaultSeaQueries,
 };
 
-use super::save_active_model;
-
 pub struct MessageEmbedQueries {}
 
 #[async_trait]
@@ -24,7 +22,7 @@ impl DefaultSeaQueries for MessageEmbedQueries {
         db: &DatabaseConnection,
         create_data: Self::CreateData
     ) -> Result<<Self::Entity as EntityTrait>::Model, AppError> {
-        save_active_model(db, EmbedActiveModel {
+        Self::save_active_model(db, EmbedActiveModel {
             title: Set(create_data.title),
             url: Set(create_data.url),
             timestamp: Set(create_data.timestamp),
