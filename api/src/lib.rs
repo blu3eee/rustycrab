@@ -12,9 +12,11 @@ pub mod queries;
 pub mod twilightrs;
 pub mod locales;
 pub mod default_queries;
-pub mod bot_guild_entity_queries;
 pub mod default_router;
-pub mod bot_guild_entity_router;
+pub mod unique_bot_guild_entity_queries;
+pub mod unique_bot_guild_entity_router;
+pub mod multi_bot_guild_entities_queries;
+pub mod multi_bot_guild_entities_router;
 
 use app_state::AppState;
 use axum::Router;

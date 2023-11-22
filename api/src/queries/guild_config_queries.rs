@@ -13,7 +13,7 @@ use crate::{
         },
         bots,
     },
-    bot_guild_entity_queries::BotGuildEntityQueries,
+    unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
     default_queries::DefaultSeaQueries,
     router::routes::bot_guild_configs::{ RequestCreateConfig, RequestUpdateConfig },
 };
@@ -35,7 +35,7 @@ impl GuildConfigQueries {
     }
 }
 
-impl BotGuildEntityQueries for GuildConfigQueries {
+impl UniqueBotGuildEntityQueries for GuildConfigQueries {
     fn bot_relation() -> sea_orm::entity::RelationDef {
         bot_guild_configurations::Relation::Bots.def()
     }

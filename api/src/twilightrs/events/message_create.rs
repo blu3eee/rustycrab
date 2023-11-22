@@ -5,7 +5,7 @@ use std::{ error::Error, sync::Arc };
 use crate::{
     queries::guild_config_queries::GuildConfigQueries,
     twilightrs::{ commands, discord_client::DiscordClient, dispatchers::ClientDispatchers },
-    bot_guild_entity_queries::BotGuildEntityQueries,
+    unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
 };
 
 pub async fn handle_message_create(

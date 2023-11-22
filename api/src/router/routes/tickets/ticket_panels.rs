@@ -37,7 +37,7 @@ use crate::{
 
 use super::ticket_support_teams::ResponseTicketSupportTeam;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateTicketPanel {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
@@ -51,7 +51,7 @@ pub struct RequestCreateTicketPanel {
     pub ticket_category: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateTicketPanel {
     pub mention_on_open: Option<Vec<String>>,
     pub naming_scheme: Option<String>,
@@ -64,7 +64,7 @@ pub struct RequestUpdateTicketPanel {
     pub ticket_category: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseTicketPanel {
     pub id: i32,
     pub mention_on_open: Vec<String>,
@@ -91,15 +91,15 @@ impl From<TicketPanelModel> for ResponseTicketPanel {
             channel_id: model.channel_id,
             sent_message_id: model.sent_message_id,
             message_id: model.message_id,
-            button_id: model.message_id,
-            welcome_message_id: model.message_id,
+            button_id: model.button_id,
+            welcome_message_id: model.welcome_message_id,
             support_team_id: model.support_team_id,
             ticket_category: model.ticket_category,
         }
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseTicketPanelDetails {
     pub id: i32,
     pub mention_on_open: Vec<String>,

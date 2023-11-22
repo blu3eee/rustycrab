@@ -1,5 +1,5 @@
 use crate::app_state::AppState;
-use crate::bot_guild_entity_router::BotGuildEntityRoutes;
+use crate::unique_bot_guild_entity_router::BotGuildEntityRoutes;
 use crate::database::bot_guild_welcomes::Model as WelcomeModel;
 use crate::default_router::DefaultRoutes;
 use crate::queries::guild_welcome_queries::GuildWelcomeQueries;
@@ -33,7 +33,7 @@ impl DefaultRoutes for BotGuildWelcomesRoutes {
 
 impl BotGuildEntityRoutes for BotGuildWelcomesRoutes {}
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateWelcome {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
@@ -41,13 +41,13 @@ pub struct RequestCreateWelcome {
     pub channel_id: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateWelcome {
     pub channel_id: Option<String>,
     pub message_data: Option<RequestCreateUpdateMessage>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseGuildWelcome {
     pub id: i32,
     pub enabled: i8,
@@ -57,7 +57,7 @@ pub struct ResponseGuildWelcome {
     pub message_id: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseGuildWelcomeDetails {
     pub id: i32,
     pub enabled: i8,

@@ -9,17 +9,17 @@ use crate::{
     utilities::app_error::AppError,
 };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseDataJson<T> where T: Serialize {
     pub data: T,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseDataList<T> where T: Serialize {
     pub data: Vec<T>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseDataMessage {
     pub message: String,
 }

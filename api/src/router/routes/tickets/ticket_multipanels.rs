@@ -48,7 +48,7 @@ use crate::{
 
 use super::ticket_panels::ResponseTicketPanel;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseTicketMultiPanel {
     pub id: i32,
     pub channel_id: String,
@@ -71,7 +71,7 @@ impl From<TicketMultiPanelModel> for ResponseTicketMultiPanel {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseTicketMultiPanelDetails {
     pub id: i32,
     pub channel_id: String,
@@ -123,7 +123,7 @@ impl ResponseTicketMultiPanel {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateTicketMultiPanel {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
@@ -132,7 +132,7 @@ pub struct RequestCreateTicketMultiPanel {
     pub panel_ids: Vec<i32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateTicketMultiPanel {
     pub channel_discord_id: Option<String>,
     pub message_data: Option<RequestCreateUpdateMessage>,

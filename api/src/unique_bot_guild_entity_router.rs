@@ -4,7 +4,7 @@ use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait };
 
 use crate::{
     default_router::{ DefaultRoutes, ResponseDataJson },
-    bot_guild_entity_queries::BotGuildEntityQueries,
+    unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
     app_state::AppState,
     default_queries::DefaultSeaQueries,
     utilities::app_error::AppError,
@@ -23,7 +23,7 @@ use crate::{
 /// both bots and guilds. These routes allow fetching and updating entities based on Discord IDs for
 /// both bots and guilds.
 #[async_trait]
-pub trait BotGuildEntityRoutes: DefaultRoutes where Self::Queries: BotGuildEntityQueries {
+pub trait BotGuildEntityRoutes: DefaultRoutes where Self::Queries: UniqueBotGuildEntityQueries {
     /// Retrieves a single instance of the entity associated with specific Discord IDs for a bot and a guild.
     ///
     /// ### Parameters
@@ -45,7 +45,7 @@ pub trait BotGuildEntityRoutes: DefaultRoutes where Self::Queries: BotGuildEntit
     )
         -> Result<Json<ResponseDataJson<Self::ResponseJson>>, AppError>
         where
-            Self::Queries: BotGuildEntityQueries,
+            Self::Queries: UniqueBotGuildEntityQueries,
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
     {
@@ -81,7 +81,7 @@ pub trait BotGuildEntityRoutes: DefaultRoutes where Self::Queries: BotGuildEntit
     )
         -> Result<Json<ResponseDataJson<Self::ResponseJson>>, AppError>
         where
-            Self::Queries: BotGuildEntityQueries,
+            Self::Queries: UniqueBotGuildEntityQueries,
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
     {

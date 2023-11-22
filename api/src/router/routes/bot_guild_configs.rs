@@ -6,7 +6,7 @@ use crate::{
     database::bot_guild_configurations::Model as GuildConfig,
     default_router::DefaultRoutes,
     queries::guild_config_queries::GuildConfigQueries,
-    bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::BotGuildEntityRoutes,
     app_state::AppState,
 };
 
@@ -33,13 +33,13 @@ impl DefaultRoutes for BotGuildConfigsRoutes {
 
 impl BotGuildEntityRoutes for BotGuildConfigsRoutes {}
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateConfig {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateConfig {
     pub prefix: Option<String>,
     pub locale: Option<String>,
@@ -49,7 +49,7 @@ pub struct RequestUpdateConfig {
     pub premium_flags: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseGuildConfig {
     pub id: i32,
     pub prefix: String,
@@ -60,7 +60,7 @@ pub struct ResponseGuildConfig {
     pub premium_flags: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseGuildConfigDetails {
     pub id: i32,
     pub prefix: String,

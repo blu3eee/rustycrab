@@ -4,10 +4,10 @@ use crate::{
     database::ticket_settings::Model as TicketSettingModel,
     default_router::DefaultRoutes,
     queries::tickets_system::ticket_setting_queries::TicketSettingQueries,
-    bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::BotGuildEntityRoutes,
 };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateTicketSetting {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
@@ -21,7 +21,7 @@ pub struct RequestCreateTicketSetting {
     pub archive_overflow_category: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateTicketSetting {
     pub per_user_ticket_limit: Option<i32>,
     pub allow_user_to_close_tickets: Option<bool>,
@@ -33,7 +33,7 @@ pub struct RequestUpdateTicketSetting {
     pub archive_overflow_category: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseTicketSetting {
     pub id: i32,
     pub per_user_ticket_limit: i32,

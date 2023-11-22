@@ -17,7 +17,7 @@ use super::default_queries::DefaultSeaQueries;
 /// that are associated with both a bot and a guild in Discord. It provides methods
 /// for finding and updating these entities based on bot and guild Discord IDs.
 #[async_trait]
-pub trait BotGuildEntityQueries: DefaultSeaQueries {
+pub trait UniqueBotGuildEntityQueries: DefaultSeaQueries {
     /// Defines the relation to the `bots` entity for entities that are associated with Discord bots.
     ///
     /// ### Returns

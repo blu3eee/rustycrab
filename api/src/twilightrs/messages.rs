@@ -1,5 +1,6 @@
 use std::time::{ SystemTime, UNIX_EPOCH };
 
+use twilight_http::Client;
 use twilight_model::{
     channel::message::embed::{
         Embed,
@@ -10,9 +11,13 @@ use twilight_model::{
         EmbedField,
     },
     util::Timestamp,
+    id::{ Id, marker::{ GuildMarker, UserMarker } },
 };
 
-use crate::database::embed_info::Model as EmbedModel;
+use crate::{
+    database::embed_info::Model as EmbedModel,
+    utilities::utils::replace_placeholders_sync,
+};
 
 #[derive(Debug, Clone, Default)]
 pub struct DiscordEmbed {
@@ -33,6 +38,95 @@ pub struct DiscordEmbed {
 impl DiscordEmbed {
     pub fn new() -> Self {
         DiscordEmbed { ..Default::default() }
+    }
+
+    pub async fn to_embed(
+        self,
+        http: &Client,
+        guild_id: Option<Id<GuildMarker>>,
+        user_id: Option<Id<UserMarker>>
+    ) -> Embed {
+        let guild = if let Some(guild_id) = guild_id {
+            if let Ok(guild) = http.guild(guild_id).await {
+                if let Ok(guild) = guild.model().await { Some(guild) } else { None }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let user = if let Some(user_id) = user_id {
+            if let Ok(user) = http.user(user_id).await {
+                if let Ok(user) = user.model().await { Some(user) } else { None }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        Embed {
+            author: self.author_name.map(|name| EmbedAuthor {
+                name: replace_placeholders_sync(name, &guild, &user),
+                icon_url: self.author_icon_url.map(|url|
+                    replace_placeholders_sync(url, &guild, &user)
+                ),
+                proxy_icon_url: None,
+                url: None, // If you have a corresponding URL in EmbedModel, use it here
+            }),
+            // color: model.color.and_then(|c| Some(c as u32)),
+            color: Some(
+                self.color.map_or_else(
+                    || u32::from_str_radix("2B2D31", 16).unwrap_or_default(),
+                    |c| c as u32
+                )
+            ),
+            description: self.description.map(|text|
+                replace_placeholders_sync(text, &guild, &user)
+            ),
+            fields: self.fields.map_or_else(
+                || vec![],
+                |f| f.into_iter().map(EmbedField::from).collect()
+            ), // Assuming you have a way to convert model fields to Vec<EmbedField>
+            footer: self.footer_text.map(|text| EmbedFooter {
+                text: replace_placeholders_sync(text, &guild, &user),
+                icon_url: self.footer_icon_url.map(|text|
+                    replace_placeholders_sync(text, &guild, &user)
+                ),
+                proxy_icon_url: None, // Proxy URLs are generally provided by Discord, not by the user
+            }),
+            image: self.image.map(|url| EmbedImage {
+                url: replace_placeholders_sync(url, &guild, &user),
+                proxy_url: None, // Proxy URLs are generally provided by Discord, not by the user
+                height: None, // You may not have this information
+                width: None, // You may not have this information
+            }),
+            kind: "rich".to_string(), // "rich" is a commonly used kind
+            provider: None, // This is generally set by Discord when using links from known providers
+            thumbnail: self.thumbnail.map(|url| EmbedThumbnail {
+                url: replace_placeholders_sync(url, &guild, &user),
+                proxy_url: None,
+                height: None,
+                width: None,
+            }),
+            title: self.title.map(|text| replace_placeholders_sync(text, &guild, &user)),
+            url: self.url.map(|text| replace_placeholders_sync(text, &guild, &user)),
+            video: None, // Assuming you don't have video information in your model
+            timestamp: self.timestamp
+                .map(|t| {
+                    if t {
+                        let start = SystemTime::now();
+                        let since_the_epoch = start
+                            .duration_since(UNIX_EPOCH)
+                            .expect("Time went backwards");
+                        Timestamp::from_micros(since_the_epoch.as_micros() as i64).ok()
+                    } else {
+                        None
+                    }
+                })
+                .flatten(),
+        }
     }
 }
 
@@ -65,7 +159,7 @@ impl From<DiscordEmbed> for Embed {
                 |f| f.into_iter().map(EmbedField::from).collect()
             ), // Assuming you have a way to convert model fields to Vec<EmbedField>
             footer: model.footer_text.map(|text| EmbedFooter {
-                text,
+                text: text,
                 icon_url: model.footer_icon_url,
                 proxy_icon_url: None, // Proxy URLs are generally provided by Discord, not by the user
             }),

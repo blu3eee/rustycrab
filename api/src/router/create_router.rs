@@ -8,7 +8,7 @@ use crate::{
     },
     app_state::AppState,
     default_router::DefaultRoutes,
-    bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::BotGuildEntityRoutes,
 };
 
 use axum::{ routing::get, Router, Extension, middleware };

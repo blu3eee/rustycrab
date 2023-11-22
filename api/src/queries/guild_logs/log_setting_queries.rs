@@ -1,7 +1,7 @@
 use sea_orm::{ DatabaseConnection, Set, RelationTrait };
 use async_trait::async_trait;
 
-use crate::bot_guild_entity_queries::BotGuildEntityQueries;
+use crate::unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries;
 use crate::default_queries::DefaultSeaQueries;
 use crate::queries::bot_queries::BotQueries;
 use crate::queries::guild_queries::GuildQueries;
@@ -18,7 +18,7 @@ use crate::{
 
 pub struct LogSettingQueries;
 
-impl BotGuildEntityQueries for LogSettingQueries {
+impl UniqueBotGuildEntityQueries for LogSettingQueries {
     fn bot_relation() -> sea_orm::entity::RelationDef {
         log_settings::Relation::Bots.def()
     }

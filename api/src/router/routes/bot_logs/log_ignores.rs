@@ -18,7 +18,7 @@ use axum::{ Extension, extract::Path, Json, Router, routing::get };
 use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait };
 use serde::{ Deserialize, Serialize };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseAllGuildIgnores {
     channels: Vec<ResponseLogIgnoreChannel>,
     roles: Vec<ResponseLogIgnoreRole>,
@@ -198,16 +198,16 @@ impl DefaultRoutes for BotGuildLogIgnoresRoleRoutes {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateLogIgnoreChannel {
     pub log_setting_id: i32,
     pub channel_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateLogIgnoreChannel {}
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseLogIgnoreChannel {
     pub id: i32,
     pub log_setting_id: Option<i32>,
@@ -224,16 +224,16 @@ impl From<LogIgnoreChannelModel> for ResponseLogIgnoreChannel {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateLogIgnoreRole {
     pub log_setting_id: i32,
     pub role_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateLogIgnoreRole {}
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseLogIgnoreRole {
     pub id: i32,
     pub log_setting_id: Option<i32>,

@@ -17,7 +17,7 @@ use crate::{
     router::routes::bot_guild_welcomes::{ RequestCreateWelcome, RequestUpdateWelcome },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
-    bot_guild_entity_queries::BotGuildEntityQueries,
+    unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
 };
 
 use super::{
@@ -30,7 +30,7 @@ pub struct GuildWelcomeQueries {}
 
 impl GuildWelcomeQueries {}
 
-impl BotGuildEntityQueries for GuildWelcomeQueries {
+impl UniqueBotGuildEntityQueries for GuildWelcomeQueries {
     fn bot_relation() -> sea_orm::entity::RelationDef {
         bot_guild_welcomes::Relation::Bots.def()
     }

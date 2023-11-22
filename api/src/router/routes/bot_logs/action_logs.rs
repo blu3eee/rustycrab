@@ -85,7 +85,7 @@ impl DefaultRoutes for ActionLogsRoutes {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateLogAction {
     pub bot_discord_id: String,
     pub guild_discord_id: String,
@@ -93,13 +93,13 @@ pub struct RequestCreateLogAction {
     pub events: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestUpdateActionLog {
     pub channel_id: Option<String>,
     pub events: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseActionLog {
     pub id: i32,
     pub channel_id: String,

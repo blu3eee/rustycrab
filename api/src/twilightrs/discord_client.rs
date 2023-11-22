@@ -2,9 +2,11 @@ use fluent_bundle::FluentArgs;
 use sea_orm::DatabaseConnection;
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
-    channel::{ Message, message::embed::Embed },
+    channel::{ Message, message::embed::Embed, Channel },
     id::{ Id, marker::{ ChannelMarker, MessageMarker, UserMarker, GuildMarker } },
     user::{ CurrentUser, User },
+    http::interaction::{ InteractionResponse, InteractionResponseType },
+    gateway::payload::incoming::InteractionCreate,
 };
 use twilight_http::{ Client as HttpClient, Response, request::channel::message::CreateMessage };
 use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap };
@@ -13,7 +15,7 @@ use crate::{
     database::embed_info::Model as EmbedModel,
     locales::{ get_localized_string, load_localization },
     queries::guild_config_queries::GuildConfigQueries,
-    bot_guild_entity_queries::BotGuildEntityQueries,
+    unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
 };
 
 use super::{ messages::DiscordEmbed, commands::context::context_command::GuildConfigModel };
@@ -39,6 +41,50 @@ pub enum GuildIdentifier {
 }
 
 impl DiscordClient {
+    pub async fn fetch_messages(
+        &self,
+        channel: &Channel
+    ) -> Result<Vec<Message>, Box<dyn Error + Send + Sync>> {
+        if let Some(count) = channel.message_count {
+            Ok(
+                self.http
+                    .channel_messages(channel.id)
+                    .limit(count as u16)?.await?
+                    .model().await?
+            )
+        } else {
+            let mut msg_vec: Vec<Message> = Vec::new();
+
+            let mut last_message_id: Option<Id<MessageMarker>> = None;
+
+            loop {
+                let fetched_messages = if let Some(id) = last_message_id {
+                    self.http
+                        .channel_messages(channel.id)
+                        .before(id)
+                        .limit(100)
+                        ? // Use the maximum limit allowed by Discord
+                        .await?.model().await?
+                } else {
+                    self.http
+                        .channel_messages(channel.id)
+                        .limit(100)
+                        ? // Use the maximum limit allowed by Discord
+                        .await?.model().await?
+                };
+
+                if fetched_messages.is_empty() {
+                    break;
+                }
+
+                last_message_id = fetched_messages.last().map(|m| m.id);
+                msg_vec.extend(fetched_messages);
+            }
+
+            Ok(msg_vec)
+        }
+    }
+
     pub async fn get_guild(
         &self,
         guild_id: Option<Id<GuildMarker>>
@@ -190,6 +236,22 @@ impl DiscordClient {
                 Err("No content provided for edit".into())
             }
         }
+    }
+
+    pub async fn defer_interaction(
+        &self,
+        interaction: &Box<InteractionCreate>
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+        self.http.interaction(interaction.application_id).create_response(
+            interaction.id,
+            &interaction.token,
+            &(InteractionResponse {
+                kind: InteractionResponseType::DeferredUpdateMessage,
+                data: None,
+            })
+        ).await?;
+
+        Ok(())
     }
 }
 

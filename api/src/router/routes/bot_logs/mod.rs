@@ -6,7 +6,7 @@ use axum::Router;
 
 use crate::{
     app_state::AppState,
-    bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::BotGuildEntityRoutes,
     default_router::DefaultRoutes,
 };
 

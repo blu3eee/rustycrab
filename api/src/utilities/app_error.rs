@@ -54,7 +54,7 @@ impl IntoResponse for AppError {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct ErrorResponse {
     error: String,
 }

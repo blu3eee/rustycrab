@@ -12,7 +12,7 @@ use crate::{
         RequestCreateTicketSetting,
         RequestUpdateTicketSetting,
     },
-    bot_guild_entity_queries::BotGuildEntityQueries,
+    unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
     utilities::app_error::AppError,
     queries::{ bot_queries::BotQueries, guild_queries::GuildQueries },
 };
@@ -21,7 +21,7 @@ pub struct TicketSettingQueries {}
 
 impl TicketSettingQueries {}
 
-impl BotGuildEntityQueries for TicketSettingQueries {
+impl UniqueBotGuildEntityQueries for TicketSettingQueries {
     fn bot_relation() -> sea_orm::entity::RelationDef {
         TicketSettingRelations::Bots.def()
     }
