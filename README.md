@@ -25,8 +25,6 @@ Throughout this project, I have achieved several key milestones:
 
 - **Streamlined Routing**: The application's routing logic has been refined for efficiency, showcasing Rust's powerful type system and library support.
 
-These highlights represent significant steps forward in my Rust learning journey and the API's redevelopment.
-
 ## Future Plans
 
 Once the API rewrite is complete and stable, the next phase of this project will involve rebuilding my website using the `yew` crate, a modern Rust framework for creating multi-threaded frontend web apps with WebAssembly.
