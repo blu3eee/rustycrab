@@ -21,7 +21,7 @@ Once the API rewrite is complete and stable, the next phase of this project will
 
 ## Contributing
 
-While this project is primarily for my learning and exploration, contributions, suggestions, and discussions are welcome! If you have insights or suggestions, feel free to open an issue or submit a pull request.
+While this project is primarily for my learning and exploration, suggestions, and discussions are welcome! If you have insights or suggestions, feel free to open an issue or submit a pull request.
 
 ---
 
