@@ -2,18 +2,30 @@
 
 ## Introduction
 
-Welcome to my Rust API Redesign Project! This repository is a part of my journey to learn **Rust**, a powerful low-level programming language known for its performance and safety. The primary goal of this project is to redesign an existing API, which I originally developed in TypeScript using NestJS, by reimplementing it in Rust. This transition aims to leverage Rust's capabilities to enhance the performance and reliability of the API.
+Welcome to my Rust API Redesign Project! This repository documents my journey in learning Rust and applying it to redesign an existing API, originally written in Typescript with NestJS, for enhanced performance and efficiency. A unique aspect of this project is the integration of an API and a Discord bot that simultaneously interact with the database, showcasing Rust's ability to handle concurrent tasks effectively.
 
 ## Project Overview
 
-The project involves rewriting a pre-existing API, initially built with TypeScript and NestJS, in Rust. Rust offers unparalleled performance and memory safety, making it an ideal choice for backend development. This rewrite serves as a hands-on approach to understand Rust's paradigms, syntax, and its ecosystem.
+In this project, I focus on leveraging Rust's low-level control and high-level capabilities to rebuild my API, originally crafted in Typescript. The primary goal is to enhance performance and reliability. A noteworthy feature of this redesign is the concurrent operation of the API and a Discord bot, both utilizing the same database resources. This demonstrates Rust's exceptional ability to manage multiple tasks and shared resources without compromising on performance.
 
-### Learning Objectives:
+### Learning Objectives
 
 - Gain a deep understanding of Rust and its features.
 - Explore popular Rust crates like `tokio` for asynchronous runtime, `serde` for serialization and deserialization, and `seaORM` for database interactions.
 - Navigate and utilize documentation from crates.io and various crate documentation websites.
 - Implement best practices for Rust development to ensure code efficiency and safety.
+
+## Highlights and Progress
+
+Throughout this project, I have achieved several key milestones:
+
+- **Concurrent API and Discord Bot Operation**: One of the standout achievements of this project so far is running the API and a Discord bot concurrently, both accessing the same database. This setup exemplifies Rust's prowess in handling parallel tasks and shared resources efficiently, ensuring seamless operation and data consistency.
+
+- **Generalization of Database Queries**: The use of `seaORM` has enabled me to prototype a generalized approach for SQL database interactions, minimizing redundancy and enhancing code maintainability.
+
+- **Streamlined Routing**: The application's routing logic has been refined for efficiency, showcasing Rust's powerful type system and library support.
+
+These highlights represent significant steps forward in my Rust learning journey and the API's redevelopment.
 
 ## Future Plans
 
