@@ -3,7 +3,7 @@ use crate::{
     default_router::DefaultRoutes,
     queries::guild_logs::log_setting_queries::LogSettingQueries,
     app_state::AppState,
-    unique_bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
 };
 
 use async_trait::async_trait;
@@ -29,7 +29,7 @@ impl DefaultRoutes for BotGuildLogSettingsRoutes {
     }
 }
 
-impl BotGuildEntityRoutes for BotGuildLogSettingsRoutes {}
+impl UniqueBotGuildEntityRoutes for BotGuildLogSettingsRoutes {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateLogSetting {

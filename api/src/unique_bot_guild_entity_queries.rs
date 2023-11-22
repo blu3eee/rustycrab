@@ -13,7 +13,7 @@ use sea_orm::{
 
 use super::default_queries::DefaultSeaQueries;
 
-/// `BotGuildEntityQueries` is an extension of `DefaultSeaQueries` tailored for entities
+/// `UniqueBotGuildEntityQueries` is an extension of `DefaultSeaQueries` tailored for entities
 /// that are associated with both a bot and a guild in Discord. It provides methods
 /// for finding and updating these entities based on bot and guild Discord IDs.
 #[async_trait]
@@ -29,7 +29,7 @@ pub trait UniqueBotGuildEntityQueries: DefaultSeaQueries {
     ///
     /// ### Example
     /// ```rust,ignore
-    /// impl BotGuildEntityQueries for MyEntityQueries {
+    /// impl UniqueBotGuildEntityQueries for MyEntityQueries {
     ///     fn bot_relation() -> sea_orm::entity::RelationDef {
     ///         MyEntity::Relation::Bots.def()
     ///     }
@@ -50,7 +50,7 @@ pub trait UniqueBotGuildEntityQueries: DefaultSeaQueries {
     ///
     /// ### Example
     /// ```rust,ignore
-    /// impl BotGuildEntityQueries for MyEntityQueries {
+    /// impl UniqueBotGuildEntityQueries for MyEntityQueries {
     ///     fn guild_relation() -> sea_orm::entity::RelationDef {
     ///         MyEntity::Relation::GuildInfo.def()
     ///     }

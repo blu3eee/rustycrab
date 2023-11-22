@@ -6,7 +6,7 @@ use crate::{
     database::bot_guild_configurations::Model as GuildConfig,
     default_router::DefaultRoutes,
     queries::guild_config_queries::GuildConfigQueries,
-    unique_bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
     app_state::AppState,
 };
 
@@ -31,7 +31,7 @@ impl DefaultRoutes for BotGuildConfigsRoutes {
     }
 }
 
-impl BotGuildEntityRoutes for BotGuildConfigsRoutes {}
+impl UniqueBotGuildEntityRoutes for BotGuildConfigsRoutes {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateConfig {

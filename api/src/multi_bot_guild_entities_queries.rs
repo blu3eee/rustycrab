@@ -5,7 +5,7 @@ use sea_orm::{ DatabaseConnection, EntityTrait, Condition, QueryFilter, ColumnTr
 
 use super::default_queries::DefaultSeaQueries;
 
-/// `BotGuildEntityQueries` is an extension of `DefaultSeaQueries` tailored for entities
+/// `MultipleBotGuildEntityQueries` is an extension of `DefaultSeaQueries` tailored for entities
 /// that are associated with both a bot and a guild in Discord. It provides methods
 /// for finding and updating these entities based on bot and guild Discord IDs.
 #[async_trait]
@@ -21,7 +21,7 @@ pub trait MultipleBotGuildEntityQueries: DefaultSeaQueries {
     ///
     /// ### Example
     /// ```rust,ignore
-    /// impl BotGuildEntityQueries for MyEntityQueries {
+    /// impl MultipleBotGuildEntityQueries for MyEntityQueries {
     ///     fn bot_relation() -> sea_orm::entity::RelationDef {
     ///         MyEntity::Relation::Bots.def()
     ///     }
@@ -42,7 +42,7 @@ pub trait MultipleBotGuildEntityQueries: DefaultSeaQueries {
     ///
     /// ### Example
     /// ```rust,ignore
-    /// impl BotGuildEntityQueries for MyEntityQueries {
+    /// impl MultipleBotGuildEntityQueries for MyEntityQueries {
     ///     fn guild_relation() -> sea_orm::entity::RelationDef {
     ///         MyEntity::Relation::GuildInfo.def()
     ///     }
@@ -52,10 +52,10 @@ pub trait MultipleBotGuildEntityQueries: DefaultSeaQueries {
     /// Here, `MyEntity::Relation::GuildInfo.def()` refers to the defined relation in the `MyEntity`'s model.
     fn guild_relation() -> sea_orm::entity::RelationDef;
 
-    /// Finds an entity based on both the bot's and guild's Discord IDs.
+    /// Finds entities based on both the bot's and guild's Discord IDs.
     ///
     /// This method uses the provided relations (`bot_relation` and `guild_relation`) to perform a query
-    /// that retrieves the entity matching both a specific bot's and a guild's Discord IDs.
+    /// that retrieves entities matching both a specific bot's and a guild's Discord IDs.
     ///
     /// ### Parameters
     /// - `db`: The database connection.
@@ -63,10 +63,10 @@ pub trait MultipleBotGuildEntityQueries: DefaultSeaQueries {
     /// - `guild_discord_id`: The Discord ID of the guild.
     ///
     /// ### Returns
-    /// - `Result<<Self::Entity as EntityTrait>::Model, AppError>`: A result containing either the found entity model, or an `AppError` if not found or in case of a query error.
+    /// - `Result<Vec<<Self::Entity as EntityTrait>::Model>, AppError>`: A result containing either the found entity models, or an `AppError` if not found or in case of a query error.
     ///
     /// ### Description
-    /// The method performs a database query using left joins on the `bot_relation` and `guild_relation` to find an entity.
+    /// The method performs a database query using left joins on the `bot_relation` and `guild_relation` to find entities.
     /// The query filters entities based on the matching `BotId` and `GuildId`, which correspond to the provided Discord IDs.
     /// It is a versatile method for querying entities related to specific bots and guilds in a Discord context.
     ///

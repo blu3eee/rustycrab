@@ -1,5 +1,5 @@
 use crate::app_state::AppState;
-use crate::unique_bot_guild_entity_router::BotGuildEntityRoutes;
+use crate::unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes;
 use crate::database::bot_guild_welcomes::Model as WelcomeModel;
 use crate::default_router::DefaultRoutes;
 use crate::queries::guild_welcome_queries::GuildWelcomeQueries;
@@ -31,7 +31,7 @@ impl DefaultRoutes for BotGuildWelcomesRoutes {
     }
 }
 
-impl BotGuildEntityRoutes for BotGuildWelcomesRoutes {}
+impl UniqueBotGuildEntityRoutes for BotGuildWelcomesRoutes {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateWelcome {

@@ -6,7 +6,7 @@ use axum::Router;
 
 use crate::{
     app_state::AppState,
-    unique_bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
     default_router::DefaultRoutes,
 };
 
@@ -15,7 +15,7 @@ use self::log_ignores::ignore_routes;
 pub async fn bot_logs_routes(state: AppState) -> Router {
     let router = Router::new()
         .merge(
-            <log_settings::BotGuildLogSettingsRoutes as BotGuildEntityRoutes>::router(
+            <log_settings::BotGuildLogSettingsRoutes as UniqueBotGuildEntityRoutes>::router(
                 state.clone()
             ).await
         )

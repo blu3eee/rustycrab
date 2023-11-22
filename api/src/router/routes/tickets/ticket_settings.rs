@@ -4,7 +4,7 @@ use crate::{
     database::ticket_settings::Model as TicketSettingModel,
     default_router::DefaultRoutes,
     queries::tickets_system::ticket_setting_queries::TicketSettingQueries,
-    unique_bot_guild_entity_router::BotGuildEntityRoutes,
+    unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -68,7 +68,7 @@ impl From<TicketSettingModel> for ResponseTicketSetting {
 
 pub struct TicketSettingRoutes {}
 
-impl BotGuildEntityRoutes for TicketSettingRoutes {}
+impl UniqueBotGuildEntityRoutes for TicketSettingRoutes {}
 
 #[async_trait]
 impl DefaultRoutes for TicketSettingRoutes {

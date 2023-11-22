@@ -10,20 +10,20 @@ use crate::{
     utilities::app_error::AppError,
 };
 
-/// The `BotGuildEntityRoutes` trait extends the `DefaultRoutes` trait to include specialized
+/// The `UniqueBotGuildEntityRoutes` trait extends the `DefaultRoutes` trait to include specialized
 /// routes and behaviors for entities related to both bots and guilds, typically in a Discord context.
-/// It integrates with `BotGuildEntityQueries` to facilitate CRUD operations specific to bot-guild associations.
+/// It integrates with `UniqueBotGuildEntityQueries` to facilitate CRUD operations specific to bot-guild associations.
 ///
 /// ## Requirements
 /// - Implementing structs must already implement `DefaultRoutes`.
-/// - The associated queries (`Self::Queries`) must implement `BotGuildEntityQueries`.
+/// - The associated queries (`Self::Queries`) must implement `UniqueBotGuildEntityQueries`.
 ///
 /// ## Specialized Routes
 /// This trait provides additional route handlers specifically designed for entities associated with
 /// both bots and guilds. These routes allow fetching and updating entities based on Discord IDs for
 /// both bots and guilds.
 #[async_trait]
-pub trait BotGuildEntityRoutes: DefaultRoutes where Self::Queries: UniqueBotGuildEntityQueries {
+pub trait UniqueBotGuildEntityRoutes: DefaultRoutes where Self::Queries: UniqueBotGuildEntityQueries {
     /// Retrieves a single instance of the entity associated with specific Discord IDs for a bot and a guild.
     ///
     /// ### Parameters

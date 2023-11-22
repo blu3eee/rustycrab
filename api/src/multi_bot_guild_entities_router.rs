@@ -38,7 +38,7 @@ pub trait MultipleBotGuildEntitiesRoutes
     /// - The entity model must be convertible into its corresponding active model.
     ///
     /// ### Returns
-    /// - `Result<Json<ResponseDataJson<Self::ResponseJson>>, AppError>`: On success, returns a JSON response containing the retrieved entity. On failure, returns an `AppError`.
+    /// - `Result<Json<ResponseDataList<Self::ResponseJson>>, AppError>`: On success, returns a JSON response containing the retrieved entities. On failure, returns an `AppError`.
     ///
     /// ### Description
     /// This function performs a database query to find an entity that is linked with both a specific bot and guild, identified
