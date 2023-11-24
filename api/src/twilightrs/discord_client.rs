@@ -1,12 +1,14 @@
-use fluent_bundle::FluentArgs;
+use fluent::FluentArgs;
+
 use sea_orm::DatabaseConnection;
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
     channel::{ Message, message::embed::Embed, Channel },
-    id::{ Id, marker::{ ChannelMarker, MessageMarker, UserMarker, GuildMarker } },
+    id::{ Id, marker::{ ChannelMarker, MessageMarker, UserMarker, GuildMarker, RoleMarker } },
     user::{ CurrentUser, User },
     http::interaction::{ InteractionResponse, InteractionResponseType },
     gateway::payload::incoming::InteractionCreate,
+    guild::Role,
 };
 use twilight_http::{ Client as HttpClient, Response, request::channel::message::CreateMessage };
 use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap };
@@ -28,19 +30,79 @@ pub enum MessageContent {
     None,
 }
 
+use fluent::FluentResource;
+use fluent_bundle::bundle::FluentBundle;
+use intl_memoizer::concurrent::IntlLangMemoizer;
+
 pub struct DiscordClient {
     pub db: DatabaseConnection,
     pub http: Arc<HttpClient>,
     pub cache: Arc<InMemoryCache>,
     pub deleted_messages: RwLock<HashMap<Id<ChannelMarker>, Vec<CachedMessage>>>,
+    pub bundles: HashMap<String, FluentBundle<FluentResource, IntlLangMemoizer>>,
+    // Default bundle for new guilds or when specific guild bundle is not found
+    pub default_bundle: FluentBundle<FluentResource, IntlLangMemoizer>,
+    pub afk_users: RwLock<HashMap<Id<GuildMarker>, HashMap<Id<UserMarker>, UserAfkStatus>>>,
 }
 
-pub enum GuildIdentifier {
-    GuildId(Id<GuildMarker>),
-    Config(GuildConfigModel),
+pub struct UserAfkStatus {
+    pub message: Option<String>,
+    pub since: u32,
+    pub activities_count: u8,
+    pub notify: Vec<Id<UserMarker>>,
+}
+
+impl UserAfkStatus {
+    pub fn new(message: Option<String>, since: u32) -> Self {
+        Self {
+            message,
+            since,
+            activities_count: 0,
+            notify: vec![],
+        }
+    }
 }
 
 impl DiscordClient {
+    pub fn new(db: DatabaseConnection, http: Arc<HttpClient>, cache: Arc<InMemoryCache>) -> Self {
+        let mut bundles: HashMap<
+            String,
+            FluentBundle<FluentResource, IntlLangMemoizer>
+        > = HashMap::new();
+        for locale in vec!["en", "vn"] {
+            let bundle = load_localization(locale);
+            bundles.entry(locale.to_string()).or_insert(bundle);
+        }
+
+        DiscordClient {
+            db,
+            http,
+            cache,
+            deleted_messages: HashMap::new().into(),
+            bundles,
+            default_bundle: load_localization("en"),
+            afk_users: HashMap::new().into(),
+        }
+    }
+
+    fn get_bundle(&self, locale: &str) -> &FluentBundle<FluentResource, IntlLangMemoizer> {
+        if let Some(bundle) = self.bundles.get(locale) { bundle } else { &self.default_bundle }
+    }
+
+    pub fn get_locale_string(
+        &self,
+        locale: &str,
+        key: &str,
+        args: Option<&FluentArgs> // Use the same lifetime 'a here
+    ) -> String {
+        let bundle = self.get_bundle(locale);
+        if let Some(result) = get_localized_string(bundle, key, args) {
+            result
+        } else {
+            key.to_string()
+        }
+    }
+
     pub async fn fetch_messages(
         &self,
         channel: &Channel
@@ -104,29 +166,6 @@ impl DiscordClient {
         let guild_id: String = guild_id.get().to_string();
 
         Ok(GuildConfigQueries::find_by_discord_ids(&self.db, &bot_id, &guild_id).await?)
-    }
-
-    pub fn get_locale_string(
-        &self,
-        locale: &str,
-        key: &str,
-        args: Option<&FluentArgs> // Use the same lifetime 'a here
-    ) -> Option<String> {
-        let bundle = load_localization(&locale);
-        get_localized_string(&bundle, key, args)
-    }
-
-    pub async fn get_locale(&self, guild_identifier: GuildIdentifier) -> String {
-        match guild_identifier {
-            GuildIdentifier::Config(config) => config.locale.clone(),
-            GuildIdentifier::GuildId(guild_id) => {
-                if let Ok(config) = self.get_guild_config(&guild_id).await {
-                    config.locale
-                } else {
-                    "en".to_string()
-                }
-            }
-        }
     }
 
     pub async fn get_user_banner_url(
@@ -252,6 +291,58 @@ impl DiscordClient {
         ).await?;
 
         Ok(())
+    }
+
+    pub async fn find_role(
+        &self,
+        guild_id: Id<GuildMarker>,
+        role_arg: &str
+    ) -> Result<Role, Box<dyn Error + Send + Sync>> {
+        // Fetch all roles from the guild
+        let roles = self.http.roles(guild_id).await?.model().await?;
+
+        // Check if the argument is a direct ID
+        if let Ok(role_id) = role_arg.parse::<u64>() {
+            let role_id = Id::new(role_id);
+            return roles
+                .into_iter()
+                .find(|role| role.id == role_id)
+                .ok_or_else(|| "Role not found".into());
+        }
+
+        // Check if the argument is a role mention
+        if role_arg.starts_with("<@&") && role_arg.ends_with(">") {
+            if let Ok(role_id) = role_arg[3..role_arg.len() - 1].parse::<u64>() {
+                let role_id = Id::new(role_id);
+                return roles
+                    .into_iter()
+                    .find(|role| role.id == role_id)
+                    .ok_or_else(|| "Role not found".into());
+            }
+        }
+
+        // Find the role by name
+        roles
+            .into_iter()
+            .find(
+                |role|
+                    role.name.eq_ignore_ascii_case(role_arg) ||
+                    role.name.to_ascii_lowercase().contains(&role_arg.to_ascii_lowercase())
+            )
+            .ok_or_else(|| "Role not found".into())
+    }
+
+    pub async fn user_has_role(
+        &self,
+        guild_id: Id<GuildMarker>,
+        user_id: Id<UserMarker>,
+        role_id: Id<RoleMarker>
+    ) -> Result<bool, Box<dyn Error + Send + Sync>> {
+        // Fetch the member
+        let member = self.http.guild_member(guild_id, user_id).await?.model().await?;
+
+        // Check if the member has the role
+        Ok(member.roles.contains(&role_id))
     }
 }
 
