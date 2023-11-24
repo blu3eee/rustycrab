@@ -22,7 +22,10 @@ pub struct ContextCommandDispatcher {
 
 impl ContextCommandDispatcher {
     pub fn categories(&self) -> Vec<Box<dyn ContextCommandCategory>> {
-        Vec::from([Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>])
+        Vec::from([
+            Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>,
+            Box::new(AdminCommands {}) as Box<dyn ContextCommandCategory>,
+        ])
     }
 
     pub fn new() -> Self {
@@ -85,9 +88,5 @@ impl ContextCommandDispatcher {
                 // handler not mapped
             }
         }
-    }
-
-    pub async fn get_categories(&self) -> Vec<Box<dyn ContextCommandCategory>> {
-        Vec::from([Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>])
     }
 }
