@@ -17,7 +17,7 @@ pub async fn add_afk_notification(
     button_data: &MessageComponentInteractionData
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("acked {}", button_data.custom_id);
-    client.defer_interaction(interaction).await?;
+    client.defer_button_interaction(interaction).await?;
 
     if let Some(user) = interaction.author() {
         let afk_user_id = button_data.custom_id
