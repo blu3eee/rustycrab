@@ -1,16 +1,37 @@
-pub enum ColorTypes {
-    String(String),
+pub enum ColorResolvables {
+    ColorInt(u32),
+    HexString(String),
+    Red,
+    Green,
+    Blue,
+    Yellow,
 }
 
-pub fn convert_color_u32(color: ColorTypes) -> u32 {
-    match color {
-        ColorTypes::String(color_string) => {
-            u32::from_str_radix(color_string.trim_start_matches("#"), 16).unwrap_or_else(|_|
-                u32::from_str_radix("2B2D31", 16).unwrap()
-            )
+impl ColorResolvables {
+    pub fn as_str(&self) -> &str {
+        match self {
+            ColorResolvables::HexString(hex) => hex,
+            ColorResolvables::Red => "ef476f",
+            ColorResolvables::Green => "06d6a0",
+            ColorResolvables::Blue => "118ab2",
+            ColorResolvables::Yellow => "ffd166",
+            ColorResolvables::ColorInt(_) => "2B2D31",
+        }
+    }
+
+    pub fn as_u32(&self) -> u32 {
+        match self {
+            ColorResolvables::ColorInt(number) => *number,
+            _ => {
+                u32::from_str_radix(self.as_str().trim_start_matches("#"), 16).unwrap_or_else(|_|
+                    u32::from_str_radix("2B2D31", 16).unwrap()
+                )
+            }
         }
     }
 }
+
+use std::{ time::SystemTime, error::Error };
 
 use sea_orm::DbErr;
 use twilight_http::Client;
@@ -161,4 +182,9 @@ pub async fn replace_placeholders(
     replaced_text = replaced_text.replace("{here}", "@here");
 
     replaced_text
+}
+
+pub fn current_unix_timestamp() -> Result<u32, Box<dyn Error + Send + Sync>> {
+    // Convert SystemTime to Timestamp
+    Ok(SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs() as u32)
 }
