@@ -39,7 +39,7 @@ pub struct RequestCreateConfig {
     pub guild_discord_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RequestUpdateConfig {
     pub prefix: Option<String>,
     pub locale: Option<String>,

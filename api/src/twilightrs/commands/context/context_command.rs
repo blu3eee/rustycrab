@@ -76,12 +76,13 @@ pub trait ContextCommand: Send + Sync {
         None
     }
 
+    #[allow(unused_variables)]
     async fn run(
         &self,
-        _client: &DiscordClient,
-        _config: &GuildConfigModel,
-        _msg: &MessageCreate,
-        _command_args: Vec<ParsedArg>
+        client: &DiscordClient,
+        config: &GuildConfigModel,
+        msg: &MessageCreate,
+        command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
         Ok(())
     }
@@ -155,6 +156,7 @@ pub trait ContextCommand: Send + Sync {
         let parsed_args = self.parse_args(cmd_args, &arg_specs, &client.http).await;
         match parsed_args {
             Ok(args) => {
+                // client.set_bundle(&config.locale);
                 let _: Result<(), Box<dyn Error + Send + Sync>> = self.run(
                     client,
                     config,
@@ -168,7 +170,7 @@ pub trait ContextCommand: Send + Sync {
                     msg.id,
                     crate::twilightrs::discord_client::MessageContent::Text(
                         format!(
-                            "```{}```",
+                            "```fix\n{}```",
                             self
                                 .get_full_command()
                                 .into_iter()
@@ -196,7 +198,7 @@ pub trait ContextCommand: Send + Sync {
 
         for (_, arg_spec) in arg_specs.iter().enumerate() {
             match arg_spec.arg_type {
-                ArgType::Word => {
+                ArgType::Arg => {
                     if let Some(arg) = remaining_args.first() {
                         parsed_args.push(ParsedArg::Word(arg.to_string()));
                         remaining_args = &remaining_args[1..];
@@ -204,7 +206,7 @@ pub trait ContextCommand: Send + Sync {
                         return Err("Missing required number argument".into());
                     }
                 }
-                ArgType::Words => {
+                ArgType::Args => {
                     if remaining_args.is_empty() && !arg_spec.optional {
                         return Err("Missing required string argument".into());
                     }
@@ -313,7 +315,7 @@ pub trait ContextCommand: Send + Sync {
                 .into_iter()
                 .map(|a| a.to_string())
                 .collect(),
-            self.get_full_command(),
+            self.get_full_command()[1..].to_vec(),
             self.description(locale),
         )
     }

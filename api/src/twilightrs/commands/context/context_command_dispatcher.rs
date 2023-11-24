@@ -8,6 +8,7 @@ use crate::{
             ContextCommandCategory,
             general::GeneralCommands,
             ContextCommandHandler,
+            admin::AdminCommands,
         },
         discord_client::DiscordClient,
     },
@@ -30,6 +31,7 @@ impl ContextCommandDispatcher {
 
         let categories: Vec<Box<dyn ContextCommandCategory>> = Vec::from([
             Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>,
+            Box::new(AdminCommands {}) as Box<dyn ContextCommandCategory>,
         ]);
 
         let mut commands_aliases: HashMap<String, String> = HashMap::new();
