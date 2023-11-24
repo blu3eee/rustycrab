@@ -13,7 +13,7 @@ env_logger = "0.10"
 sea-orm = { version = "0.12.6", features = ["sqlx-mysql", "runtime-tokio-rustls"] }
 axum = { version = "0.6.20", features = ["macros", "headers"] }
 mysql = "24.0" # This is the MySQL client, not required if you're using SeaORM
-actix-web = "4.4" # Or any other web framework you prefer
+# actix-web = "4.4" # Or any other web framework you prefer
 dotenv = "0.15.0" # To manage environment variables
 serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
