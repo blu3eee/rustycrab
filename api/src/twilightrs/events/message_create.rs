@@ -4,7 +4,12 @@ use std::{ error::Error, sync::Arc };
 
 use crate::{
     queries::guild_config_queries::GuildConfigQueries,
-    twilightrs::{ commands, discord_client::DiscordClient, dispatchers::ClientDispatchers },
+    twilightrs::{
+        commands,
+        discord_client::DiscordClient,
+        dispatchers::ClientDispatchers,
+        utils::afk::check_afk,
+    },
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
 };
 
@@ -16,16 +21,19 @@ pub async fn handle_message_create(
     // Implement your logic for handling the message create event
     // For example, send a response message
     // check for commands
-
     if let Some(guild_id) = msg.guild_id {
         let bot_id: String = client.http.current_user().await?.model().await?.id.get().to_string();
         if bot_id == msg.author.id.get().to_string() {
             return Ok(());
         }
 
-        let guild_id: String = guild_id.get().to_string();
+        let guild_id_str: String = guild_id.get().to_string();
 
-        let config = GuildConfigQueries::find_by_discord_ids(&client.db, &bot_id, &guild_id).await?;
+        let config = GuildConfigQueries::find_by_discord_ids(
+            &client.db,
+            &bot_id,
+            &guild_id_str
+        ).await?;
         // println!("{}", config.prefix);
 
         let content = msg.content.trim().to_string();
@@ -56,6 +64,8 @@ pub async fn handle_message_create(
                 }
             }
         }
+
+        let _ = check_afk(client, &config, msg, guild_id).await;
     }
 
     Ok(())

@@ -1,7 +1,6 @@
 // src/twilightrs/events/mod.rs
 mod message_create;
 mod message_delete;
-mod interaction_create;
 mod interaction_handlers;
 
 use std::{ error::Error, sync::Arc };
@@ -10,7 +9,7 @@ use twilight_gateway::{ Event, Shard };
 use self::{
     message_create::handle_message_create,
     message_delete::handle_message_delete,
-    interaction_create::handle_interaction_create,
+    interaction_handlers::handle_interaction_create,
 };
 
 use super::{ discord_client::DiscordClient, dispatchers::ClientDispatchers };
@@ -35,6 +34,7 @@ pub async fn handle_bot_events(mut shard: Shard, client: Arc<DiscordClient>) {
 
         // Spawn a new task to handle the event
         // let dispatchers_cloned = dispatchers.clone();
+
         if let Event::MessageDelete(_) = &event {
             tokio::spawn(handle_event(client.clone(), event, dispatchers.clone()));
         } else {

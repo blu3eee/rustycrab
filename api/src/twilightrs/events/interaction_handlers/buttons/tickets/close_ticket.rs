@@ -252,40 +252,17 @@ pub async fn close_confirmed_handler(
                     ).await;
                 }
             }
-            // move to archive category
-            let category: Option<Channel> = if let Some(category_id) = &setting.archive_category {
-                if
-                    let Ok(category) = client.http.channel(
-                        Id::new(u64::from_str_radix(category_id, 10).unwrap())
-                    ).await
-                {
-                    Some(category.model().await?)
-                } else if let Some(category_id) = &setting.archive_overflow_category {
-                    if
-                        let Ok(category) = client.http.channel(
-                            Id::new(u64::from_str_radix(category_id, 10).unwrap())
-                        ).await
-                    {
-                        Some(category.model().await?)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            } else if let Some(category_id) = &setting.archive_overflow_category {
-                if
-                    let Ok(category) = client.http.channel(
-                        Id::new(u64::from_str_radix(category_id, 10).unwrap())
-                    ).await
-                {
-                    Some(category.model().await?)
-                } else {
-                    None
-                }
+            // First, try to get the main archive category
+            let main_category = get_category_channel(client, &setting.archive_category).await?;
+
+            // Then, try to get the overflow archive category if the main one is not available
+            let overflow_category = if main_category.is_none() {
+                get_category_channel(client, &setting.archive_overflow_category).await?
             } else {
                 None
             };
+
+            let category = main_category.or(overflow_category);
 
             let _ = client.http
                 .update_channel(channel.id)
@@ -299,9 +276,19 @@ pub async fn close_confirmed_handler(
                 .archived(true).await?;
         }
     }
+    // send closing notification to the ticket opener
+    if let Ok(dm_channel) = client.http.create_private_channel(ticket_opener.id).await {
+        if let Ok(dm_channel) = dm_channel.model().await {
+            let _ = client.http.create_message(dm_channel.id).embeds(&embeds)?.await;
+        }
+    }
 
     // send closed notification to the ticket channel
-    let _ = client.http.create_message(ticket_channel.id).embeds(&embeds)?.await;
+    // let _ = client.http.create_message(ticket_channel.id).embeds(&embeds)?.await;
+    let _ = client.http
+        .interaction(interaction.application_id)
+        .create_followup(&interaction.token)
+        .embeds(&embeds)?.await;
 
     // update ticket status
     let _ = TicketQueries::update_by_id(&client.db, ticket.id, RequestUpdateTicket {
@@ -410,4 +397,18 @@ async fn generate_transcript_data(
         users: transcript_users,
         messages: transcript_messages,
     })
+}
+
+async fn get_category_channel(
+    client: &Arc<DiscordClient>,
+    category_id_option: &Option<String>
+) -> Result<Option<Channel>, Box<dyn Error + Send + Sync>> {
+    if let Some(category_id_str) = category_id_option {
+        if let Ok(category_id) = u64::from_str_radix(category_id_str, 10) {
+            if let Ok(category) = client.http.channel(Id::new(category_id)).await {
+                return Ok(Some(category.model().await?));
+            }
+        }
+    }
+    Ok(None)
 }

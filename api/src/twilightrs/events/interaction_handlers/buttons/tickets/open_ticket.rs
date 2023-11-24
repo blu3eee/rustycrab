@@ -227,8 +227,8 @@ async fn create_channel_ticket(
         }
     }
 
-    let channel = client.http.channel(ticket_channel_id).await?.model().await?;
-    println!("ticket channel perm overwrites: {:?}", channel.permission_overwrites);
+    // let channel = client.http.channel(ticket_channel_id).await?.model().await?;
+    // println!("ticket channel perm overwrites: {:?}", channel.permission_overwrites);
 
     Ok(Some(ticket_channel_id))
 }
@@ -242,7 +242,7 @@ async fn welcome_ticket(
     ticket: TicketModel,
     channel_id: Id<ChannelMarker>
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    // [async task] mention suppor team
+    // mention suppor team
 
     if let Some(team) = &panel_details.support_team {
         let notify_support_team_msg = client.send_message(
@@ -273,7 +273,7 @@ async fn welcome_ticket(
         }
     }
 
-    // [async task] send welcome message
+    //  send welcome message
     if let Some(message) = &panel_details.welcome_message {
         if let Some(embed) = &message.embed {
             println!("building embeds");
@@ -308,7 +308,7 @@ async fn welcome_ticket(
         }
     }
 
-    // [async task] mention on open
+    // mention on open
     let mentions: String = panel_details.mention_on_open
         .clone()
         .into_iter()
@@ -326,7 +326,7 @@ async fn welcome_ticket(
         crate::twilightrs::discord_client::MessageContent::Text(mentions)
     ).await;
 
-    // [async task] notify the user that their ticket channel is opened
+    // notify the user that their ticket channel is opened
     let _ = client.http
         .interaction(interaction.application_id)
         .create_followup(&interaction.token)
@@ -345,9 +345,6 @@ async fn welcome_ticket(
         status: Some("Opened".to_string()),
         ..Default::default()
     }).await;
-
-    // let result = TicketQueries::delete_by_id(&client.db, ticket.id).await?;
-    // println!("delete ticket result {:?}", result);
 
     Ok(())
 }

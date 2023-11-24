@@ -1,32 +1,29 @@
+mod buttons;
+
 use std::{ error::Error, sync::Arc };
 
 use twilight_model::{
-    application::interaction::message_component::MessageComponentInteractionData,
     gateway::payload::incoming::InteractionCreate,
+    application::interaction::{ InteractionType, InteractionData },
 };
 
-use crate::twilightrs::{ dispatchers::ClientDispatchers, discord_client::DiscordClient };
+use crate::twilightrs::{ discord_client::DiscordClient, dispatchers::ClientDispatchers };
 
-mod buttons;
 use self::buttons::button_handlers;
 
-pub async fn button_handlers(
+pub async fn handle_interaction_create(
     client: &Arc<DiscordClient>,
     interaction: &Box<InteractionCreate>,
-    dispatchers: &Arc<ClientDispatchers>,
-    button_data: &MessageComponentInteractionData
+    dispatchers: &Arc<ClientDispatchers>
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let button_parts: Vec<String> = button_data.custom_id.split(":").map(String::from).collect();
-    if let Some(button_event) = button_parts.first() {
-        match button_event.as_str() {
-            "1" => {
-                buttons::tickets::tickets_handler(
-                    client,
-                    interaction,
-                    dispatchers,
-                    button_data
-                ).await?;
+    if let Some(_) = interaction.guild_id {
+        match interaction.kind {
+            InteractionType::MessageComponent => {
+                if let Some(InteractionData::MessageComponent(button_data)) = &interaction.data {
+                    button_handlers(client, interaction, dispatchers, button_data).await?;
+                }
             }
+            InteractionType::ApplicationCommand => {}
             _ => {}
         }
     }
