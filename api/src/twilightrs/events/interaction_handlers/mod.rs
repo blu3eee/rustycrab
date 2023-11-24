@@ -8,6 +8,7 @@ use twilight_model::{
 use crate::twilightrs::{ dispatchers::ClientDispatchers, discord_client::DiscordClient };
 
 mod buttons;
+use self::buttons::button_handlers;
 
 pub async fn button_handlers(
     client: &Arc<DiscordClient>,
