@@ -23,7 +23,16 @@ pub async fn handle_interaction_create(
                     button_handlers(client, interaction, dispatchers, button_data).await?;
                 }
             }
-            InteractionType::ApplicationCommand => {}
+            InteractionType::ApplicationCommand => {
+                if let Some(InteractionData::ApplicationCommand(command_data)) = &interaction.data {
+                    // command_data.name
+                    let _ = dispatchers.slash_commands.dispatch(
+                        client,
+                        interaction,
+                        command_data
+                    ).await;
+                }
+            }
             _ => {}
         }
     }

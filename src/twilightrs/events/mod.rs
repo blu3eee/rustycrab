@@ -58,6 +58,12 @@ async fn handle_event(
         }
         Event::Ready(ready) => {
             println!("[{}#{:04}] Shard is ready", ready.user.name, ready.user.discriminator);
+            println!(
+                "[{}#{:04}] Registering slash commands",
+                ready.user.name,
+                ready.user.discriminator
+            );
+            let _ = dispatchers.slash_commands.register_commands(&client).await;
         }
         Event::MessageDelete(message_delete) => {
             handle_message_delete(&client, &message_delete).await?;
