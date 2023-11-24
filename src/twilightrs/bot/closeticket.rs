@@ -48,12 +48,13 @@ use crate::{
 pub async fn close_ticket_handler(
     client: &Arc<DiscordClient>,
     interaction: &Box<InteractionCreate>,
-    guild_id: Id<GuildMarker>,
+    guild_id: &Id<GuildMarker>,
     ticket: &TicketModel,
     action: &str
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(status) = &ticket.status {
         if status == "Closed" {
+            client.defer_button_interaction(interaction).await?;
             client.http
                 .interaction(interaction.application_id)
                 .create_followup(&interaction.token)
@@ -85,6 +86,7 @@ pub async fn close_ticket_handler(
         .guild_member(interaction.guild_id.unwrap(), user.id).await?
         .model().await?;
     if !closing_allowed(client, ticket, &member, channel, &panel_details, &setting).await? {
+        client.defer_button_interaction(interaction).await?;
         client.http
             .interaction(interaction.application_id)
             .create_followup(&interaction.token)
@@ -97,6 +99,8 @@ pub async fn close_ticket_handler(
             .flags(MessageFlags::EPHEMERAL).await?;
         return Ok(());
     }
+    client.defer_interaction(interaction).await?;
+
     if action == "4" || !setting.ticket_close_confirmation {
         close_confirmed_handler(client, interaction, guild_id, ticket, &setting).await?;
         return Ok(());
@@ -141,11 +145,11 @@ pub async fn close_ticket_handler(
 pub async fn close_confirmed_handler(
     client: &Arc<DiscordClient>,
     interaction: &Box<InteractionCreate>,
-    guild_id: Id<GuildMarker>,
+    guild_id: &Id<GuildMarker>,
     ticket: &TicketModel,
     setting: &ResponseTicketSetting
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let guild = client.http.guild(guild_id).await?.model().await?;
+    let guild = client.http.guild(guild_id.clone()).await?.model().await?;
     let ticket_opener = client.http
         .user(Id::new(u64::from_str_radix(&ticket.user_id, 10).unwrap())).await?
         .model().await?;

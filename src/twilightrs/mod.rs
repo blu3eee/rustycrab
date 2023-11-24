@@ -5,3 +5,4 @@ pub mod utils;
 pub mod commands;
 
 pub mod dispatchers;
+pub mod bot;

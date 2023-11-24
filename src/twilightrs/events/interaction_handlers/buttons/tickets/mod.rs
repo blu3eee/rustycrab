@@ -7,7 +7,11 @@ use twilight_model::{
 };
 
 use crate::{
-    twilightrs::{ discord_client::DiscordClient, dispatchers::ClientDispatchers },
+    twilightrs::{
+        discord_client::DiscordClient,
+        dispatchers::ClientDispatchers,
+        bot::closeticket::close_ticket_handler,
+    },
     queries::tickets_system::{
         ticket_panels_queries::TicketPanelsQueries,
         ticket_queries::TicketQueries,
@@ -16,10 +20,9 @@ use crate::{
     router::routes::tickets::ticket_panels::{ ResponseTicketPanel, ResponseTicketPanelDetails },
 };
 
-use self::{ open_ticket::open_ticket_handler, close_ticket::close_ticket_handler };
+use self::open_ticket::open_ticket_handler;
 
 mod open_ticket;
-mod close_ticket;
 
 pub async fn tickets_handler(
     client: &Arc<DiscordClient>,
@@ -28,8 +31,6 @@ pub async fn tickets_handler(
     button_data: &MessageComponentInteractionData
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(guild_id) = interaction.guild_id {
-        client.defer_interaction(interaction).await?;
-
         let button_parts: Vec<String> = button_data.custom_id
             .split(":")
             .map(String::from)
@@ -38,6 +39,7 @@ pub async fn tickets_handler(
         if let Some(action) = button_parts.get(1) {
             match action.as_str() {
                 "1" => {
+                    client.defer_ephemeral_interaction(interaction).await?;
                     if let Some(id) = button_parts.get(2) {
                         let panel_id = i32::from_str_radix(id, 10)?;
                         let panel: ResponseTicketPanel = TicketPanelsQueries::find_by_id(
@@ -65,11 +67,12 @@ pub async fn tickets_handler(
                             close_ticket_handler(
                                 client,
                                 interaction,
-                                guild_id,
+                                &guild_id,
                                 &ticket,
                                 &action
                             ).await?;
                         } else {
+                            client.defer_button_interaction(interaction).await?;
                             client.http
                                 .interaction(interaction.application_id)
                                 .create_followup(&interaction.token)
@@ -85,6 +88,7 @@ pub async fn tickets_handler(
                     }
                 }
                 _ => {
+                    client.defer_button_interaction(interaction).await?;
                     client.http
                         .interaction(interaction.application_id)
                         .create_followup(&interaction.token)
