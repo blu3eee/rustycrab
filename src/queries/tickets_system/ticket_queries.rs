@@ -1,4 +1,12 @@
-use sea_orm::{ DatabaseConnection, Set, EntityTrait, RelationTrait };
+use sea_orm::{
+    DatabaseConnection,
+    Set,
+    EntityTrait,
+    RelationTrait,
+    QueryFilter,
+    Condition,
+    ColumnTrait,
+};
 use async_trait::async_trait;
 
 use crate::{
@@ -15,6 +23,20 @@ use crate::{
 };
 
 pub struct TicketQueries {}
+
+impl TicketQueries {
+    pub async fn find_by_channel_discord_id(
+        db: &DatabaseConnection,
+        channel_id: String
+    ) -> Result<<<Self as DefaultSeaQueries>::Entity as EntityTrait>::Model, AppError> {
+        <<Self as DefaultSeaQueries>::Entity as EntityTrait>
+            ::find()
+            .filter(Condition::all().add(tickets::Column::ChannelId.eq(channel_id)))
+            .one(db).await
+            .map_err(AppError::from)?
+            .ok_or_else(|| AppError::not_found("Record not found"))
+    }
+}
 
 #[async_trait]
 impl DefaultSeaQueries for TicketQueries {
