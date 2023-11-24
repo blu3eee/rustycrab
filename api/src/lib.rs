@@ -90,6 +90,7 @@ pub async fn running_bots(
     db: &DatabaseConnection
 ) -> Result<HashMap<String, Arc<DiscordClient>>, AppError> {
     let bots: Vec<BotModel> = BotQueries::find_all(&db).await?;
+
     let mut discord_clients = HashMap::new();
     for bot in bots {
         let config = Config::builder(bot.token.clone(), Intents::all())
@@ -117,14 +118,8 @@ pub async fn running_bots(
         let cache: Arc<InMemoryCache> = Arc::new(
             InMemoryCache::builder().resource_types(ResourceType::all()).build()
         );
-
         // Only HTTP client is stored in DiscordClient
-        let client = Arc::new(DiscordClient {
-            db: db.clone(),
-            http: http.clone(),
-            cache: cache.clone(),
-            deleted_messages: HashMap::new().into(),
-        });
+        let client = Arc::new(DiscordClient::new(db.clone(), http.clone(), cache.clone()));
 
         discord_clients.insert(bot.bot_id, client.clone());
 
