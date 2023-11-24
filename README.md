@@ -33,6 +33,8 @@ Once the API rewrite is complete and stable, the next phase of this project will
 
 While this project is primarily for my learning and exploration, suggestions, and discussions are welcome! If you have insights or suggestions, feel free to open an issue or submit a pull request.
 
+`cargo watch -w src -w Cargo.toml -x check -x test -x run`
+
 ---
 
 Thank you for visiting my project! Stay tuned for more updates as I continue my journey with Rust.
