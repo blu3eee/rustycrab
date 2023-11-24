@@ -3,10 +3,10 @@ use fluent::FluentArgs;
 use sea_orm::DatabaseConnection;
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
-    channel::{ Message, message::embed::Embed, Channel },
+    channel::{ Message, message::{ embed::Embed, MessageFlags }, Channel },
     id::{ Id, marker::{ ChannelMarker, MessageMarker, UserMarker, GuildMarker, RoleMarker } },
     user::{ CurrentUser, User },
-    http::interaction::{ InteractionResponse, InteractionResponseType },
+    http::interaction::{ InteractionResponse, InteractionResponseType, InteractionResponseData },
     gateway::payload::incoming::InteractionCreate,
     guild::Role,
 };
@@ -84,6 +84,10 @@ impl DiscordClient {
             afk_users: HashMap::new().into(),
         }
     }
+
+    // pub async fn register_commands(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
+    //     Ok(())
+    // }
 
     fn get_bundle(&self, locale: &str) -> &FluentBundle<FluentResource, IntlLangMemoizer> {
         if let Some(bundle) = self.bundles.get(locale) { bundle } else { &self.default_bundle }
@@ -277,7 +281,7 @@ impl DiscordClient {
         }
     }
 
-    pub async fn defer_interaction(
+    pub async fn defer_button_interaction(
         &self,
         interaction: &Box<InteractionCreate>
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -286,6 +290,41 @@ impl DiscordClient {
             &interaction.token,
             &(InteractionResponse {
                 kind: InteractionResponseType::DeferredUpdateMessage,
+                data: None,
+            })
+        ).await?;
+
+        Ok(())
+    }
+
+    pub async fn defer_ephemeral_interaction(
+        &self,
+        interaction: &Box<InteractionCreate>
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+        self.http.interaction(interaction.application_id).create_response(
+            interaction.id,
+            &interaction.token,
+            &(InteractionResponse {
+                kind: InteractionResponseType::DeferredChannelMessageWithSource,
+                data: Some(InteractionResponseData {
+                    flags: Some(MessageFlags::EPHEMERAL),
+                    ..Default::default()
+                }),
+            })
+        ).await?;
+
+        Ok(())
+    }
+
+    pub async fn defer_interaction(
+        &self,
+        interaction: &Box<InteractionCreate>
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+        self.http.interaction(interaction.application_id).create_response(
+            interaction.id,
+            &interaction.token,
+            &(InteractionResponse {
+                kind: InteractionResponseType::DeferredChannelMessageWithSource,
                 data: None,
             })
         ).await?;
