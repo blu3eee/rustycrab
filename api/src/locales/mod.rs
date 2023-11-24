@@ -4,9 +4,7 @@ use intl_memoizer::concurrent::IntlLangMemoizer;
 use unic_langid::LanguageIdentifier;
 use std::fs;
 
-pub fn load_localization(
-    locale: &str
-) -> FluentBundle<FluentResource, intl_memoizer::concurrent::IntlLangMemoizer> {
+pub fn load_localization(locale: &str) -> FluentBundle<FluentResource, IntlLangMemoizer> {
     let ftl_path = format!("src/locales/{}/main.ftl", locale);
     let ftl_string = fs::read_to_string(ftl_path).expect("Failed to read FTL file");
 
