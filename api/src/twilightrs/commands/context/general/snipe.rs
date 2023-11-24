@@ -11,7 +11,6 @@ use crate::{
     },
     cdn_avatar,
 };
-
 pub struct SnipeCommand;
 
 #[async_trait]
@@ -21,13 +20,16 @@ impl ContextCommand for SnipeCommand {
     }
 
     fn args(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::new(ArgType::User, true), ArgSpec::new(ArgType::Number, true)]
+        vec![
+            ArgSpec::new("user", ArgType::User, true),
+            ArgSpec::new("snipe number", ArgType::Number, true)
+        ]
     }
 
     async fn run(
         &self,
         client: &DiscordClient,
-        _: &GuildConfigModel,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -74,12 +76,12 @@ impl ContextCommand for SnipeCommand {
                 ).await?;
             }
         } else {
-            client.send_message(
-                msg.channel_id,
-                MessageContent::Text(
-                    "No deleted message found at the specified position.".to_string()
-                )
-            ).await?;
+            let message = client.get_locale_string(
+                &config.locale,
+                "command-snipe-invalid-position",
+                None
+            );
+            client.send_message(msg.channel_id, MessageContent::Text(message)).await?;
         }
 
         Ok(())

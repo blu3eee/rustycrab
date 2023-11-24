@@ -5,6 +5,7 @@ use self::{
     help::HelpCommand,
     banner::BannerCommand,
     snipe::SnipeCommand,
+    afk::AfkCommand,
 };
 
 use super::{ ContextCommandCategory, ContextCommand };
@@ -15,6 +16,8 @@ mod math;
 mod help;
 mod banner;
 mod snipe;
+mod afk;
+
 pub struct GeneralCommands;
 
 impl ContextCommandCategory for GeneralCommands {
@@ -30,6 +33,7 @@ impl ContextCommandCategory for GeneralCommands {
             Box::new(HelpCommand) as Box<dyn ContextCommand>,
             Box::new(BannerCommand) as Box<dyn ContextCommand>,
             Box::new(SnipeCommand) as Box<dyn ContextCommand>,
+            Box::new(AfkCommand) as Box<dyn ContextCommand>,
         ])
     }
 }

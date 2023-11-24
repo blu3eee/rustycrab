@@ -9,7 +9,6 @@ use crate::{
         discord_client::{ DiscordClient, MessageContent },
     },
 };
-
 pub struct PingCommand;
 
 #[async_trait]

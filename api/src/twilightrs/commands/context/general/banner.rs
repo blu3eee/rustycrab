@@ -11,7 +11,6 @@ use crate::{
     },
     cdn_avatar,
 };
-
 pub struct BannerCommand;
 
 #[async_trait]
@@ -21,7 +20,7 @@ impl ContextCommand for BannerCommand {
     }
 
     fn args(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::new(ArgType::User, true)] // User argument is optional
+        vec![ArgSpec::new("user", ArgType::User, true)] // User argument is optional
     }
 
     async fn run(

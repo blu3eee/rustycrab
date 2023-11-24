@@ -19,7 +19,7 @@ use crate::{
     cdn_guild_icon,
     cdn_avatar,
     queries::bot_queries::BotQueries,
-    utilities::utils::{ convert_color_u32, ColorTypes },
+    utilities::utils::ColorResolvables,
 };
 
 pub struct HelpCommand;
@@ -49,8 +49,9 @@ impl HelpCommand {
                 .and_modify(|commands| commands.push(command.clone()))
                 .or_insert_with(|| vec![command]);
         }
-        client.send_message(
+        client.reply_message(
             msg.channel_id,
+            msg.id,
             MessageContent::DiscordEmbeds(
                 vec![DiscordEmbed {
                     title: Some(format!("{}'s Commands", bot.name)),
@@ -97,9 +98,9 @@ impl HelpCommand {
                     timestamp: Some(true),
                     color: if let Ok(info) = bot_info {
                         Some(
-                            convert_color_u32(
-                                ColorTypes::String(format!("{}", &info.theme_hex_color))
-                            )
+                            ColorResolvables::HexString(
+                                format!("{}", &info.theme_hex_color)
+                            ).as_u32()
                         )
                     } else {
                         None
@@ -128,8 +129,9 @@ impl HelpCommand {
         let (command_usage, command_aliases, subcommand_usage, command_description) =
             command_handler.command.get_help(&config.locale, config.prefix.to_string(), args);
 
-        let _ = client.send_message(
+        let _ = client.reply_message(
             msg.channel_id,
+            msg.id,
             MessageContent::DiscordEmbeds(
                 vec![DiscordEmbed {
                     description: command_description,
@@ -173,7 +175,7 @@ impl HelpCommand {
                         }
                         discord_fields.push(DiscordEmbedField {
                             name: "Usage".to_string(),
-                            value: format!("```{}```", command_usage),
+                            value: format!("```fix\n{}```", command_usage),
                             inline: false,
                         });
 
@@ -181,7 +183,7 @@ impl HelpCommand {
                             discord_fields.push(DiscordEmbedField {
                                 name: "Subcommands".to_string(),
                                 value: format!(
-                                    "```{}```",
+                                    "```fix\n{}```",
                                     subcommand_usage
                                         .into_iter()
                                         .map(|sub| format!("{}{}", config.prefix, sub))
@@ -195,9 +197,9 @@ impl HelpCommand {
                     },
                     color: if let Ok(info) = bot_info {
                         Some(
-                            convert_color_u32(
-                                ColorTypes::String(format!("{}", &info.theme_hex_color))
-                            )
+                            ColorResolvables::HexString(
+                                format!("{}", &info.theme_hex_color)
+                            ).as_u32()
                         )
                     } else {
                         None
@@ -229,7 +231,7 @@ impl ContextCommand for HelpCommand {
     }
 
     fn args(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::new(ArgType::Words, true)] // User argument is optional
+        vec![ArgSpec::new("command", ArgType::Args, true)] // User argument is optional
     }
 
     async fn run(
