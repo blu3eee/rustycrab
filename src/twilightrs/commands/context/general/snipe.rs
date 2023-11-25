@@ -28,11 +28,11 @@ impl ContextCommand for SnipeCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let position = if let Some(ParsedArg::Number(pos)) = command_args.get(0) {
             *pos as usize
         } else {

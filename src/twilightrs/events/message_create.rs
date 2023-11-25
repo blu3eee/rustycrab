@@ -14,10 +14,10 @@ use crate::{
 };
 
 pub async fn handle_message_create(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     msg: &MessageCreate,
     dispatchers: &Arc<ClientDispatchers>
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     // Implement your logic for handling the message create event
     // For example, send a response message
     // check for commands
@@ -54,7 +54,7 @@ pub async fn handle_message_create(
                     .collect();
                 if let Some((&cmd_name, cmd_args)) = parts.split_first() {
                     let _ = commands::context_commands_handler(
-                        client,
+                        Arc::clone(&client),
                         &config,
                         &dispatchers,
                         msg,
@@ -65,7 +65,7 @@ pub async fn handle_message_create(
             }
         }
 
-        let _ = check_afk(client, &config, msg, guild_id).await;
+        let _ = check_afk(Arc::clone(&client), &config, msg, guild_id).await;
     }
 
     Ok(())

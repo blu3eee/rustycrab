@@ -27,10 +27,10 @@ impl SlashCommandDispatcher {
 
     pub async fn register_commands(
         &self,
-        client: &Arc<DiscordClient>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+        client: DiscordClient
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         for (_, command) in &self.commands {
-            if let Ok(register_command) = command.register(client).await {
+            if let Ok(register_command) = command.register(Arc::clone(&client)).await {
                 println!("Registered command {}", register_command.name);
             } else {
                 eprintln!("Failed to register command {}", command.name());
@@ -42,10 +42,10 @@ impl SlashCommandDispatcher {
 
     pub async fn dispatch(
         &self,
-        client: &Arc<DiscordClient>,
+        client: DiscordClient,
         interaction: &Box<InteractionCreate>,
         command_data: &Box<CommandData>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         if let Some(command) = self.commands.get(&command_data.name) {
             let _ = command.exec(client, interaction, command_data).await;
         }

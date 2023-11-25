@@ -29,11 +29,11 @@ impl ContextCommand for AvatarCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         _: &bot_guild_configurations::Model,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let bot = client.get_bot().await?;
 
         let user = if let Some(ParsedArg::User(user)) = command_args.get(0) {

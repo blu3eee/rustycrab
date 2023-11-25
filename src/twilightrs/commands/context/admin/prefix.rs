@@ -36,11 +36,11 @@ impl ContextCommand for ChangePrefixCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         if let Some(ParsedArg::Word(new_prefix)) = command_args.first() {
             if new_prefix.is_empty() {
                 let message = client.get_locale_string(

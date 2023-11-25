@@ -45,11 +45,11 @@ impl ContextCommand for TimeoutMemberCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         if let Some(ParsedArg::Users(users)) = command_args.first() {
             if let Some(ParsedArg::Number(duration)) = command_args.get(1) {
                 if let Some(guild_id) = msg.guild_id {

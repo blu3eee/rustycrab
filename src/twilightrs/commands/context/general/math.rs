@@ -28,11 +28,11 @@ impl ContextCommand for MathCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         if let Some(ParsedArg::Text(expression)) = command_args.first() {
             match meval::eval_str(expression) {
                 Ok(result) => {

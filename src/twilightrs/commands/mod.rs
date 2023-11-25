@@ -9,13 +9,13 @@ use crate::database::bot_guild_configurations;
 use super::{ discord_client::DiscordClient, dispatchers::ClientDispatchers };
 
 pub async fn context_commands_handler(
-    client: &DiscordClient,
+    client: DiscordClient,
     config: &bot_guild_configurations::Model,
     dispatchers: &Arc<ClientDispatchers>,
     msg: &MessageCreate,
     command_name: &str,
     command_args: &[&str]
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     dispatchers.context_commands.dispatch_command(
         client,
         config,

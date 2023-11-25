@@ -34,11 +34,11 @@ impl ContextCommand for ChangeLanguageCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let available_locales = vec!["en", "vn"];
         if let Some(ParsedArg::Word(language)) = command_args.first() {
             if language.is_empty() || !available_locales.contains(&language.as_str()) {

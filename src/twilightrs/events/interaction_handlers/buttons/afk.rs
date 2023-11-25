@@ -1,4 +1,4 @@
-use std::{ sync::Arc, error::Error };
+use std::error::Error;
 use twilight_model::{
     gateway::payload::incoming::InteractionCreate,
     application::interaction::message_component::MessageComponentInteractionData,
@@ -12,10 +12,10 @@ use crate::{
 };
 
 pub async fn add_afk_notification(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     button_data: &MessageComponentInteractionData
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     println!("acked {}", button_data.custom_id);
     client.defer_button_interaction(interaction).await?;
 

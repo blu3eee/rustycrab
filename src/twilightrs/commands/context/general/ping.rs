@@ -19,11 +19,11 @@ impl ContextCommand for PingCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         _: &GuildConfigModel,
         msg: &MessageCreate,
         _: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         // Example: Use command_args if needed for the logic
         // If PingCommand doesn't need arguments, this part can remain unchanged
 

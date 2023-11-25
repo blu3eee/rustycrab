@@ -1,6 +1,7 @@
 use fluent::FluentArgs;
 
 use sea_orm::DatabaseConnection;
+use songbird::{ Songbird, tracks::TrackHandle };
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
     channel::{ Message, message::{ embed::Embed, MessageFlags }, Channel },
@@ -34,15 +35,22 @@ use fluent::FluentResource;
 use fluent_bundle::bundle::FluentBundle;
 use intl_memoizer::concurrent::IntlLangMemoizer;
 
-pub struct DiscordClient {
+pub type DiscordClient = Arc<DiscordClientRef>;
+pub struct DiscordClientRef {
     pub db: DatabaseConnection,
     pub http: Arc<HttpClient>,
     pub cache: Arc<InMemoryCache>,
+    // voice features
+    pub songbird: Arc<Songbird>,
+    pub trackdata: RwLock<HashMap<Id<GuildMarker>, TrackHandle>>,
+    // deleted messages
     pub deleted_messages: RwLock<HashMap<Id<ChannelMarker>, Vec<CachedMessage>>>,
+    // afk feature
+    pub afk_users: RwLock<HashMap<Id<GuildMarker>, HashMap<Id<UserMarker>, UserAfkStatus>>>,
+    // multi-lingual
     pub bundles: HashMap<String, FluentBundle<FluentResource, IntlLangMemoizer>>,
     // Default bundle for new guilds or when specific guild bundle is not found
     pub default_bundle: FluentBundle<FluentResource, IntlLangMemoizer>,
-    pub afk_users: RwLock<HashMap<Id<GuildMarker>, HashMap<Id<UserMarker>, UserAfkStatus>>>,
 }
 
 pub struct UserAfkStatus {
@@ -63,8 +71,13 @@ impl UserAfkStatus {
     }
 }
 
-impl DiscordClient {
-    pub fn new(db: DatabaseConnection, http: Arc<HttpClient>, cache: Arc<InMemoryCache>) -> Self {
+impl DiscordClientRef {
+    pub fn new(
+        db: DatabaseConnection,
+        http: Arc<HttpClient>,
+        cache: Arc<InMemoryCache>,
+        songbird: Arc<Songbird>
+    ) -> Self {
         let mut bundles: HashMap<
             String,
             FluentBundle<FluentResource, IntlLangMemoizer>
@@ -74,10 +87,12 @@ impl DiscordClient {
             bundles.entry(locale.to_string()).or_insert(bundle);
         }
 
-        DiscordClient {
+        DiscordClientRef {
             db,
             http,
             cache,
+            songbird,
+            trackdata: Default::default(),
             deleted_messages: HashMap::new().into(),
             bundles,
             default_bundle: load_localization("en"),
@@ -85,7 +100,7 @@ impl DiscordClient {
         }
     }
 
-    // pub async fn register_commands(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
+    // pub async fn register_commands(&self) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     //     Ok(())
     // }
 
@@ -284,7 +299,7 @@ impl DiscordClient {
     pub async fn defer_button_interaction(
         &self,
         interaction: &Box<InteractionCreate>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         self.http.interaction(interaction.application_id).create_response(
             interaction.id,
             &interaction.token,
@@ -300,7 +315,7 @@ impl DiscordClient {
     pub async fn defer_ephemeral_interaction(
         &self,
         interaction: &Box<InteractionCreate>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         self.http.interaction(interaction.application_id).create_response(
             interaction.id,
             &interaction.token,
@@ -319,7 +334,7 @@ impl DiscordClient {
     pub async fn defer_interaction(
         &self,
         interaction: &Box<InteractionCreate>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         self.http.interaction(interaction.application_id).create_response(
             interaction.id,
             &interaction.token,
@@ -382,6 +397,24 @@ impl DiscordClient {
 
         // Check if the member has the role
         Ok(member.roles.contains(&role_id))
+    }
+
+    pub async fn is_user_in_same_channel_as_bot(
+        &self,
+        guild_id: Id<GuildMarker>,
+        user_id: Id<UserMarker>
+    ) -> Result<bool, Box<dyn Error + Send + Sync + 'static>> {
+        let user_channel_id = self.cache
+            .voice_state(user_id, guild_id)
+            .and_then(|state| Some(state.channel_id()));
+
+        let bot_user_id = self.http.current_user().await?.model().await?.id;
+
+        let bot_channel_id = self.cache
+            .voice_state(bot_user_id, guild_id)
+            .and_then(|state| Some(state.channel_id()));
+
+        Ok(user_channel_id == bot_channel_id)
     }
 }
 

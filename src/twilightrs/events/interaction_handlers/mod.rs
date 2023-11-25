@@ -12,10 +12,10 @@ use crate::twilightrs::{ discord_client::DiscordClient, dispatchers::ClientDispa
 use self::buttons::button_handlers;
 
 pub async fn handle_interaction_create(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     dispatchers: &Arc<ClientDispatchers>
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     if let Some(_) = interaction.guild_id {
         match interaction.kind {
             InteractionType::MessageComponent => {

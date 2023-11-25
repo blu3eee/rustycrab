@@ -18,6 +18,7 @@ use crate::{
         tickets_system::{
             ticket_setting_queries::TicketSettingQueries,
             ticket_queries::TicketQueries,
+            ticket_panels_queries::TicketPanelsQueries,
         },
         message_embed_queries::MessageEmbedQueries,
     },
@@ -26,25 +27,46 @@ use crate::{
     router::routes::tickets::{
         ticket_settings::ResponseTicketSetting,
         tickets::{ RequestCreateTicket, RequestUpdateTicket },
-        ticket_panels::ResponseTicketPanelDetails,
+        ticket_panels::{ ResponseTicketPanelDetails, ResponseTicketPanel },
     },
     database::tickets::Model as TicketModel,
     utilities::utils::color_to_button_style,
 };
 
 pub async fn open_ticket_handler(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     guild_id: Id<GuildMarker>,
-    panel_details: ResponseTicketPanelDetails
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let setting: ResponseTicketSetting = TicketSettingQueries::find_by_discord_ids(
-        &client.db,
-        &panel_details.bot.bot_id,
-        &panel_details.guild.guild_id
-    ).await?.into();
-
+    panel_id: String
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     if let Some(user) = interaction.author() {
+        let panel_id = i32::from_str_radix(&panel_id, 10)?;
+        let panel: ResponseTicketPanel = TicketPanelsQueries::find_by_id(
+            &client.db,
+            panel_id
+        ).await?.into();
+
+        let panel_details: ResponseTicketPanelDetails = panel.to_details(&client.db).await?;
+
+        let setting: ResponseTicketSetting = TicketSettingQueries::find_by_discord_ids(
+            &client.db,
+            &panel_details.bot.bot_id,
+            &panel_details.guild.guild_id
+        ).await?.into();
+
+        let current_tickets = TicketQueries::find_user_tickets(
+            &client.db,
+            user.id.to_string()
+        ).await?;
+        if (current_tickets.len() as i32) >= setting.per_user_ticket_limit {
+            client.http
+                .interaction(interaction.application_id)
+                .create_followup(&interaction.token)
+                .content("You have reached ticket limit")?
+                .flags(MessageFlags::EPHEMERAL).await?;
+            return Ok(());
+        }
+
         let ticket = TicketQueries::create_entity(&client.db, RequestCreateTicket {
             bot_discord_id: panel_details.bot.bot_id.clone(),
             guild_discord_id: panel_details.guild.guild_id.clone(),
@@ -55,7 +77,7 @@ pub async fn open_ticket_handler(
         // Check if the setting is for thread or channel ticket
         let channel = if setting.thread_ticket {
             create_thread_ticket(
-                client,
+                Arc::clone(&client),
                 interaction,
                 &panel_details,
                 user,
@@ -64,7 +86,7 @@ pub async fn open_ticket_handler(
             ).await?
         } else {
             create_channel_ticket(
-                client,
+                Arc::clone(&client),
                 interaction,
                 &panel_details,
                 user,
@@ -74,9 +96,8 @@ pub async fn open_ticket_handler(
         };
 
         if let Some(channel_id) = channel {
-            println!("ticket channel created");
             welcome_ticket(
-                client,
+                Arc::clone(&client),
                 interaction,
                 panel_details,
                 user,
@@ -98,7 +119,7 @@ pub async fn open_ticket_handler(
 }
 
 async fn create_thread_ticket(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     panel_details: &ResponseTicketPanelDetails,
     user: &User,
@@ -137,7 +158,7 @@ async fn create_thread_ticket(
 }
 
 async fn create_channel_ticket(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     _: &Box<InteractionCreate>,
     panel_details: &ResponseTicketPanelDetails,
     user: &User,
@@ -146,7 +167,6 @@ async fn create_channel_ticket(
 ) -> Result<Option<Id<ChannelMarker>>, Box<dyn Error + Send + Sync>> {
     // Implementation to create a channel and set permissions
     // Ensure to use appropriate methods from Discord API client to create channels and manage permissions
-    println!("creating ticket channel");
     let ticket_category = if panel_details.ticket_category.is_empty() {
         None
     } else {
@@ -227,21 +247,18 @@ async fn create_channel_ticket(
         }
     }
 
-    // let channel = client.http.channel(ticket_channel_id).await?.model().await?;
-    // println!("ticket channel perm overwrites: {:?}", channel.permission_overwrites);
-
     Ok(Some(ticket_channel_id))
 }
 
 async fn welcome_ticket(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     panel_details: ResponseTicketPanelDetails,
     user: &User,
     guild_id: Id<GuildMarker>,
     ticket: TicketModel,
     channel_id: Id<ChannelMarker>
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     // mention suppor team
 
     if let Some(team) = &panel_details.support_team {

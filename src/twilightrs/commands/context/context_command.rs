@@ -79,11 +79,11 @@ pub trait ContextCommand: Send + Sync {
     #[allow(unused_variables)]
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         Ok(())
     }
 
@@ -112,11 +112,11 @@ pub trait ContextCommand: Send + Sync {
     /// interacting with Discord's API, or processing command arguments.
     async fn exec(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
         cmd_args: &[&str]
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         // Check permissions
         if let Some(_) = msg.guild_id {
             let required_permissions = self.permissions();
@@ -157,7 +157,7 @@ pub trait ContextCommand: Send + Sync {
         match parsed_args {
             Ok(args) => {
                 // client.set_bundle(&config.locale);
-                let _: Result<(), Box<dyn Error + Send + Sync>> = self.run(
+                let _: Result<(), Box<dyn Error + Send + Sync + 'static>> = self.run(
                     client,
                     config,
                     msg,

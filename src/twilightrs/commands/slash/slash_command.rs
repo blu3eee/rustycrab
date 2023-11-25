@@ -1,4 +1,4 @@
-use std::{ error::Error, sync::Arc };
+use std::error::Error;
 
 use twilight_model::{
     gateway::payload::incoming::InteractionCreate,
@@ -32,7 +32,7 @@ pub trait SlashCommand: Send + Sync {
 
     async fn register(
         &self,
-        client: &DiscordClient
+        client: DiscordClient
     ) -> Result<Command, Box<dyn Error + Sync + Send>> {
         let application = client.http.current_user_application().await?.model().await?;
         let interaction_client = client.http.interaction(application.id);
@@ -55,7 +55,7 @@ pub trait SlashCommand: Send + Sync {
 
     async fn exec(
         &self,
-        client: &Arc<DiscordClient>,
+        client: DiscordClient,
         interaction: &Box<InteractionCreate>,
         command_data: &Box<CommandData>
     ) -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -64,8 +64,8 @@ pub trait SlashCommand: Send + Sync {
 
     async fn run(
         &self,
-        client: &Arc<DiscordClient>,
+        client: DiscordClient,
         interaction: &Box<InteractionCreate>,
         command_data: &Box<CommandData>
-    ) -> Result<(), Box<dyn Error + Send + Sync>>;
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>>;
 }

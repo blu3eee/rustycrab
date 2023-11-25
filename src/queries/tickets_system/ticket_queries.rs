@@ -36,6 +36,17 @@ impl TicketQueries {
             .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("Record not found"))
     }
+
+    pub async fn find_user_tickets(
+        db: &DatabaseConnection,
+        user_id: String
+    ) -> Result<Vec<<<Self as DefaultSeaQueries>::Entity as EntityTrait>::Model>, AppError> {
+        <<Self as DefaultSeaQueries>::Entity as EntityTrait>
+            ::find()
+            .filter(Condition::all().add(tickets::Column::UserId.eq(user_id)))
+            .all(db).await
+            .map_err(AppError::from)
+    }
 }
 
 #[async_trait]

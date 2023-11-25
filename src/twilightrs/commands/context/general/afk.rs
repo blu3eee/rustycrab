@@ -25,11 +25,11 @@ impl ContextCommand for AfkCommand {
     }
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &bot_guild_configurations::Model,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let guild_id = msg.guild_id.unwrap(); // Assuming command is used in a guild
         let user_id = msg.author.id;
 

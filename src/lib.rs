@@ -25,7 +25,8 @@ use queries::bot_queries::BotQueries;
 use sea_orm::DatabaseConnection;
 
 use utilities::app_error::AppError;
-use std::collections::HashMap;
+use std::future::Future;
+use std::{ collections::HashMap, error::Error };
 use std::net::SocketAddr;
 use std::sync::Arc;
 
@@ -33,14 +34,17 @@ use crate::router::create_router::create_router;
 use crate::database::bots::Model as BotModel;
 
 // discord
-use twilight_gateway::{ Intents, ShardId, Shard, Config };
+use twilight_gateway::{ Intents, Shard, Config, stream };
+
+use songbird::{ shards::TwilightMap, Songbird };
+
 use twilight_http::Client as HttpClient;
 use twilight_cache_inmemory::{ ResourceType, InMemoryCache };
 use twilight_model::gateway::{
     payload::outgoing::update_presence::UpdatePresencePayload,
     presence::{ MinimalActivity, ActivityType, Status },
 };
-use twilightrs::discord_client::DiscordClient;
+use twilightrs::discord_client::DiscordClientRef;
 use twilightrs::events::handle_bot_events;
 
 /// Creates a URL to a user's avatar on Discord's CDN.
@@ -88,7 +92,7 @@ pub async fn run(app_state: AppState) {
 /// including its configuration, HTTP client, and event handling.
 pub async fn running_bots(
     db: &DatabaseConnection
-) -> Result<HashMap<String, Arc<DiscordClient>>, AppError> {
+) -> Result<HashMap<String, Arc<DiscordClientRef>>, Box<dyn Error + Send + Sync>> {
     let bots: Vec<BotModel> = BotQueries::find_all(&db).await?;
 
     let mut discord_clients = HashMap::new();
@@ -113,19 +117,45 @@ pub async fn running_bots(
                 )?
             )
             .build();
-        let shard = Shard::with_config(ShardId::ONE, config);
         let http = Arc::new(HttpClient::new(bot.token.clone()));
+        let user_id = http.current_user().await?.model().await?.id;
+
         let cache: Arc<InMemoryCache> = Arc::new(
             InMemoryCache::builder().resource_types(ResourceType::all()).build()
         );
+
+        let shards: Vec<Shard> = stream
+            ::create_recommended(&http, config, |_, builder| builder.build()).await?
+            .collect();
+
+        let senders = TwilightMap::new(
+            shards
+                .iter()
+                .map(|s| (s.id().number(), s.sender()))
+                .collect()
+        );
+
+        let songbird = Arc::new(Songbird::twilight(Arc::new(senders), user_id));
         // Only HTTP client is stored in DiscordClient
-        let client = Arc::new(DiscordClient::new(db.clone(), http.clone(), cache.clone()));
+        let client = Arc::new(
+            DiscordClientRef::new(db.clone(), http.clone(), cache.clone(), songbird.clone())
+        );
 
         discord_clients.insert(bot.bot_id, client.clone());
 
         // Handle events with the shard in a separate task
-        tokio::spawn(async move { handle_bot_events(shard, client).await });
+        spawn(handle_bot_events(shards, client));
     }
 
     Ok(discord_clients)
+}
+
+pub fn spawn(
+    fut: impl Future<Output = Result<(), Box<dyn Error + Send + Sync + 'static>>> + Send + 'static
+) {
+    tokio::spawn(async move {
+        if let Err(why) = fut.await {
+            eprintln!("handler error: {:?}", why);
+        }
+    });
 }

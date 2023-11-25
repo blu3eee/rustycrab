@@ -13,11 +13,11 @@ mod tickets;
 mod afk;
 
 pub async fn button_handlers(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     dispatchers: &Arc<ClientDispatchers>,
     button_data: &MessageComponentInteractionData
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let button_parts: Vec<String> = button_data.custom_id.split(":").map(String::from).collect();
     if let Some(button_event) = button_parts.first() {
         match button_event.as_str() {

@@ -46,12 +46,12 @@ use crate::{
 };
 
 pub async fn close_ticket_handler(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     guild_id: &Id<GuildMarker>,
     ticket: &TicketModel,
     action: &str
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     if let Some(status) = &ticket.status {
         if status == "Closed" {
             client.defer_button_interaction(interaction).await?;
@@ -85,7 +85,16 @@ pub async fn close_ticket_handler(
     let member = client.http
         .guild_member(interaction.guild_id.unwrap(), user.id).await?
         .model().await?;
-    if !closing_allowed(client, ticket, &member, channel, &panel_details, &setting).await? {
+    if
+        !closing_allowed(
+            Arc::clone(&client),
+            ticket,
+            &member,
+            channel,
+            &panel_details,
+            &setting
+        ).await?
+    {
         client.defer_button_interaction(interaction).await?;
         client.http
             .interaction(interaction.application_id)
@@ -143,12 +152,12 @@ pub async fn close_ticket_handler(
 }
 
 pub async fn close_confirmed_handler(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     guild_id: &Id<GuildMarker>,
     ticket: &TicketModel,
     setting: &ResponseTicketSetting
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let guild = client.http.guild(guild_id.clone()).await?.model().await?;
     let ticket_opener = client.http
         .user(Id::new(u64::from_str_radix(&ticket.user_id, 10).unwrap())).await?
@@ -200,7 +209,7 @@ pub async fn close_confirmed_handler(
         {
             // create transcript
             let transcript = generate_transcript_data(
-                client,
+                Arc::clone(&client),
                 &guild,
                 &ticket_channel,
                 &ticket_opener
@@ -257,11 +266,14 @@ pub async fn close_confirmed_handler(
                 }
             }
             // First, try to get the main archive category
-            let main_category = get_category_channel(client, &setting.archive_category).await?;
+            let main_category = get_category_channel(
+                Arc::clone(&client),
+                &setting.archive_category
+            ).await?;
 
             // Then, try to get the overflow archive category if the main one is not available
             let overflow_category = if main_category.is_none() {
-                get_category_channel(client, &setting.archive_overflow_category).await?
+                get_category_channel(Arc::clone(&client), &setting.archive_overflow_category).await?
             } else {
                 None
             };
@@ -304,7 +316,7 @@ pub async fn close_confirmed_handler(
 }
 
 async fn closing_allowed(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     ticket: &TicketModel,
     member: &Member,
     channel: &Channel,
@@ -345,7 +357,7 @@ async fn closing_allowed(
 }
 
 async fn generate_transcript_data(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     guild: &Guild,
     channel: &Channel,
     ticket_opener: &User
@@ -404,7 +416,7 @@ async fn generate_transcript_data(
 }
 
 async fn get_category_channel(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     category_id_option: &Option<String>
 ) -> Result<Option<Channel>, Box<dyn Error + Send + Sync>> {
     if let Some(category_id_str) = category_id_option {

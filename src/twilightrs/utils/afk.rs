@@ -1,4 +1,4 @@
-use std::{ sync::Arc, error::Error };
+use std::error::Error;
 
 use fluent_bundle::FluentArgs;
 use twilight_model::{
@@ -17,11 +17,11 @@ use crate::{
 };
 
 pub async fn check_afk(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     config: &GuildConfigModel,
     msg: &MessageCreate,
     guild_id: Id<GuildMarker>
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     // Check AFK status
     let (user_no_longer_afk, notify_users) = {
         let mut afk_users = client.afk_users.write().unwrap();

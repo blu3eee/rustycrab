@@ -32,11 +32,11 @@ impl ContextCommand for PurgeCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         _: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         if let Some(ParsedArg::Number(amount)) = command_args.first() {
             // Ensure the amount is within a reasonable range
             let amount: u64 = (*amount).try_into().unwrap_or(100);

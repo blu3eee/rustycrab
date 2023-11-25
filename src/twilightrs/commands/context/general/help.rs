@@ -27,11 +27,11 @@ pub struct HelpCommand;
 impl HelpCommand {
     async fn display_general_help(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &bot_guild_configurations::Model,
         msg: &MessageCreate,
         dispatcher: ContextCommandDispatcher
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let guild = client.get_guild(msg.guild_id).await?;
         let bot = client.get_bot().await?;
         let bot_id = bot.id.to_string();
@@ -115,12 +115,12 @@ impl HelpCommand {
 
     async fn display_command_help(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &bot_guild_configurations::Model,
         msg: &MessageCreate,
         command_handler: &ContextCommandHandler,
         args: &[String]
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let guild = client.get_guild(msg.guild_id).await?;
 
         let bot = client.get_bot().await?;
@@ -236,11 +236,11 @@ impl ContextCommand for HelpCommand {
 
     async fn run(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &bot_guild_configurations::Model,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let dispatcher = ContextCommandDispatcher::new();
 
         match command_args.get(0) {

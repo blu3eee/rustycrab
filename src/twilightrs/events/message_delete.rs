@@ -5,9 +5,9 @@ use twilight_model::gateway::payload::incoming::MessageDelete;
 use crate::twilightrs::discord_client::DiscordClient;
 
 pub async fn handle_message_delete(
-    client: &DiscordClient,
+    client: DiscordClient,
     event: &MessageDelete
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let mut messages = client.deleted_messages.write().unwrap(); // Acquire a write lock
 
     // Check if the deleted message is in the cache

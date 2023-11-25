@@ -9,6 +9,7 @@ use crate::{
             general::GeneralCommands,
             ContextCommandHandler,
             admin::AdminCommands,
+            voice::VoiceCommands,
         },
         discord_client::DiscordClient,
     },
@@ -25,6 +26,7 @@ impl ContextCommandDispatcher {
         Vec::from([
             Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>,
             Box::new(AdminCommands {}) as Box<dyn ContextCommandCategory>,
+            Box::new(VoiceCommands {}) as Box<dyn ContextCommandCategory>,
         ])
     }
 
@@ -35,6 +37,7 @@ impl ContextCommandDispatcher {
         let categories: Vec<Box<dyn ContextCommandCategory>> = Vec::from([
             Box::new(GeneralCommands {}) as Box<dyn ContextCommandCategory>,
             Box::new(AdminCommands {}) as Box<dyn ContextCommandCategory>,
+            Box::new(VoiceCommands {}) as Box<dyn ContextCommandCategory>,
         ]);
 
         let mut commands_aliases: HashMap<String, String> = HashMap::new();
@@ -73,7 +76,7 @@ impl ContextCommandDispatcher {
 
     pub async fn dispatch_command(
         &self,
-        client: &DiscordClient,
+        client: DiscordClient,
         config: &GuildConfigModel,
         message: &MessageCreate,
         command_name: &str,

@@ -12,12 +12,8 @@ use crate::{
         dispatchers::ClientDispatchers,
         bot::closeticket::close_ticket_handler,
     },
-    queries::tickets_system::{
-        ticket_panels_queries::TicketPanelsQueries,
-        ticket_queries::TicketQueries,
-    },
+    queries::tickets_system::ticket_queries::TicketQueries,
     default_queries::DefaultSeaQueries,
-    router::routes::tickets::ticket_panels::{ ResponseTicketPanel, ResponseTicketPanelDetails },
 };
 
 use self::open_ticket::open_ticket_handler;
@@ -25,11 +21,11 @@ use self::open_ticket::open_ticket_handler;
 mod open_ticket;
 
 pub async fn tickets_handler(
-    client: &Arc<DiscordClient>,
+    client: DiscordClient,
     interaction: &Box<InteractionCreate>,
     _: &Arc<ClientDispatchers>,
     button_data: &MessageComponentInteractionData
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     if let Some(guild_id) = interaction.guild_id {
         let button_parts: Vec<String> = button_data.custom_id
             .split(":")
@@ -41,16 +37,7 @@ pub async fn tickets_handler(
                 "1" => {
                     client.defer_ephemeral_interaction(interaction).await?;
                     if let Some(id) = button_parts.get(2) {
-                        let panel_id = i32::from_str_radix(id, 10)?;
-                        let panel: ResponseTicketPanel = TicketPanelsQueries::find_by_id(
-                            &client.db,
-                            panel_id
-                        ).await?.into();
-
-                        let panel_details: ResponseTicketPanelDetails = panel.to_details(
-                            &client.db
-                        ).await?;
-                        open_ticket_handler(client, interaction, guild_id, panel_details).await?;
+                        open_ticket_handler(client, interaction, guild_id, id.to_string()).await?;
                     } else {
                         client.http
                             .interaction(interaction.application_id)

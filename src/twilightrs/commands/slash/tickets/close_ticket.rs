@@ -1,4 +1,4 @@
-use std::{ error::Error, sync::Arc };
+use std::error::Error;
 
 use twilight_model::{
     gateway::payload::incoming::InteractionCreate,
@@ -32,10 +32,10 @@ impl SlashCommand for CloseTicketSlashCommand {
 
     async fn run(
         &self,
-        client: &Arc<DiscordClient>,
+        client: DiscordClient,
         interaction: &Box<InteractionCreate>,
         _: &Box<CommandData>
-    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         if let Some(guild_id) = &interaction.guild_id {
             if let Some(channel) = &interaction.channel {
                 println!("close ticket");
