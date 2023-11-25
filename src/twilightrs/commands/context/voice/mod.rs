@@ -21,7 +21,7 @@ pub struct VoiceCommands;
 
 impl ContextCommandCategory for VoiceCommands {
     fn name(&self) -> &'static str {
-        "Voice"
+        "Voice & Music"
     }
 
     fn collect_commands(&self) -> Vec<Box<dyn ContextCommand>> {

@@ -15,6 +15,7 @@ use crate::{
         },
         discord_client::{ DiscordClient, MessageContent },
         messages::{ DiscordEmbed, DiscordEmbedField },
+        bot::youtube::search_youtube,
     },
     utilities::format_duration,
 };
@@ -78,7 +79,23 @@ impl ContextCommand for PlayCommand {
             }
         }
 
-        if let Some(ParsedArg::Text(url)) = command_args.first() {
+        if let Some(ParsedArg::Text(arg)) = command_args.first() {
+            // Check if arg is a URL or a search query
+            let url = if arg.starts_with("http://") || arg.starts_with("https://") {
+                arg.clone() // Use the URL as is
+            } else {
+                // Perform a YouTube search and get the first result's URL
+                match search_youtube(arg).await {
+                    Ok(url) => { url }
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        return Ok(());
+                    }
+                }
+            };
+
+            println!("{}", url);
+
             let mut src = YoutubeDl::new(reqwest::Client::new(), url.clone());
             match src.aux_metadata().await {
                 Ok(metadata) => {
@@ -136,7 +153,7 @@ impl ContextCommand for PlayCommand {
                         let mut store = client.trackdata.write().unwrap();
                         store.insert(guild_id, handle);
                     } else {
-                        println!("Could not get call lock for Songbird");
+                        println!("Could not get call lock for bird to sing");
                     }
                 }
                 Err(e) => {
@@ -149,10 +166,12 @@ impl ContextCommand for PlayCommand {
         } else {
             client.http
                 .create_message(msg.channel_id)
-                .content("Please provide a URL to play.")?.await?;
+                .content("Please provide a valid URL or search query to play.")?.await?;
         }
         Ok(())
     }
 }
 
 impl PlayCommand {}
+
+// looks like the YoutubeDl::aux_metadata().await only returns one object for the audio stream of the youtube video even if we passed in the URL of a playlist, is there a way to

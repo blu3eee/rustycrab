@@ -24,6 +24,7 @@ impl ContextCommand for PauseMusicCommand {
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let guild_id = msg.guild_id.ok_or("Command not used in a guild")?;
+
         if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
             client.http
                 .create_message(msg.channel_id)

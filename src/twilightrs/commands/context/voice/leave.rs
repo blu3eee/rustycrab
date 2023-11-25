@@ -32,6 +32,17 @@ impl ContextCommand for LeaveChannelCommand {
             return Ok(());
         }
 
+        if let Some(call_lock) = client.songbird.get(guild_id) {
+            let mut call = call_lock.lock().await;
+            call.stop();
+
+            client.http.create_message(msg.channel_id).content("Stopped playing music")?.await?;
+        } else {
+            client.http
+                .create_message(msg.channel_id)
+                .content("No music is currently playing")?.await?;
+        }
+
         if client.songbird.leave(guild_id).await.is_ok() {
             client.http.create_message(msg.channel_id).content("Left the voice channel")?.await?;
         } else {
