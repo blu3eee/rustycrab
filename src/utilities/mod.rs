@@ -1,9 +1,25 @@
+use std::time::Duration;
+
 pub mod app_error;
 pub mod utils;
 pub mod to_hashmap;
+
 pub fn warn<T, E: ::std::fmt::Debug>(result: Result<T, E>) {
     match result {
         Ok(_) => {}
         Err(err) => println!("[Warning] {:?}", err),
+    }
+}
+
+pub fn format_duration(duration: &Duration) -> String {
+    let total_seconds = duration.as_secs();
+    let hours = total_seconds / 3600;
+    let minutes = (total_seconds % 3600) / 60;
+    let seconds = total_seconds % 60;
+
+    if hours > 0 {
+        format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+    } else {
+        format!("{:02}:{:02}", minutes, seconds)
     }
 }
