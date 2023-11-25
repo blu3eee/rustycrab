@@ -3,7 +3,7 @@ use std::{ error::Error, sync::Arc, time::Duration };
 use async_trait::async_trait;
 use songbird::{ input::{ YoutubeDl, Compose }, Event, TrackEvent };
 
-use twilight_model::{ gateway::payload::incoming::MessageCreate, channel::message::Embed };
+use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
     twilightrs::{
