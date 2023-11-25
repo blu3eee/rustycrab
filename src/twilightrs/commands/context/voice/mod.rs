@@ -2,9 +2,12 @@
 mod join;
 mod leave;
 mod play;
-mod stop;
 mod pause;
 mod resume;
+mod stop;
+mod skip;
+
+mod song_bird_event_handler;
 
 use self::{
     play::PlayCommand,
@@ -13,6 +16,7 @@ use self::{
     pause::PauseMusicCommand,
     resume::ResumeMusicCommand,
     stop::StopMusicCommand,
+    skip::SkipCurrentTrackCommand,
 };
 
 use super::{ ContextCommandCategory, context_command::ContextCommand };
@@ -32,6 +36,7 @@ impl ContextCommandCategory for VoiceCommands {
             Box::new(PauseMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(ResumeMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(StopMusicCommand {}) as Box<dyn ContextCommand>,
+            Box::new(SkipCurrentTrackCommand {}) as Box<dyn ContextCommand>,
         ])
     }
 }

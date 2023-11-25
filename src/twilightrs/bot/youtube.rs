@@ -3,19 +3,26 @@ use reqwest;
 use serde::Deserialize;
 
 // YouTube API response structure
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct YoutubeSearchResponse {
-    pub items: Vec<YoutubeVideoItem>,
-}
-
-#[derive(Deserialize)]
-pub struct YoutubeVideoItem {
-    pub id: YoutubeVideoId,
+    pub items: Vec<YoutubeVideoSnippet>,
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize)]
-pub struct YoutubeVideoId {
+#[derive(Deserialize, Debug)]
+pub struct YoutubeVideoSnippet {
+    pub id: YoutubeVideoDetails,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug)]
+pub struct PlaylistYoutubeVideoItem {
+    pub contentDetails: YoutubeVideoDetails,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug)]
+pub struct YoutubeVideoDetails {
     pub videoId: String,
 }
 
@@ -36,4 +43,63 @@ pub async fn search_youtube(query: &str) -> Result<String, Box<dyn Error + Sync 
     } else {
         Err("No results found".into())
     }
+}
+
+use url::Url;
+pub fn is_youtube_playlist_url(url: &str) -> bool {
+    let parsed_url = Url::parse(url).unwrap();
+    parsed_url.query_pairs().any(|(key, _)| key == "list")
+}
+
+fn extract_playlist_id(url: &str) -> Option<String> {
+    let parsed_url = Url::parse(url).ok()?;
+    parsed_url
+        .query_pairs()
+        .find(|(key, _)| key == "list")
+        .map(|(_, value)| value.to_string())
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug)]
+pub struct PlaylistItemsResponse {
+    pub items: Vec<PlaylistYoutubeVideoItem>,
+}
+
+pub async fn fetch_playlist_videos(url: &str) -> Result<Vec<String>, Box<dyn Error + Sync + Send>> {
+    let api_key: String = env
+        ::var("YOUTUBE_API")
+        .expect("YOUTUBE_API must be set in the .env file");
+
+    let playlist_id = extract_playlist_id(url).ok_or("Invalid playlist URL")?;
+    let base_url = format!(
+        "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId={}&maxResults=50&key={}",
+        playlist_id,
+        api_key
+    );
+
+    let mut video_urls = Vec::new();
+
+    let resp = reqwest::get(&base_url).await?.json::<PlaylistItemsResponse>().await?;
+
+    for item in &resp.items {
+        video_urls.push(format!("https://www.youtube.com/watch?v={}", item.contentDetails.videoId));
+    }
+    // loop {
+    // let current_url = match &page_token {
+    //     Some(token) => format!("{}&pageToken={}", base_url, token),
+    //     None => base_url.clone(),
+    // };
+
+    // Break the loop if there's no next page
+    // match resp.nextPageToken {
+    //     Some(token) => {
+    //         page_token = Some(token);
+    //     }
+    //     None => {
+    //         break;
+    //     }
+    // }
+    // }
+
+    Ok(video_urls)
 }

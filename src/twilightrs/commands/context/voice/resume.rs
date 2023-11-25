@@ -35,30 +35,25 @@ impl ContextCommand for ResumeMusicCommand {
         }
 
         // Scope to limit the lock guard
-        let track_handle = {
-            let store = client.trackdata.read().unwrap();
+        let trackqueue = {
+            let store = client.trackqueues.read().unwrap();
             store.get(&guild_id).cloned()
         };
 
-        if let Some(handle) = track_handle {
-            let info = handle.get_info().await?;
+        if let Some(tracks_queue) = trackqueue {
+            if let Some(handle) = tracks_queue.current() {
+                let info = handle.get_info().await?;
 
-            if info.playing == PlayMode::Pause {
-                let _success = handle.play();
-                let _ = client.http
-                    .create_message(msg.channel_id)
-                    .content("Resumed the track")?.await;
-            } else {
-                client.http
-                    .create_message(msg.channel_id)
-                    .content("No track is currently paused")?.await?;
+                if info.playing == PlayMode::Pause {
+                    let _success = handle.play();
+                    let _ = client.http
+                        .create_message(msg.channel_id)
+                        .content("Resumed the track")?.await;
+                    return Ok(());
+                }
             }
-        } else {
-            client.http
-                .create_message(msg.channel_id)
-                .content("No music track is currently playing")?.await?;
         }
-
+        client.http.create_message(msg.channel_id).content("No track is currently paused")?.await?;
         Ok(())
     }
 }

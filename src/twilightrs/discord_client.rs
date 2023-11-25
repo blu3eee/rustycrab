@@ -1,7 +1,7 @@
 use fluent::FluentArgs;
 
 use sea_orm::DatabaseConnection;
-use songbird::{ Songbird, tracks::TrackHandle };
+use songbird::{ Songbird, tracks::TrackQueue };
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
     channel::{ Message, message::{ embed::Embed, MessageFlags }, Channel },
@@ -42,7 +42,8 @@ pub struct DiscordClientRef {
     pub cache: Arc<InMemoryCache>,
     // voice features
     pub songbird: Arc<Songbird>,
-    pub trackdata: RwLock<HashMap<Id<GuildMarker>, TrackHandle>>,
+    pub trackqueues: RwLock<HashMap<Id<GuildMarker>, TrackQueue>>,
+    pub music_event_handlers: RwLock<HashMap<Id<GuildMarker>, TrackQueue>>,
     // deleted messages
     pub deleted_messages: RwLock<HashMap<Id<ChannelMarker>, Vec<CachedMessage>>>,
     // afk feature
@@ -92,7 +93,8 @@ impl DiscordClientRef {
             http,
             cache,
             songbird,
-            trackdata: Default::default(),
+            trackqueues: Default::default(),
+            music_event_handlers: Default::default(),
             deleted_messages: HashMap::new().into(),
             bundles,
             default_bundle: load_localization("en"),

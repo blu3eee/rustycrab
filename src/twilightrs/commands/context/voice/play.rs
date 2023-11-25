@@ -1,9 +1,9 @@
-use std::error::Error;
+use std::{ error::Error, sync::Arc, time::Duration };
 
 use async_trait::async_trait;
-use songbird::input::{ YoutubeDl, Compose };
+use songbird::{ input::{ YoutubeDl, Compose }, Event, TrackEvent };
 
-use twilight_model::gateway::payload::incoming::MessageCreate;
+use twilight_model::{ gateway::payload::incoming::MessageCreate, channel::message::Embed };
 
 use crate::{
     twilightrs::{
@@ -15,10 +15,13 @@ use crate::{
         },
         discord_client::{ DiscordClient, MessageContent },
         messages::{ DiscordEmbed, DiscordEmbedField },
-        bot::youtube::search_youtube,
+        bot::youtube::{ search_youtube, is_youtube_playlist_url, fetch_playlist_videos },
     },
-    utilities::format_duration,
+    utilities::{ format_duration, utils::ColorResolvables },
+    cdn_avatar,
 };
+
+use super::song_bird_event_handler::MusicEventHandler;
 
 pub struct PlayCommand {}
 
@@ -81,12 +84,16 @@ impl ContextCommand for PlayCommand {
 
         if let Some(ParsedArg::Text(arg)) = command_args.first() {
             // Check if arg is a URL or a search query
-            let url = if arg.starts_with("http://") || arg.starts_with("https://") {
-                arg.clone() // Use the URL as is
+            let urls: Vec<String> = if arg.starts_with("http://") || arg.starts_with("https://") {
+                if is_youtube_playlist_url(arg) {
+                    fetch_playlist_videos(arg).await?
+                } else {
+                    vec![arg.clone()] // Use the URL as is
+                }
             } else {
                 // Perform a YouTube search and get the first result's URL
                 match search_youtube(arg).await {
-                    Ok(url) => { url }
+                    Ok(url) => { vec![url] }
                     Err(e) => {
                         eprintln!("{}", e);
                         return Ok(());
@@ -94,74 +101,190 @@ impl ContextCommand for PlayCommand {
                 }
             };
 
-            println!("{}", url);
+            println!("{:?}", urls);
 
-            let mut src = YoutubeDl::new(reqwest::Client::new(), url.clone());
-            match src.aux_metadata().await {
-                Ok(metadata) => {
-                    if let Some(call_lock) = client.songbird.get(guild_id) {
-                        let mut call = call_lock.lock().await;
+            if urls.len() == 1 {
+                let url = &urls[0];
+                let mut src = YoutubeDl::new(reqwest::Client::new(), url.clone());
+                match src.aux_metadata().await {
+                    Ok(metadata) => {
+                        if let Some(call_lock) = client.songbird.get(guild_id) {
+                            let mut call = call_lock.lock().await;
 
-                        let handle = call.play_input(src.into());
+                            // We need to ensure that this guild has a TrackQueue created for it.
+                            let track_queue = {
+                                let mut queues = client.trackqueues.write().unwrap();
+                                queues.entry(guild_id).or_default().clone()
+                            };
+                            let handle = track_queue.add_source(src.into(), &mut *call).await;
 
-                        client.reply_message(
-                            msg.channel_id,
-                            msg.id,
-                            MessageContent::DiscordEmbeds(
-                                vec![DiscordEmbed {
-                                    author_name: Some("Now playing".to_string()),
-                                    author_icon_url: Some(
-                                        "https://cdn.darrennathanael.com/icons/spinning_disk.gif".to_string()
-                                    ),
-                                    title: Some(
-                                        metadata.title
-                                            .as_ref()
-                                            .unwrap_or(&"<UNKNOWN>".to_string())
-                                            .to_string()
-                                    ),
-                                    url: Some(url.to_string()),
-                                    thumbnail: if let Some(url) = metadata.thumbnail {
-                                        Some(url)
-                                    } else {
-                                        None
-                                    },
-                                    fields: Some(
-                                        vec![
-                                            DiscordEmbedField {
-                                                name: format!("Requested by"),
-                                                value: format!("<@{}>", msg.author.id),
-                                                inline: true,
+                            let start_event_handler = MusicEventHandler {
+                                client: Arc::clone(&client),
+                                channel_id: msg.channel_id,
+                                url: url.clone(),
+                                metadata: metadata.clone(),
+                                requested_by: msg.author.clone(),
+                            };
+
+                            handle
+                                .add_event(Event::Track(TrackEvent::Play), start_event_handler)
+                                .expect("Failed to add event handler");
+
+                            if track_queue.len() > 1 {
+                                client.reply_message(
+                                    msg.channel_id,
+                                    msg.id,
+                                    MessageContent::DiscordEmbeds(
+                                        vec![DiscordEmbed {
+                                            author_name: Some("Added track".to_string()),
+                                            author_icon_url: Some(
+                                                "https://cdn.darrennathanael.com/icons/spinning_disk.gif".to_string()
+                                            ),
+                                            thumbnail: if let Some(url) = metadata.thumbnail {
+                                                Some(url)
+                                            } else {
+                                                None
                                             },
-                                            DiscordEmbedField {
-                                                name: format!("Duration"),
-                                                value: if
-                                                    let Some(duration) = metadata.duration.as_ref()
-                                                {
-                                                    format_duration(duration)
-                                                } else {
-                                                    format!("<Unknown duration>")
-                                                },
-                                                inline: true,
-                                            }
-                                        ]
-                                    ),
-                                    ..Default::default()
-                                }]
-                            )
-                        ).await?;
-
-                        let mut store = client.trackdata.write().unwrap();
-                        store.insert(guild_id, handle);
-                    } else {
-                        println!("Could not get call lock for bird to sing");
+                                            fields: Some(
+                                                vec![
+                                                    DiscordEmbedField {
+                                                        name: format!("Track"),
+                                                        value: format!(
+                                                            "[{}]({})",
+                                                            metadata.title
+                                                                .as_ref()
+                                                                .unwrap_or(&"<UNKNOWN>".to_string())
+                                                                .to_string(),
+                                                            url
+                                                        ),
+                                                        inline: false,
+                                                    },
+                                                    DiscordEmbedField {
+                                                        name: format!("Duration"),
+                                                        value: if
+                                                            let Some(duration) =
+                                                                metadata.duration.as_ref()
+                                                        {
+                                                            format_duration(duration)
+                                                        } else {
+                                                            format!("<Unknown duration>")
+                                                        },
+                                                        inline: true,
+                                                    },
+                                                    DiscordEmbedField {
+                                                        name: format!("Position in queue"),
+                                                        value: format!("{}", track_queue.len()),
+                                                        inline: true,
+                                                    }
+                                                ]
+                                            ),
+                                            footer_text: Some(
+                                                format!("Requested by @{}", msg.author.name)
+                                            ),
+                                            footer_icon_url: msg.author.avatar.map(|hash|
+                                                cdn_avatar!(msg.author.id, hash)
+                                            ),
+                                            color: Some(ColorResolvables::Green.as_u32()),
+                                            ..Default::default()
+                                        }]
+                                    )
+                                ).await?;
+                            }
+                        } else {
+                            println!("Could not get call lock for bird to sing");
+                        }
+                    }
+                    Err(e) => {
+                        println!("Error retrieving metadata: {:?}", e);
+                        client.http
+                            .create_message(msg.channel_id)
+                            .content("Error retrieving track information.")?.await?;
                     }
                 }
-                Err(e) => {
-                    println!("Error retrieving metadata: {:?}", e);
-                    client.http
-                        .create_message(msg.channel_id)
-                        .content("Error retrieving track information.")?.await?;
+            } else if urls.len() > 1 {
+                let mut total_duration = Duration::from_secs(0);
+                let added_queue = client.reply_message(
+                    msg.channel_id,
+                    msg.id,
+                    MessageContent::DiscordEmbeds(
+                        vec![DiscordEmbed {
+                            author_name: Some(format!("Added {} tracks to queue", urls.len())),
+                            author_icon_url: Some(
+                                "https://cdn.darrennathanael.com/icons/spinning_disk.gif".to_string()
+                            ),
+                            footer_text: Some(format!("Requested by @{}", msg.author.name)),
+                            footer_icon_url: msg.author.avatar.map(|hash|
+                                cdn_avatar!(msg.author.id, hash)
+                            ),
+                            color: Some(ColorResolvables::Green.as_u32()),
+                            ..Default::default()
+                        }]
+                    )
+                ).await?;
+                for url in &urls {
+                    let mut src = YoutubeDl::new(reqwest::Client::new(), url.clone());
+                    match src.aux_metadata().await {
+                        Ok(metadata) => {
+                            if let Some(call_lock) = client.songbird.get(guild_id) {
+                                let mut call = call_lock.lock().await;
+
+                                // We need to ensure that this guild has a TrackQueue created for it.
+                                let track_queue = {
+                                    let mut queues = client.trackqueues.write().unwrap();
+                                    queues.entry(guild_id).or_default().clone()
+                                };
+                                let handle = track_queue.add_source(src.into(), &mut *call).await;
+                                if let Some(duration) = metadata.duration {
+                                    total_duration += duration;
+                                }
+                                let start_event_handler = MusicEventHandler {
+                                    client: Arc::clone(&client),
+                                    channel_id: msg.channel_id,
+                                    url: url.clone(),
+                                    metadata: metadata.clone(),
+                                    requested_by: msg.author.clone(),
+                                };
+                                handle
+                                    .add_event(Event::Track(TrackEvent::Play), start_event_handler)
+                                    .expect("Failed to add event handler");
+                            } else {
+                                println!("Could not get call lock for bird to sing");
+                            }
+                        }
+                        Err(e) => {
+                            println!("Error retrieving metadata: {:?}", e);
+                            client.http
+                                .create_message(msg.channel_id)
+                                .content("Error retrieving track information.")?.await?;
+                        }
+                    }
                 }
+
+                client.edit_message(
+                    msg.channel_id,
+                    added_queue.model().await?.id,
+                    MessageContent::DiscordEmbeds(
+                        vec![DiscordEmbed {
+                            author_name: Some(format!("Added {} tracks to queue", urls.len())),
+                            author_icon_url: Some(
+                                "https://cdn.darrennathanael.com/icons/spinning_disk.gif".to_string()
+                            ),
+                            footer_text: Some(format!("Requested by @{}", msg.author.name)),
+                            footer_icon_url: msg.author.avatar.map(|hash|
+                                cdn_avatar!(msg.author.id, hash)
+                            ),
+                            color: Some(ColorResolvables::Green.as_u32()),
+                            fields: Some(
+                                vec![DiscordEmbedField {
+                                    name: format!("Duration"),
+                                    value: format_duration(&total_duration),
+                                    inline: false,
+                                }]
+                            ),
+                            ..Default::default()
+                        }]
+                    )
+                ).await?;
             }
         } else {
             client.http
@@ -173,5 +296,3 @@ impl ContextCommand for PlayCommand {
 }
 
 impl PlayCommand {}
-
-// looks like the YoutubeDl::aux_metadata().await only returns one object for the audio stream of the youtube video even if we passed in the URL of a playlist, is there a way to

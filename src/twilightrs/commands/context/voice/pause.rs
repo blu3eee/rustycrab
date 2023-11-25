@@ -34,33 +34,37 @@ impl ContextCommand for PauseMusicCommand {
             return Ok(());
         }
         // Scope to limit the lock guard
-        let track_handle = {
-            let store = client.trackdata.read().unwrap();
+        let track_queue = {
+            let store = client.trackqueues.read().unwrap();
             store.get(&guild_id).cloned()
         };
 
-        if let Some(handle) = track_handle {
-            let info = handle.get_info().await?;
+        if let Some(trackqueue) = track_queue {
+            if let Some(handle) = trackqueue.current() {
+                let info = handle.get_info().await?;
 
-            let paused = match info.playing {
-                PlayMode::Play => {
-                    let _success = handle.pause();
-                    false
-                }
-                _ => {
-                    let _success = handle.play();
-                    true
-                }
-            };
-            let action = if paused { "Unpaused" } else { "Paused" };
-            let _ = client.http
-                .create_message(msg.channel_id)
-                .content(&format!("{} the track", action))?.await;
-        } else {
-            client.http
-                .create_message(msg.channel_id)
-                .content("No music track is currently playing")?.await?;
+                let paused = match info.playing {
+                    PlayMode::Play => {
+                        let _success = handle.pause();
+                        false
+                    }
+                    _ => {
+                        let _success = handle.play();
+                        true
+                    }
+                };
+                let action = if paused { "Unpaused" } else { "Paused" };
+                let _ = client.http
+                    .create_message(msg.channel_id)
+                    .content(&format!("{} the track", action))?.await;
+
+                return Ok(());
+            }
         }
+
+        client.http
+            .create_message(msg.channel_id)
+            .content("No music track is currently playing")?.await?;
 
         Ok(())
     }
