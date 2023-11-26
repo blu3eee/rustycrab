@@ -6,6 +6,7 @@ mod pause;
 mod resume;
 mod stop;
 mod skip;
+mod queue;
 
 mod song_bird_event_handler;
 
@@ -17,6 +18,7 @@ use self::{
     resume::ResumeMusicCommand,
     stop::StopMusicCommand,
     skip::SkipCurrentTrackCommand,
+    queue::QueueCommand,
 };
 
 use super::{ ContextCommandCategory, context_command::ContextCommand };
@@ -37,6 +39,7 @@ impl ContextCommandCategory for VoiceCommands {
             Box::new(ResumeMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(StopMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(SkipCurrentTrackCommand {}) as Box<dyn ContextCommand>,
+            Box::new(QueueCommand {}) as Box<dyn ContextCommand>,
         ])
     }
 }

@@ -32,7 +32,11 @@ impl HelpCommand {
         msg: &MessageCreate,
         dispatcher: ContextCommandDispatcher
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild = client.get_guild(msg.guild_id).await?;
+        let guild = if let Some(guild_id) = msg.guild_id {
+            Some(client.get_guild(guild_id).await?)
+        } else {
+            None
+        };
         let bot = client.get_bot().await?;
         let bot_id = bot.id.to_string();
         let bot_info = BotQueries::find_by_discord_id(&client.db, &bot_id).await;
@@ -121,7 +125,11 @@ impl HelpCommand {
         command_handler: &ContextCommandHandler,
         args: &[String]
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild = client.get_guild(msg.guild_id).await?;
+        let guild = if let Some(guild_id) = msg.guild_id {
+            Some(client.get_guild(guild_id).await?)
+        } else {
+            None
+        };
 
         let bot = client.get_bot().await?;
         let bot_info = BotQueries::find_by_discord_id(&client.db, &bot.id.to_string()).await;

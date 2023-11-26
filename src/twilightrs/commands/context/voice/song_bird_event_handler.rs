@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use songbird::{
     EventHandler as SongbirdEventHandler,
     Event,
@@ -6,7 +8,7 @@ use songbird::{
     tracks::PlayMode,
 };
 use async_trait::async_trait;
-use twilight_model::{ id::{ Id, marker::ChannelMarker }, user::User };
+use twilight_model::{ id::{ Id, marker::{ ChannelMarker, GuildMarker } }, user::User };
 
 use crate::{
     twilightrs::{
@@ -17,9 +19,12 @@ use crate::{
     utilities::{ utils::ColorResolvables, format_duration },
 };
 
+use super::play::add_track_to_queue;
+
 pub struct MusicEventHandler {
     pub client: DiscordClient,
     pub channel_id: Id<ChannelMarker>,
+    pub guild_id: Id<GuildMarker>,
     pub url: String,
     pub metadata: AuxMetadata,
     pub requested_by: User,
@@ -31,13 +36,22 @@ impl SongbirdEventHandler for MusicEventHandler {
         match ctx {
             EventContext::Track(track_states) => {
                 for (track_state, _) in *track_states {
+                    println!("event handler MusicEventHandler {:?}", track_state);
                     // Logic to execute when a track starts playing.
                     // You can check specific conditions here, for example:
                     if track_state.playing == PlayMode::Play {
+                        let guild = if let Ok(guild) = self.client.get_guild(self.guild_id).await {
+                            guild.name
+                        } else {
+                            self.guild_id.to_string()
+                        };
+
                         println!(
-                            "Track started playing: {:?}",
+                            "[Guild: {}] Track started playing: {:?}",
+                            guild,
                             self.metadata.title.clone().unwrap_or(format!("unknown"))
                         );
+
                         let _ = self.client.send_message(
                             self.channel_id,
                             MessageContent::DiscordEmbeds(
@@ -82,6 +96,22 @@ impl SongbirdEventHandler for MusicEventHandler {
                                 }]
                             )
                         ).await;
+                    } else if track_state.playing == PlayMode::End {
+                        // When a track ends, check for the next URL in waiting_track_urls
+                        if let Some(next_url) = self.client.pop_next_track_url(self.guild_id).await {
+                            // Add next track to the queue
+                            if
+                                let Err(e) = add_track_to_queue(
+                                    Arc::clone(&self.client),
+                                    self.channel_id,
+                                    self.guild_id,
+                                    &self.requested_by,
+                                    next_url
+                                ).await
+                            {
+                                eprintln!("Error adding next track to queue: {:?}", e);
+                            }
+                        }
                     }
                 }
             }

@@ -43,6 +43,7 @@ pub struct DiscordClientRef {
     // voice features
     pub songbird: Arc<Songbird>,
     pub trackqueues: RwLock<HashMap<Id<GuildMarker>, TrackQueue>>,
+    pub waiting_track_urls: RwLock<HashMap<Id<GuildMarker>, Vec<String>>>,
     pub music_event_handlers: RwLock<HashMap<Id<GuildMarker>, TrackQueue>>,
     // deleted messages
     pub deleted_messages: RwLock<HashMap<Id<ChannelMarker>, Vec<CachedMessage>>>,
@@ -94,6 +95,7 @@ impl DiscordClientRef {
             cache,
             songbird,
             trackqueues: Default::default(),
+            waiting_track_urls: Default::default(),
             music_event_handlers: Default::default(),
             deleted_messages: HashMap::new().into(),
             bundles,
@@ -170,13 +172,9 @@ impl DiscordClientRef {
 
     pub async fn get_guild(
         &self,
-        guild_id: Option<Id<GuildMarker>>
-    ) -> Result<Option<twilight_model::guild::Guild>, Box<dyn Error + Send + Sync>> {
-        if let Some(id) = guild_id {
-            Ok(Some(self.http.guild(id).await?.model().await?))
-        } else {
-            Ok(None)
-        }
+        guild_id: Id<GuildMarker>
+    ) -> Result<twilight_model::guild::Guild, Box<dyn Error + Send + Sync>> {
+        Ok(self.http.guild(guild_id).await?.model().await?)
     }
 
     pub async fn get_guild_config(
@@ -417,6 +415,19 @@ impl DiscordClientRef {
             .and_then(|state| Some(state.channel_id()));
 
         Ok(user_channel_id == bot_channel_id)
+    }
+
+    pub async fn pop_next_track_url(&self, guild_id: Id<GuildMarker>) -> Option<String> {
+        let mut waiting_urls = self.waiting_track_urls.write().unwrap();
+        waiting_urls.get_mut(&guild_id).and_then(|urls| {
+            if let Some(first) = urls.first() {
+                let first = first.to_string();
+                urls.remove(0);
+                Some(first)
+            } else {
+                None
+            }
+        })
     }
 }
 
