@@ -7,9 +7,10 @@ use crate::{
     twilightrs::{
         commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
         discord_client::{ DiscordClient, MessageContent },
-        messages::DiscordEmbed,
+        messages::{ DiscordEmbed, DiscordEmbedField },
     },
     utilities::utils::ColorResolvables,
+    cdn_avatar,
 };
 pub struct SkipCurrentTrackCommand {}
 
@@ -39,14 +40,51 @@ impl ContextCommand for SkipCurrentTrackCommand {
 
         // Scope to limit the lock guard
         let trackqueue = {
-            let store = client.trackqueues.read().unwrap();
+            let store = client.voice_manager.trackqueues.read().unwrap();
             store.get(&guild_id).cloned()
         };
 
         if let Some(trackqueue) = trackqueue {
             if let Some(_) = trackqueue.current() {
+                let skipped_track = client.voice_manager.get_current_song(guild_id);
                 match trackqueue.skip() {
-                    Ok(_) => {}
+                    Ok(_) => {
+                        if let Some((metadata, requested_user)) = skipped_track {
+                            client.reply_message(
+                                msg.channel_id,
+                                msg.id,
+                                MessageContent::DiscordEmbeds(
+                                    vec![DiscordEmbed {
+                                        description: Some(
+                                            format!(
+                                                "[{}]{} has been skipped",
+                                                metadata.title.unwrap_or("Unknown".to_string()),
+                                                metadata.source_url.map_or_else(
+                                                    || format!(""),
+                                                    |source_url| format!("({})", source_url)
+                                                )
+                                            )
+                                        ),
+                                        footer_text: Some(
+                                            format!("Skipped by @{}", msg.author.name)
+                                        ),
+                                        footer_icon_url: msg.author.avatar.map(|hash|
+                                            cdn_avatar!(msg.author.id, hash)
+                                        ),
+                                        fields: Some(
+                                            vec![DiscordEmbedField {
+                                                name: "Track was requested by".to_string(),
+                                                value: format!("<@{}>", requested_user.id),
+                                                inline: false,
+                                            }]
+                                        ),
+                                        color: Some(ColorResolvables::Yellow.as_u32()),
+                                        ..Default::default()
+                                    }]
+                                )
+                            ).await?;
+                        }
+                    }
                     Err(_) => {
                         if let Ok(_) = trackqueue.skip() {
                         } else {
@@ -62,22 +100,6 @@ impl ContextCommand for SkipCurrentTrackCommand {
                                 )
                             ).await?;
                         }
-                    }
-                }
-                match trackqueue.current() {
-                    Some(_) => {}
-                    None => {
-                        client.reply_message(
-                            msg.channel_id,
-                            msg.id,
-                            MessageContent::DiscordEmbeds(
-                                vec![DiscordEmbed {
-                                    description: Some(format!("No more track to play..")),
-                                    color: Some(ColorResolvables::Red.as_u32()),
-                                    ..Default::default()
-                                }]
-                            )
-                        ).await?;
                     }
                 }
 

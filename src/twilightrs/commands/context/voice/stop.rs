@@ -34,9 +34,11 @@ impl ContextCommand for StopMusicCommand {
             return Ok(());
         }
 
-        if let Some(call_lock) = client.songbird.get(guild_id) {
+        if let Some(call_lock) = client.voice_manager.songbird.get(guild_id) {
             let mut call = call_lock.lock().await;
             call.stop();
+
+            client.voice_manager.clear_waiting_queue(guild_id);
 
             client.http.create_message(msg.channel_id).content("Stopped playing music")?.await?;
         } else {

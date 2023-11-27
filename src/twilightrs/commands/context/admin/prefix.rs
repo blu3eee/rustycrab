@@ -41,7 +41,7 @@ impl ContextCommand for ChangePrefixCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        if let Some(ParsedArg::Word(new_prefix)) = command_args.first() {
+        if let Some(ParsedArg::Arg(new_prefix)) = command_args.first() {
             if new_prefix.is_empty() {
                 let message = client.get_locale_string(
                     &config.locale,

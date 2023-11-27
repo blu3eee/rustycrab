@@ -1,19 +1,19 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use songbird::tracks::PlayMode;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::twilightrs::{
     commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
-    discord_client::DiscordClient,
+    discord_client::{ DiscordClient, MessageContent },
+    bot::voice_manager::PlayerLoopState,
 };
-pub struct ResumeMusicCommand {}
+pub struct UnloopMusicCommand {}
 
 #[async_trait]
-impl ContextCommand for ResumeMusicCommand {
+impl ContextCommand for UnloopMusicCommand {
     fn name(&self) -> &'static str {
-        "resume"
+        "unloop"
     }
 
     async fn run(
@@ -34,26 +34,22 @@ impl ContextCommand for ResumeMusicCommand {
             return Ok(());
         }
 
-        // Scope to limit the lock guard
-        let trackqueue = {
-            let store = client.voice_manager.trackqueues.read().unwrap();
-            store.get(&guild_id).cloned()
-        };
-
-        if let Some(tracks_queue) = trackqueue {
-            if let Some(handle) = tracks_queue.current() {
-                let info = handle.get_info().await?;
-
-                if info.playing == PlayMode::Pause {
-                    let _success = handle.play();
-                    let _ = client.http
-                        .create_message(msg.channel_id)
-                        .content("Resumed the track")?.await;
-                    return Ok(());
+        match client.voice_manager.get_loop_state(guild_id) {
+            PlayerLoopState::LoopCurrentTrack => {
+                if let Some(track_handle) = client.voice_manager.get_play_queue(guild_id).current() {
+                    track_handle.disable_loop()?;
                 }
             }
+            _ => {}
         }
-        client.http.create_message(msg.channel_id).content("No track is currently paused")?.await?;
+
+        client.voice_manager.set_loop_state(guild_id, PlayerLoopState::NoLoop);
+        client.reply_message(
+            msg.channel_id,
+            msg.id,
+            MessageContent::Text("Looping disabled".to_string())
+        ).await?;
+
         Ok(())
     }
 }

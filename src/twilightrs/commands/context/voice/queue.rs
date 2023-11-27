@@ -38,10 +38,7 @@ impl ContextCommand for QueueCommand {
             return Ok(());
         }
 
-        let queued_urls = {
-            let mut waiting_urls = client.waiting_track_urls.write().unwrap();
-            waiting_urls.entry(guild_id).or_default().clone()
-        };
+        let queued_urls = client.voice_manager.get_waiting_queue(guild_id);
         if queued_urls.len() == 0 {
             let _ = client.reply_message(
                 msg.channel_id,
@@ -68,7 +65,7 @@ impl ContextCommand for QueueCommand {
             .model().await?;
 
         let mut queued_songs: Vec<String> = Vec::new();
-        for url in queued_urls[..(10).min(queued_songs.len())].to_vec() {
+        for url in queued_urls[..(10).min(queued_urls.len())].to_vec() {
             let mut source = YoutubeDl::new(reqwest::Client::new(), url.to_string());
             match source.aux_metadata().await {
                 Ok(metadata) => {
@@ -86,7 +83,7 @@ impl ContextCommand for QueueCommand {
             }
         }
 
-        let pages = ((queued_urls.len() as f64) / (10 as f64)).ceil() as usize;
+        let _ = ((queued_songs.len() as f64) / (10 as f64)).ceil() as usize;
 
         let list = queued_songs[..(10).min(queued_songs.len())]
             .to_vec()
@@ -98,13 +95,11 @@ impl ContextCommand for QueueCommand {
 
         embed.description = Some(list);
 
-        let result = client.edit_message(
+        let _ = client.edit_message(
             sent_msg.channel_id,
             sent_msg.id,
             MessageContent::DiscordEmbeds(vec![embed.clone()])
         ).await;
-
-        println!("result editing: {:?}", result);
 
         Ok(())
     }

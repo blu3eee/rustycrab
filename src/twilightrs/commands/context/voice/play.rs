@@ -1,13 +1,9 @@
 use std::{ error::Error, sync::Arc };
 
 use async_trait::async_trait;
-use songbird::{ input::{ YoutubeDl, Compose }, Event, TrackEvent };
+use songbird::input::{ YoutubeDl, Compose };
 
-use twilight_model::{
-    gateway::payload::incoming::MessageCreate,
-    id::{ marker::{ GuildMarker, ChannelMarker }, Id },
-    user::User,
-};
+use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
     twilightrs::{
@@ -19,13 +15,14 @@ use crate::{
         },
         discord_client::{ DiscordClient, MessageContent },
         messages::{ DiscordEmbed, DiscordEmbedField },
-        bot::youtube_api::{ search_youtube, is_youtube_playlist_url, fetch_playlist_videos },
+        bot::{
+            youtube_api::{ search_youtube, is_youtube_playlist_url, fetch_playlist_videos },
+            voice_manager::add_track_to_queue,
+        },
     },
     utilities::{ format_duration, utils::ColorResolvables },
     cdn_avatar,
 };
-
-use super::song_bird_event_handler::MusicEventHandler;
 
 pub struct PlayCommand {}
 
@@ -33,10 +30,6 @@ pub struct PlayCommand {}
 impl ContextCommand for PlayCommand {
     fn name(&self) -> &'static str {
         "play"
-    }
-
-    fn aliases(&self) -> Vec<&'static str> {
-        vec!["music"]
     }
 
     fn args(&self) -> Vec<ArgSpec> {
@@ -73,7 +66,7 @@ impl ContextCommand for PlayCommand {
             }
         };
 
-        match client.songbird.join(guild_id, channel_id).await {
+        match client.voice_manager.songbird.join(guild_id, channel_id).await {
             Ok(_) => {}
             Err(_) => {
                 // Notify user they need to be in a voice channel
@@ -107,18 +100,13 @@ impl ContextCommand for PlayCommand {
 
             if !urls.is_empty() {
                 // We need to ensure that this guild has a TrackQueue created for it.
-                let track_queue = {
-                    let mut queues = client.trackqueues.write().unwrap();
-                    queues.entry(guild_id).or_default().clone()
-                };
+                let track_queue = client.voice_manager.get_play_queue(guild_id);
 
                 if track_queue.is_empty() {
                     let first_url = &urls[0];
                     let remaining_urls = urls.clone().into_iter().skip(1).collect::<Vec<_>>();
-                    {
-                        let mut waiting_urls = client.waiting_track_urls.write().unwrap();
-                        waiting_urls.entry(guild_id).or_default().extend(remaining_urls);
-                    }
+                    client.voice_manager.extend_waiting_queue(guild_id, &remaining_urls);
+
                     if urls.len() > 1 {
                         let _ = client.reply_message(
                             msg.channel_id,
@@ -129,7 +117,7 @@ impl ContextCommand for PlayCommand {
                                         format!("Added {} tracks to queue", urls.len())
                                     ),
                                     author_icon_url: Some(
-                                        "https://cdn.darrennathanael.com/icons/spinning_disk.gif".to_string()
+                                        client.voice_manager.spinning_disk.clone()
                                     ),
                                     footer_text: Some(format!("Requested by @{}", msg.author.name)),
                                     footer_icon_url: msg.author.avatar.map(|hash|
@@ -142,7 +130,8 @@ impl ContextCommand for PlayCommand {
                         ).await?;
                     }
                     let _ = add_track_to_queue(
-                        Arc::clone(&client),
+                        Arc::clone(&client.http),
+                        Arc::clone(&client.voice_manager),
                         msg.channel_id,
                         guild_id.clone(),
                         &msg.author,
@@ -150,7 +139,9 @@ impl ContextCommand for PlayCommand {
                     ).await;
                 } else {
                     {
-                        let mut waiting_urls = client.waiting_track_urls.write().unwrap();
+                        let mut waiting_urls = client.voice_manager.waiting_track_urls
+                            .write()
+                            .unwrap();
                         waiting_urls.entry(guild_id).or_default().extend(urls.clone());
                     }
 
@@ -176,7 +167,7 @@ impl ContextCommand for PlayCommand {
                         match source.aux_metadata().await {
                             Ok(metadata) => {
                                 let position = {
-                                    let mut waiting_urls = client.waiting_track_urls
+                                    let mut waiting_urls = client.voice_manager.waiting_track_urls
                                         .write()
                                         .unwrap();
                                     waiting_urls.entry(guild_id).or_default().len()
@@ -257,64 +248,3 @@ impl ContextCommand for PlayCommand {
 }
 
 impl PlayCommand {}
-
-pub async fn add_track_to_queue(
-    client: DiscordClient,
-    channel_id: Id<ChannelMarker>,
-    guild_id: Id<GuildMarker>,
-    requested_by: &User,
-    url: String
-) -> Result<(), Box<dyn Error>> {
-    // Create a new source from the URL
-    let mut source = YoutubeDl::new(reqwest::Client::new(), url.to_string());
-
-    // Fetch metadata for the new track
-    match source.aux_metadata().await {
-        Ok(metadata) => {
-            if let Some(call_lock) = client.songbird.get(guild_id) {
-                // Add the source to the track queue
-                let mut call = call_lock.lock().await;
-
-                // We need to ensure that this guild has a TrackQueue created for it.
-                let track_queue = {
-                    let mut queues = client.trackqueues.write().unwrap();
-                    queues.entry(guild_id).or_default().clone()
-                };
-                let handle = track_queue.add_source(source.into(), &mut *call).await;
-
-                let start_event_handler = MusicEventHandler {
-                    client: Arc::clone(&client),
-                    channel_id,
-                    guild_id,
-                    url: url.to_string(),
-                    metadata: metadata.clone(),
-                    requested_by: requested_by.clone(),
-                };
-
-                handle
-                    .add_event(Event::Track(TrackEvent::Play), start_event_handler)
-                    .expect("Failed to add event handler");
-
-                let end_event_handler = MusicEventHandler {
-                    client: Arc::clone(&client),
-                    channel_id,
-                    guild_id,
-                    url: url.to_string(),
-                    metadata: metadata.clone(),
-                    requested_by: requested_by.clone(),
-                };
-                handle
-                    .add_event(Event::Track(TrackEvent::End), end_event_handler)
-                    .expect("Failed to add event handler");
-            }
-        }
-        Err(e) => {
-            println!("Error retrieving metadata: {:?}", e);
-            client.http
-                .create_message(channel_id)
-                .content("Error retrieving track information.")?.await?;
-        }
-    }
-
-    Ok(())
-}

@@ -35,7 +35,7 @@ impl ContextCommand for PauseMusicCommand {
         }
         // Scope to limit the lock guard
         let track_queue = {
-            let store = client.trackqueues.read().unwrap();
+            let store = client.voice_manager.trackqueues.read().unwrap();
             store.get(&guild_id).cloned()
         };
 

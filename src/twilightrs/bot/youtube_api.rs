@@ -61,7 +61,7 @@ fn extract_playlist_id(url: &str) -> Option<String> {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]
-pub struct PlaylistItemsResponse {
+pub struct YoutubePlaylistResponse {
     pub items: Vec<PlaylistYoutubeVideoItem>,
 }
 
@@ -79,27 +79,11 @@ pub async fn fetch_playlist_videos(url: &str) -> Result<Vec<String>, Box<dyn Err
 
     let mut video_urls = Vec::new();
 
-    let resp = reqwest::get(&base_url).await?.json::<PlaylistItemsResponse>().await?;
+    let resp = reqwest::get(&base_url).await?.json::<YoutubePlaylistResponse>().await?;
 
     for item in &resp.items {
         video_urls.push(format!("https://www.youtube.com/watch?v={}", item.contentDetails.videoId));
     }
-    // loop {
-    // let current_url = match &page_token {
-    //     Some(token) => format!("{}&pageToken={}", base_url, token),
-    //     None => base_url.clone(),
-    // };
-
-    // Break the loop if there's no next page
-    // match resp.nextPageToken {
-    //     Some(token) => {
-    //         page_token = Some(token);
-    //     }
-    //     None => {
-    //         break;
-    //     }
-    // }
-    // }
 
     Ok(video_urls)
 }

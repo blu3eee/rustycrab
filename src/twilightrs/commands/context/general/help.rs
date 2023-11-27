@@ -92,13 +92,9 @@ impl HelpCommand {
                     author_icon_url: guild
                         .as_ref()
                         .and_then(|guild|
-                            guild.icon.map(|icon_hash|
-                                cdn_guild_icon!(guild.id.to_string(), icon_hash)
-                            )
+                            guild.icon.map(|icon_hash| cdn_guild_icon!(guild.id, icon_hash))
                         ),
-                    thumbnail: bot.avatar.map(|avatar_hash|
-                        cdn_avatar!(bot.id.to_string(), avatar_hash)
-                    ),
+                    thumbnail: bot.avatar.map(|avatar_hash| cdn_avatar!(bot.id, avatar_hash)),
                     timestamp: Some(true),
                     color: if let Ok(info) = bot_info {
                         Some(
@@ -252,7 +248,7 @@ impl ContextCommand for HelpCommand {
         let dispatcher = ContextCommandDispatcher::new();
 
         match command_args.get(0) {
-            Some(ParsedArg::Words(args)) if !args.is_empty() => {
+            Some(ParsedArg::Args(args)) if !args.is_empty() => {
                 let command_name = &args[0];
                 if let Some(command_name) = dispatcher.commands_aliases.get(command_name) {
                     if let Some(command_handler) = dispatcher.handlers.get(command_name) {

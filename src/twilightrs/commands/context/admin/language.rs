@@ -40,7 +40,7 @@ impl ContextCommand for ChangeLanguageCommand {
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let available_locales = vec!["en", "vn"];
-        if let Some(ParsedArg::Word(language)) = command_args.first() {
+        if let Some(ParsedArg::Arg(language)) = command_args.first() {
             if language.is_empty() || !available_locales.contains(&language.as_str()) {
                 let _ = client.send_message(
                     msg.channel_id,

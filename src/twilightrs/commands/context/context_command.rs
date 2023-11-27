@@ -200,7 +200,7 @@ pub trait ContextCommand: Send + Sync {
             match arg_spec.arg_type {
                 ArgType::Arg => {
                     if let Some(arg) = remaining_args.first() {
-                        parsed_args.push(ParsedArg::Word(arg.to_string()));
+                        parsed_args.push(ParsedArg::Arg(arg.to_string()));
                         remaining_args = &remaining_args[1..];
                     } else if !arg_spec.optional {
                         return Err("Missing required number argument".into());
@@ -212,7 +212,7 @@ pub trait ContextCommand: Send + Sync {
                     }
                     if !remaining_args.is_empty() {
                         parsed_args.push(
-                            ParsedArg::Words(
+                            ParsedArg::Args(
                                 remaining_args
                                     .iter()
                                     .map(|arg| arg.to_string())

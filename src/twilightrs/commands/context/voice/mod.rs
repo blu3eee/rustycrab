@@ -1,4 +1,5 @@
 // mod tts;
+mod music;
 mod join;
 mod leave;
 mod play;
@@ -7,8 +8,10 @@ mod resume;
 mod stop;
 mod skip;
 mod queue;
-
-mod song_bird_event_handler;
+mod song;
+mod skip_to;
+mod loop_music;
+mod unloop_music;
 
 use self::{
     play::PlayCommand,
@@ -19,6 +22,11 @@ use self::{
     stop::StopMusicCommand,
     skip::SkipCurrentTrackCommand,
     queue::QueueCommand,
+    song::CurrentSongCommand,
+    skip_to::SkipToTrackCommand,
+    loop_music::LoopMusicCommand,
+    unloop_music::UnloopMusicCommand,
+    music::MusicHelpCommand,
 };
 
 use super::{ ContextCommandCategory, context_command::ContextCommand };
@@ -34,12 +42,17 @@ impl ContextCommandCategory for VoiceCommands {
         Vec::from([
             Box::new(JoinCommand {}) as Box<dyn ContextCommand>,
             Box::new(LeaveChannelCommand {}) as Box<dyn ContextCommand>,
+            Box::new(MusicHelpCommand {}) as Box<dyn ContextCommand>,
             Box::new(PlayCommand {}) as Box<dyn ContextCommand>,
             Box::new(PauseMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(ResumeMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(StopMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(SkipCurrentTrackCommand {}) as Box<dyn ContextCommand>,
             Box::new(QueueCommand {}) as Box<dyn ContextCommand>,
+            Box::new(CurrentSongCommand {}) as Box<dyn ContextCommand>,
+            Box::new(SkipToTrackCommand {}) as Box<dyn ContextCommand>,
+            Box::new(LoopMusicCommand {}) as Box<dyn ContextCommand>,
+            Box::new(UnloopMusicCommand {}) as Box<dyn ContextCommand>,
         ])
     }
 }

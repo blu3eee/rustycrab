@@ -43,8 +43,8 @@ impl ArgSpec {
 /// Parsed command argument types
 pub enum ParsedArg {
     None,
-    Word(String),
-    Words(Vec<String>),
+    Arg(String),
+    Args(Vec<String>),
     Text(String),
     Number(i64),
     User(User),

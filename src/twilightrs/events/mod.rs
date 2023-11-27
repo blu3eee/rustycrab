@@ -44,7 +44,7 @@ pub async fn handle_bot_events(
             }
         };
 
-        client.songbird.process(&event).await;
+        client.voice_manager.songbird.process(&event).await;
 
         if let Event::MessageDelete(_) = &event {
         } else {

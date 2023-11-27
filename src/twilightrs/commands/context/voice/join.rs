@@ -55,7 +55,7 @@ impl ContextCommand for JoinCommand {
             }
         };
 
-        let join_result = client.songbird.join(guild_id, channel_id).await;
+        let join_result = client.voice_manager.songbird.join(guild_id, channel_id).await;
 
         let content = match join_result {
             Ok(_call_lock) => {
