@@ -1,7 +1,7 @@
 use fluent::FluentArgs;
 
 use sea_orm::DatabaseConnection;
-use songbird::{ Songbird, tracks::TrackQueue };
+use songbird::Songbird;
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
     channel::{ Message, message::{ embed::Embed, MessageFlags }, Channel },
@@ -21,7 +21,16 @@ use crate::{
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
 };
 
-use super::{ messages::DiscordEmbed, commands::context::context_command::GuildConfigModel };
+use super::{
+    messages::DiscordEmbed,
+    commands::context::context_command::GuildConfigModel,
+    bot::voice_manager::VoiceManager,
+};
+
+use fluent::FluentResource;
+use fluent_bundle::bundle::FluentBundle;
+use intl_memoizer::concurrent::IntlLangMemoizer;
+
 pub enum MessageContent {
     Text(String),
     EmbedModels(Vec<EmbedModel>),
@@ -31,27 +40,34 @@ pub enum MessageContent {
     None,
 }
 
-use fluent::FluentResource;
-use fluent_bundle::bundle::FluentBundle;
-use intl_memoizer::concurrent::IntlLangMemoizer;
-
 pub type DiscordClient = Arc<DiscordClientRef>;
+
+/// A reference to the Discord client, encapsulating various functionalities and states.
+/// This structure provides access to database connections, HTTP client, in-memory cache,
+/// and other shared resources necessary for bot operations.
 pub struct DiscordClientRef {
+    /// Connection to the database.
     pub db: DatabaseConnection,
+
+    /// HTTP client for interacting with the Discord API.
     pub http: Arc<HttpClient>,
+
+    /// In-memory cache of Discord entities.
     pub cache: Arc<InMemoryCache>,
-    // voice features
-    pub songbird: Arc<Songbird>,
-    pub trackqueues: RwLock<HashMap<Id<GuildMarker>, TrackQueue>>,
-    pub waiting_track_urls: RwLock<HashMap<Id<GuildMarker>, Vec<String>>>,
-    pub music_event_handlers: RwLock<HashMap<Id<GuildMarker>, TrackQueue>>,
-    // deleted messages
+
+    /// Record of deleted messages.
     pub deleted_messages: RwLock<HashMap<Id<ChannelMarker>, Vec<CachedMessage>>>,
-    // afk feature
+
+    /// Record of users marked as 'away from keyboard' (AFK).
     pub afk_users: RwLock<HashMap<Id<GuildMarker>, HashMap<Id<UserMarker>, UserAfkStatus>>>,
-    // multi-lingual
+
+    /// Manager for voice-related features.
+    pub voice_manager: Arc<VoiceManager>,
+
+    /// Localization bundles for multi-language support.
     pub bundles: HashMap<String, FluentBundle<FluentResource, IntlLangMemoizer>>,
-    // Default bundle for new guilds or when specific guild bundle is not found
+
+    /// Default localization bundle used when a specific guild's bundle is not found.
     pub default_bundle: FluentBundle<FluentResource, IntlLangMemoizer>,
 }
 
@@ -74,6 +90,18 @@ impl UserAfkStatus {
 }
 
 impl DiscordClientRef {
+    /// Constructs a new instance of `DiscordClientRef`.
+    ///
+    /// # Arguments
+    ///
+    /// * `db` - Connection to the database.
+    /// * `http` - Arc-wrapped HTTP client for Discord API interactions.
+    /// * `cache` - Arc-wrapped in-memory cache of Discord entities.
+    /// * `songbird` - Arc-wrapped Songbird instance for voice functionality.
+    ///
+    /// # Returns
+    ///
+    /// A new instance of `DiscordClientRef`.
     pub fn new(
         db: DatabaseConnection,
         http: Arc<HttpClient>,
@@ -93,10 +121,7 @@ impl DiscordClientRef {
             db,
             http,
             cache,
-            songbird,
-            trackqueues: Default::default(),
-            waiting_track_urls: Default::default(),
-            music_event_handlers: Default::default(),
+            voice_manager: Arc::new(VoiceManager::new(songbird)),
             deleted_messages: HashMap::new().into(),
             bundles,
             default_bundle: load_localization("en"),
@@ -104,10 +129,17 @@ impl DiscordClientRef {
         }
     }
 
-    // pub async fn register_commands(&self) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    //     Ok(())
-    // }
-
+    /// Retrieves a localization string based on the provided locale and key.
+    ///
+    /// # Arguments
+    ///
+    /// * `locale` - Locale identifier (e.g., "en", "vn").
+    /// * `key` - Key identifying the localization string.
+    /// * `args` - Optional arguments for string formatting.
+    ///
+    /// # Returns
+    ///
+    /// Localized string or the key itself if the localization is not found.
     fn get_bundle(&self, locale: &str) -> &FluentBundle<FluentResource, IntlLangMemoizer> {
         if let Some(bundle) = self.bundles.get(locale) { bundle } else { &self.default_bundle }
     }
@@ -126,6 +158,15 @@ impl DiscordClientRef {
         }
     }
 
+    /// Fetches messages from a specified Discord channel.
+    ///
+    /// # Arguments
+    ///
+    /// * `channel` - Reference to the channel entity.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of messages or an error.
     pub async fn fetch_messages(
         &self,
         channel: &Channel
@@ -170,6 +211,15 @@ impl DiscordClientRef {
         }
     }
 
+    /// Retrieves configuration for a specific guild.
+    ///
+    /// # Arguments
+    ///
+    /// * `guild_id` - ID of the guild.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the guild configuration model or an error.
     pub async fn get_guild(
         &self,
         guild_id: Id<GuildMarker>
@@ -177,6 +227,15 @@ impl DiscordClientRef {
         Ok(self.http.guild(guild_id).await?.model().await?)
     }
 
+    /// Fetches the URL of a user's banner image.
+    ///
+    /// # Arguments
+    ///
+    /// * `user_id` - ID of the user.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the URL of the user's banner image or an error.
     pub async fn get_guild_config(
         &self,
         guild_id: &Id<GuildMarker>
@@ -239,6 +298,16 @@ impl DiscordClientRef {
         }
     }
 
+    /// Sends a message to a Discord channel.
+    ///
+    /// # Arguments
+    ///
+    /// * `channel_id` - ID of the channel where the message will be sent.
+    /// * `message_content` - Content of the message to be sent.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the response of the message sent or an error.
     pub async fn send_message(
         &self,
         channel_id: Id<ChannelMarker>,
@@ -247,6 +316,17 @@ impl DiscordClientRef {
         self.send_discord_message(self.http.create_message(channel_id), message_content).await
     }
 
+    /// Replies to a specific message in a Discord channel.
+    ///
+    /// # Arguments
+    ///
+    /// * `channel_id` - ID of the channel where the reply will be sent.
+    /// * `message_id` - ID of the message to which the reply is addressed.
+    /// * `message_content` - Content of the reply.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the response of the reply sent or an error.
     pub async fn reply_message(
         &self,
         channel_id: Id<ChannelMarker>,
@@ -259,6 +339,17 @@ impl DiscordClientRef {
         ).await
     }
 
+    /// Edits an existing message in a Discord channel.
+    ///
+    /// # Arguments
+    ///
+    /// * `channel_id` - ID of the channel containing the message.
+    /// * `message_id` - ID of the message to be edited.
+    /// * `message_content` - New content for the message.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the response of the edited message or an error.
     pub async fn edit_message(
         &self,
         channel_id: Id<ChannelMarker>,
@@ -415,19 +506,6 @@ impl DiscordClientRef {
             .and_then(|state| Some(state.channel_id()));
 
         Ok(user_channel_id == bot_channel_id)
-    }
-
-    pub async fn pop_next_track_url(&self, guild_id: Id<GuildMarker>) -> Option<String> {
-        let mut waiting_urls = self.waiting_track_urls.write().unwrap();
-        waiting_urls.get_mut(&guild_id).and_then(|urls| {
-            if let Some(first) = urls.first() {
-                let first = first.to_string();
-                urls.remove(0);
-                Some(first)
-            } else {
-                None
-            }
-        })
     }
 }
 
