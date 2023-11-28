@@ -1,15 +1,17 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use fluent_bundle::FluentArgs;
 use twilight_model::{ gateway::payload::incoming::MessageCreate, channel::message::Embed };
 
 use crate::{
     twilightrs::{
         commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
         discord_client::DiscordClient,
-        messages::{ DiscordEmbedField, DiscordEmbed },
+        messages::DiscordEmbed,
+        bot::voice_music::voice_manager::track_info_fields,
     },
-    utilities::{ format_duration, utils::ColorResolvables },
+    utilities::utils::ColorResolvables,
     cdn_avatar,
 };
 
@@ -28,51 +30,42 @@ impl ContextCommand for CurrentSongCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        _: &GuildConfigModel,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or("Command not used in a guild")?;
+        let guild_id = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
 
-        if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
-            client.http
-                .create_message(msg.channel_id)
-                .content(
-                    "You need to be in the same voice channel as the bot to use this command"
-                )?.await?;
-            return Ok(());
-        }
+        let _ = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+        client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
-        if
-            let Some((metadata, requested_by)) =
-                client.voice_music_manager.get_current_song(guild_id)
-        {
+        let _ = client.fetch_trackhandle(guild_id, Some(&config.locale)).await?;
+
+        let current_track = client.voice_music_manager.get_current_song(guild_id);
+
+        if let Some((metadata, requested_by)) = current_track {
             client.http.create_message(msg.channel_id).embeds(
                 &vec![
                     Embed::from(DiscordEmbed {
-                        author_name: Some("Now playing".to_string()),
+                        author_name: Some(
+                            client.get_locale_string(&config.locale, "music-nowplaying", None)
+                        ),
+                        footer_text: Some(
+                            client.get_locale_string(
+                                &config.locale,
+                                "requested-user",
+                                Some(
+                                    &FluentArgs::from_iter(
+                                        vec![("username", msg.author.name.clone())]
+                                    )
+                                )
+                            )
+                        ),
                         author_icon_url: Some(client.voice_music_manager.spinning_disk.clone()),
-                        title: Some(
-                            metadata.title.as_ref().unwrap_or(&"<UNKNOWN>".to_string()).to_string()
-                        ),
-                        url: metadata.source_url.map(|url| url),
-                        thumbnail: if let Some(url) = metadata.thumbnail {
-                            Some(url.to_string())
-                        } else {
-                            None
-                        },
-                        fields: Some(
-                            vec![DiscordEmbedField {
-                                name: format!("Duration"),
-                                value: if let Some(duration) = metadata.duration.as_ref() {
-                                    format_duration(duration)
-                                } else {
-                                    format!("<Unknown duration>")
-                                },
-                                inline: true,
-                            }]
-                        ),
-                        footer_text: Some(format!("Requested by @{}", requested_by.name)),
+                        thumbnail: metadata.thumbnail.clone(),
+                        fields: Some(track_info_fields(&client, &config.locale, &metadata, None)),
                         footer_icon_url: requested_by.avatar.map(|hash|
                             cdn_avatar!(requested_by.id, hash)
                         ),

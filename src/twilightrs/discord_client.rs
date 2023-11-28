@@ -1,7 +1,8 @@
 use fluent::FluentArgs;
 
 use sea_orm::DatabaseConnection;
-use songbird::Songbird;
+use songbird::{ Songbird, Call, tracks::TrackHandle };
+use tokio::sync::Mutex;
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
     channel::{ Message, message::{ embed::Embed, MessageFlags }, Channel },
@@ -20,6 +21,7 @@ use crate::{
     locales::{ get_localized_string, load_localization },
     queries::guild_config_queries::GuildConfigQueries,
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
+    utilities::app_error::BoxedError,
 };
 
 use super::{
@@ -178,10 +180,7 @@ impl DiscordClientRef {
     /// # Returns
     ///
     /// A `Result` containing a vector of messages or an error.
-    pub async fn fetch_messages(
-        &self,
-        channel: &Channel
-    ) -> Result<Vec<Message>, Box<dyn Error + Send + Sync>> {
+    pub async fn fetch_messages(&self, channel: &Channel) -> Result<Vec<Message>, BoxedError> {
         if let Some(count) = channel.message_count {
             Ok(
                 self.http
@@ -222,6 +221,13 @@ impl DiscordClientRef {
         }
     }
 
+    pub async fn get_guild(
+        &self,
+        guild_id: Id<GuildMarker>
+    ) -> Result<twilight_model::guild::Guild, BoxedError> {
+        Ok(self.http.guild(guild_id).await?.model().await?)
+    }
+
     /// Retrieves configuration for a specific guild.
     ///
     /// # Arguments
@@ -231,11 +237,14 @@ impl DiscordClientRef {
     /// # Returns
     ///
     /// A `Result` containing the guild configuration model or an error.
-    pub async fn get_guild(
+    pub async fn get_guild_config(
         &self,
-        guild_id: Id<GuildMarker>
-    ) -> Result<twilight_model::guild::Guild, Box<dyn Error + Send + Sync>> {
-        Ok(self.http.guild(guild_id).await?.model().await?)
+        guild_id: &Id<GuildMarker>
+    ) -> Result<GuildConfigModel, BoxedError> {
+        let bot_id: String = self.http.current_user().await?.model().await?.id.get().to_string();
+        let guild_id: String = guild_id.get().to_string();
+
+        Ok(GuildConfigQueries::find_by_discord_ids(&self.db, &bot_id, &guild_id).await?)
     }
 
     /// Fetches the URL of a user's banner image.
@@ -247,20 +256,10 @@ impl DiscordClientRef {
     /// # Returns
     ///
     /// A `Result` containing the URL of the user's banner image or an error.
-    pub async fn get_guild_config(
-        &self,
-        guild_id: &Id<GuildMarker>
-    ) -> Result<GuildConfigModel, Box<dyn Error + Send + Sync>> {
-        let bot_id: String = self.http.current_user().await?.model().await?.id.get().to_string();
-        let guild_id: String = guild_id.get().to_string();
-
-        Ok(GuildConfigQueries::find_by_discord_ids(&self.db, &bot_id, &guild_id).await?)
-    }
-
     pub async fn get_user_banner_url(
         &self,
         user_id: Id<UserMarker>
-    ) -> Result<Option<String>, Box<dyn Error + Send + Sync>> {
+    ) -> Result<Option<String>, BoxedError> {
         // Fetch user from Discord API
         let user: User = self.http.user(user_id).await?.model().await?;
 
@@ -279,7 +278,7 @@ impl DiscordClientRef {
         }
     }
 
-    pub async fn get_bot(&self) -> Result<CurrentUser, Box<dyn Error + Send + Sync>> {
+    pub async fn get_bot(&self) -> Result<CurrentUser, BoxedError> {
         Ok(self.http.current_user().await?.model().await?)
     }
 
@@ -287,7 +286,7 @@ impl DiscordClientRef {
         &self,
         create_message: CreateMessage<'_>,
         message_content: MessageContent
-    ) -> Result<Response<Message>, Box<dyn Error + Send + Sync>> {
+    ) -> Result<Response<Message>, BoxedError> {
         match message_content {
             MessageContent::Text(text) => { Ok(create_message.content(&text)?.await?) }
             MessageContent::EmbedModels(embeds) => {
@@ -323,7 +322,7 @@ impl DiscordClientRef {
         &self,
         channel_id: Id<ChannelMarker>,
         message_content: MessageContent
-    ) -> Result<Response<Message>, Box<dyn Error + Send + Sync>> {
+    ) -> Result<Response<Message>, BoxedError> {
         self.send_discord_message(self.http.create_message(channel_id), message_content).await
     }
 
@@ -343,7 +342,7 @@ impl DiscordClientRef {
         channel_id: Id<ChannelMarker>,
         message_id: Id<MessageMarker>,
         message_content: MessageContent
-    ) -> Result<Response<Message>, Box<dyn Error + Send + Sync>> {
+    ) -> Result<Response<Message>, BoxedError> {
         self.send_discord_message(
             self.http.create_message(channel_id).reply(message_id),
             message_content
@@ -366,7 +365,7 @@ impl DiscordClientRef {
         channel_id: Id<ChannelMarker>,
         message_id: Id<MessageMarker>,
         message_content: MessageContent
-    ) -> Result<Response<Message>, Box<dyn Error + Send + Sync>> {
+    ) -> Result<Response<Message>, BoxedError> {
         let message_update = self.http.update_message(channel_id, message_id);
 
         match message_content {
@@ -401,7 +400,7 @@ impl DiscordClientRef {
     pub async fn defer_button_interaction(
         &self,
         interaction: &Box<InteractionCreate>
-    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    ) -> Result<(), BoxedError> {
         self.http.interaction(interaction.application_id).create_response(
             interaction.id,
             &interaction.token,
@@ -417,7 +416,7 @@ impl DiscordClientRef {
     pub async fn defer_ephemeral_interaction(
         &self,
         interaction: &Box<InteractionCreate>
-    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    ) -> Result<(), BoxedError> {
         self.http.interaction(interaction.application_id).create_response(
             interaction.id,
             &interaction.token,
@@ -436,7 +435,7 @@ impl DiscordClientRef {
     pub async fn defer_interaction(
         &self,
         interaction: &Box<InteractionCreate>
-    ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    ) -> Result<(), BoxedError> {
         self.http.interaction(interaction.application_id).create_response(
             interaction.id,
             &interaction.token,
@@ -453,7 +452,7 @@ impl DiscordClientRef {
         &self,
         guild_id: Id<GuildMarker>,
         role_arg: &str
-    ) -> Result<Role, Box<dyn Error + Send + Sync>> {
+    ) -> Result<Role, BoxedError> {
         // Fetch all roles from the guild
         let roles = self.http.roles(guild_id).await?.model().await?;
 
@@ -493,7 +492,7 @@ impl DiscordClientRef {
         guild_id: Id<GuildMarker>,
         user_id: Id<UserMarker>,
         role_id: Id<RoleMarker>
-    ) -> Result<bool, Box<dyn Error + Send + Sync>> {
+    ) -> Result<bool, BoxedError> {
         // Fetch the member
         let member = self.http.guild_member(guild_id, user_id).await?.model().await?;
 
@@ -505,7 +504,7 @@ impl DiscordClientRef {
         &self,
         guild_id: Id<GuildMarker>,
         user_id: Id<UserMarker>
-    ) -> Result<bool, Box<dyn Error + Send + Sync + 'static>> {
+    ) -> Result<bool, BoxedError> {
         let user_channel_id = self.cache
             .voice_state(user_id, guild_id)
             .and_then(|state| Some(state.channel_id()));
@@ -517,6 +516,67 @@ impl DiscordClientRef {
             .and_then(|state| Some(state.channel_id()));
 
         Ok(user_channel_id == bot_channel_id)
+    }
+
+    pub async fn verify_same_voicechannel(
+        &self,
+        guild_id: Id<GuildMarker>,
+        user_id: Id<UserMarker>,
+        locale: Option<&str>
+    ) -> Result<(), BoxedError> {
+        let locale = if let Some(locale) = locale {
+            locale.to_string()
+        } else {
+            let config = self.get_guild_config(&guild_id).await?;
+            String::from(config.locale)
+        };
+        if !self.is_user_in_same_channel_as_bot(guild_id, user_id).await? {
+            return Err(self.get_locale_string(&locale, "music-not-same-channel", None).into());
+        }
+
+        return Ok(());
+    }
+
+    /// Retrieves guild's call
+    pub async fn fetch_call_lock(
+        &self,
+        guild_id: Id<GuildMarker>,
+        locale: Option<&str>
+    ) -> Result<Arc<Mutex<Call>>, BoxedError> {
+        let locale = if let Some(locale) = locale {
+            locale.to_string()
+        } else {
+            let config = self.get_guild_config(&guild_id).await?;
+            String::from(config.locale)
+        };
+        self.voice_music_manager.songbird
+            .get(guild_id)
+            .ok_or(self.get_locale_string(&locale, "music-not-same-channel", None).into())
+    }
+
+    /// Retrives current handle
+    pub async fn fetch_trackhandle(
+        &self,
+        guild_id: Id<GuildMarker>,
+        locale: Option<&str>
+    ) -> Result<TrackHandle, BoxedError> {
+        let locale = if let Some(locale) = locale {
+            locale.to_string()
+        } else {
+            let config = self.get_guild_config(&guild_id).await?;
+            String::from(config.locale)
+        };
+        let track_queue = {
+            let store = self.voice_music_manager.trackqueues.read().unwrap();
+            store.get(&guild_id).cloned()
+        };
+        if let Some(trackqueue) = track_queue {
+            if let Some(handle) = trackqueue.current() {
+                return Ok(handle);
+            }
+        }
+
+        return Err(self.get_locale_string(&locale, "music-not-playing", None).into());
     }
 }
 

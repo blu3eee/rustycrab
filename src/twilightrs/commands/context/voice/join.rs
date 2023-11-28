@@ -12,11 +12,10 @@ use crate::{
             ArgSpec,
             ArgType,
         },
-        discord_client::{ DiscordClient, MessageContent },
-        messages::DiscordEmbed,
+        discord_client::DiscordClient,
+        utils::send_response_message,
     },
     utilities::utils::ColorResolvables,
-    cdn_avatar,
 };
 
 pub struct JoinCommand {}
@@ -73,29 +72,7 @@ impl ContextCommand for JoinCommand {
             }
         };
 
-        let content = client.get_locale_string(&config.locale, key, Some(&args));
-        // Notify user about the result
-        client.reply_message(
-            msg.channel_id,
-            msg.id,
-            MessageContent::DiscordEmbeds(
-                vec![DiscordEmbed {
-                    description: Some(content),
-                    color: Some(color.as_u32()),
-                    footer_text: Some(
-                        client.get_locale_string(
-                            &config.locale,
-                            "requested-user",
-                            Some(
-                                &FluentArgs::from_iter(vec![("username", msg.author.name.clone())])
-                            )
-                        )
-                    ),
-                    footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
-                    ..Default::default()
-                }]
-            )
-        ).await?;
+        send_response_message(&client, config, msg, key, color).await?;
 
         Ok(())
     }

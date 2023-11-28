@@ -1,17 +1,15 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use fluent_bundle::FluentArgs;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
     twilightrs::{
         commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
         discord_client::DiscordClient,
-        messages::DiscordEmbed,
+        utils::send_response_message,
     },
     utilities::utils::ColorResolvables,
-    cdn_avatar,
 };
 pub struct LeaveChannelCommand {}
 
@@ -32,54 +30,20 @@ impl ContextCommand for LeaveChannelCommand {
             client.get_locale_string(&config.locale, "command-guildonly", None)
         )?;
 
-        let (key, color) = if
-            let Some(call_lock) = client.voice_music_manager.songbird.get(guild_id)
-        {
-            if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
-                ("music-not-same-channel", ColorResolvables::Red)
-            } else {
-                let mut call = call_lock.lock().await;
-                call.stop();
+        client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
-                if client.voice_music_manager.songbird.leave(guild_id).await.is_ok() {
-                    ("command-leave-left", ColorResolvables::Green)
-                } else {
-                    ("command-leave-failed", ColorResolvables::Red)
-                }
+        let call_lock = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+        let mut call = call_lock.lock().await;
+        call.stop();
+        let (key, color) = {
+            if client.voice_music_manager.songbird.leave(guild_id).await.is_ok() {
+                ("command-leave-left", ColorResolvables::Green)
+            } else {
+                ("command-leave-failed", ColorResolvables::Red)
             }
-        } else {
-            ("music-no-voice", ColorResolvables::Red)
         };
 
-        if
-            let Err(e) = client.reply_message(
-                msg.channel_id,
-                msg.id,
-                crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
-                    vec![DiscordEmbed {
-                        description: Some(client.get_locale_string(&config.locale, key, None)),
-                        color: Some(color.as_u32()),
-                        footer_text: Some(
-                            client.get_locale_string(
-                                &config.locale,
-                                "requested-user",
-                                Some(
-                                    &FluentArgs::from_iter(
-                                        vec![("username", msg.author.name.clone())]
-                                    )
-                                )
-                            )
-                        ),
-                        footer_icon_url: msg.author.avatar.map(|hash|
-                            cdn_avatar!(msg.author.id, hash)
-                        ),
-                        ..Default::default()
-                    }]
-                )
-            ).await
-        {
-            eprintln!("{:?}", e);
-        }
+        send_response_message(&client, config, msg, key, color).await?;
 
         Ok(())
     }

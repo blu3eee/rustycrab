@@ -38,15 +38,8 @@ impl ContextCommand for QueueCommand {
             client.get_locale_string(&config.locale, "command-guildonly", None)
         )?;
 
-        if let None = client.voice_music_manager.songbird.get(guild_id) {
-            return Err(client.get_locale_string(&config.locale, "music-not-playing", None).into());
-        }
-
-        if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
-            return Err(
-                client.get_locale_string(&config.locale, "music-not-same-channel", None).into()
-            );
-        }
+        let _ = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+        client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
         let queued_urls = client.voice_music_manager.get_waiting_queue(guild_id);
         if queued_urls.len() == 0 {

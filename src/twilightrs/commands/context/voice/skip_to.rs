@@ -11,11 +11,10 @@ use crate::{
             ArgSpec,
             ArgType,
         },
-        discord_client::{ DiscordClient, MessageContent },
-        messages::DiscordEmbed,
+        discord_client::DiscordClient,
+        utils::send_response_message,
     },
     utilities::utils::ColorResolvables,
-    cdn_avatar,
 };
 pub struct SkipToTrackCommand {}
 
@@ -32,63 +31,34 @@ impl ContextCommand for SkipToTrackCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        _: &GuildConfigModel,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or("Command not used in a guild")?;
+        let guild_id = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
 
-        if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
-            client.http
-                .create_message(msg.channel_id)
-                .content(
-                    "You need to be in the same voice channel as the bot to use this command"
-                )?.await?;
-            return Ok(());
-        }
+        let _ = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+        client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
-        let position = match command_args.first() {
-            Some(ParsedArg::Number(pos)) => *pos as usize,
-            _ => {
-                client.reply_message(
-                    msg.channel_id,
-                    msg.id,
-                    MessageContent::Text("Please provide a valid position to skip to".to_string())
-                ).await?;
-                return Ok(());
+        let handle = client.fetch_trackhandle(guild_id, Some(&config.locale)).await?;
+
+        let (key, color) = match command_args.first() {
+            Some(ParsedArg::Number(position)) => {
+                // Skips to the specified track position (indexed-1)
+                if client.voice_music_manager.skip_to_position(guild_id, *position as usize) {
+                    // Skip the current track
+                    let _ = handle.stop();
+
+                    ("command-skipto-success", ColorResolvables::Red)
+                } else {
+                    ("command-skipto-invalid", ColorResolvables::Red)
+                }
             }
+            _ => { ("command-skipto-nopos", ColorResolvables::Red) }
         };
-
-        // Skips to the specified track position (indexed-1)
-        if client.voice_music_manager.skip_to_position(guild_id, position) {
-            // Skip the current track
-            if let Some(handle) = client.voice_music_manager.get_play_queue(guild_id).current() {
-                let _ = handle.stop();
-            }
-
-            client.reply_message(
-                msg.channel_id,
-                msg.id,
-                MessageContent::DiscordEmbeds(
-                    vec![DiscordEmbed {
-                        description: Some(format!("Skipped to track at position {}", position)),
-                        footer_text: Some(format!("Skipped by @{}", msg.author.name)),
-                        footer_icon_url: msg.author.avatar.map(|hash|
-                            cdn_avatar!(msg.author.id, hash)
-                        ),
-                        color: Some(ColorResolvables::Green.as_u32()),
-                        ..Default::default()
-                    }]
-                )
-            ).await?;
-        } else {
-            client.reply_message(
-                msg.channel_id,
-                msg.id,
-                MessageContent::Text("Invalid position provided".to_string())
-            ).await?;
-        }
-
+        send_response_message(&client, config, msg, key, color).await?;
         Ok(())
     }
 }

@@ -5,6 +5,8 @@ use serde::{ Deserialize, Serialize };
 use std::fmt;
 use std::error::Error;
 
+pub type BoxedError = Box<dyn Error + Send + Sync + 'static>;
+
 #[derive(Debug)]
 pub struct AppError {
     code: StatusCode,

@@ -4,9 +4,13 @@ use async_trait::async_trait;
 use songbird::tracks::PlayMode;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
-use crate::twilightrs::{
-    commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
-    discord_client::DiscordClient,
+use crate::{
+    twilightrs::{
+        commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
+        discord_client::DiscordClient,
+        utils::send_response_message,
+    },
+    utilities::utils::ColorResolvables,
 };
 pub struct ResumeMusicCommand {}
 
@@ -19,41 +23,32 @@ impl ContextCommand for ResumeMusicCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        _: &GuildConfigModel,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or("Command not used in a guild")?;
+        let guild_id = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
 
-        if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
-            client.http
-                .create_message(msg.channel_id)
-                .content(
-                    "You need to be in the same voice channel as the bot to use this command"
-                )?.await?;
-            return Ok(());
-        }
+        let _ = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+        client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
-        // Scope to limit the lock guard
-        let trackqueue = {
-            let store = client.voice_music_manager.trackqueues.read().unwrap();
-            store.get(&guild_id).cloned()
+        let handle = client.fetch_trackhandle(guild_id, Some(&config.locale)).await?;
+
+        let info = handle.get_info().await?;
+
+        let (key, color) = if info.playing == PlayMode::Pause {
+            if let Ok(_) = handle.play() {
+                ("command-resume-success", ColorResolvables::Red)
+            } else {
+                ("command-resume-failed", ColorResolvables::Red)
+            }
+        } else {
+            ("command-resume-notpaused", ColorResolvables::Red)
         };
 
-        if let Some(tracks_queue) = trackqueue {
-            if let Some(handle) = tracks_queue.current() {
-                let info = handle.get_info().await?;
-
-                if info.playing == PlayMode::Pause {
-                    let _success = handle.play();
-                    let _ = client.http
-                        .create_message(msg.channel_id)
-                        .content("Resumed the track")?.await;
-                    return Ok(());
-                }
-            }
-        }
-        client.http.create_message(msg.channel_id).content("No track is currently paused")?.await?;
+        send_response_message(&client, config, msg, key, color).await?;
         Ok(())
     }
 }

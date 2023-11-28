@@ -131,7 +131,7 @@ command-join-failed = Failed to join { $channel }! Reason: { $err }
 
 # Leave Command
 command-leave = Nicely ask the bot to leave the channel
-command-leave-left = Left the voice channel.
+command-leave-left = Left the voice channel
 command-leave-failed = Failed to leave the voice channel
 
 # Loop Command
@@ -143,12 +143,12 @@ command-loop-invalid = Invalid loop type. accepts: current/one/all/queue
 
 # Pause Command
 command-pause = Pause the current playing track
-command-pause-paused = Paused the track.
-command-pause-unpaused = Unpaused the track.
+command-pause-paused = Paused the track
+command-pause-unpaused = Unpaused the track
 
 # Play Command
 command-play = Play music
-command-play-invalid-url = Please provide a valid URL or search query to play.
+command-play-invalid-url = Please provide a valid URL or search query to play
 command-play-added-tracks = Added { $count } tracks to the queue
 command-play-added-track = Added track
 
@@ -157,3 +157,22 @@ music-queue-empty = Queue is empty
 music-queue-title = Queue: { $count } songs
 music-queue-prev = Prev Page
 music-queue-next = Next Page
+
+# Resume
+command-resume = Resume the paused track
+command-resume-success = Resumed the track
+command-resume-failed = Failed to resume the track
+command-resume-notpaused = Music player is not paused
+
+# Skip
+command-skip = Skip the current track
+command-skip-skipped = [{ $title }]{$ url } has been skipped
+command-skip-author = Skipped by @{ $username }
+command-skip-requested-by = Track was requested by { $user }
+command-skip-no-metadata = Skipped a track, no skipped track info found
+command-skip-failed = Failed to skip current track
+# Skip to
+command-skipto = Skip to the track at a position
+command-skipto-nopos = Please provide a valid position to skip to
+command-skipto-invalid = Invalid position: only { $count } tracks in queue
+command-skipto-success = Skipped to track at position { $position }

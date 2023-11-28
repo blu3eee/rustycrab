@@ -19,33 +19,25 @@ impl ContextCommand for StopMusicCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        _: &GuildConfigModel,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or("Command not used in a guild")?;
+        let guild_id = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
+        let call_lock = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+        client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
-        if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
-            client.http
-                .create_message(msg.channel_id)
-                .content(
-                    "You need to be in the same voice channel as the bot to use this command"
-                )?.await?;
-            return Ok(());
-        }
+        let handle = client.fetch_trackhandle(guild_id, Some(&config.locale)).await?;
 
-        if let Some(call_lock) = client.voice_music_manager.songbird.get(guild_id) {
-            let mut call = call_lock.lock().await;
-            call.stop();
+        let mut call = call_lock.lock().await;
 
-            client.voice_music_manager.clear_waiting_queue(guild_id);
+        client.voice_music_manager.clear_waiting_queue(guild_id);
+        call.stop();
+        let _ = handle.stop();
 
-            client.http.create_message(msg.channel_id).content("Stopped playing music")?.await?;
-        } else {
-            client.http
-                .create_message(msg.channel_id)
-                .content("No music is currently playing")?.await?;
-        }
+        client.http.create_message(msg.channel_id).content("Stopped playing music")?.await?;
 
         Ok(())
     }

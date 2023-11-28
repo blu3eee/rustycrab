@@ -1,18 +1,16 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use fluent_bundle::FluentArgs;
 use songbird::tracks::PlayMode;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
     twilightrs::{
         commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
-        discord_client::{ DiscordClient, MessageContent },
-        messages::DiscordEmbed,
+        discord_client::DiscordClient,
+        utils::send_response_message,
     },
     utilities::utils::ColorResolvables,
-    cdn_avatar,
 };
 pub struct PauseMusicCommand {}
 
@@ -33,67 +31,33 @@ impl ContextCommand for PauseMusicCommand {
             client.get_locale_string(&config.locale, "command-guildonly", None)
         )?;
 
-        let (key, color) = if let Some(_) = client.voice_music_manager.songbird.get(guild_id) {
-            if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
-                ("music-not-same-channel", ColorResolvables::Red)
-            } else {
-                // Scope to limit the lock guard
-                let track_queue = {
-                    let store = client.voice_music_manager.trackqueues.read().unwrap();
-                    store.get(&guild_id).cloned()
-                };
+        let _ = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+        client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
-                if let Some(trackqueue) = track_queue {
-                    if let Some(handle) = trackqueue.current() {
-                        let info = handle.get_info().await?;
+        let handle = client.fetch_trackhandle(guild_id, Some(&config.locale)).await?;
 
-                        let paused = match info.playing {
-                            PlayMode::Play => {
-                                let _success = handle.pause();
-                                false
-                            }
-                            _ => {
-                                let _success = handle.play();
-                                true
-                            }
-                        };
-                        if !paused {
-                            ("command-pause-paused", ColorResolvables::Yellow)
-                        } else {
-                            ("command-pause-unpaused", ColorResolvables::Green)
-                        }
-                    } else {
-                        ("music-not-playing", ColorResolvables::Red)
-                    }
-                } else {
-                    ("music-not-playing", ColorResolvables::Red)
-                }
+        let info = handle.get_info().await?;
+
+        let paused = match info.playing {
+            PlayMode::Play => {
+                let _success = handle.pause();
+                false
             }
-        } else {
-            ("music-not-playing", ColorResolvables::Red)
+            _ => {
+                let _success = handle.play();
+                true
+            }
         };
 
-        client.reply_message(
-            msg.channel_id,
-            msg.id,
-            MessageContent::DiscordEmbeds(
-                vec![DiscordEmbed {
-                    description: Some(client.get_locale_string(&config.locale, key, None)),
-                    color: Some(color.as_u32()),
-                    footer_text: Some(
-                        client.get_locale_string(
-                            &config.locale,
-                            "requested-user",
-                            Some(
-                                &FluentArgs::from_iter(vec![("username", msg.author.name.clone())])
-                            )
-                        )
-                    ),
-                    footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
-                    ..Default::default()
-                }]
-            )
-        ).await?;
+        let (key, color) = {
+            if !paused {
+                ("command-pause-paused", ColorResolvables::Yellow)
+            } else {
+                ("command-pause-unpaused", ColorResolvables::Green)
+            }
+        };
+
+        send_response_message(&client, config, msg, key, color).await?;
 
         Ok(())
     }
