@@ -4,14 +4,21 @@ use twilight_model::{ gateway::payload::incoming::MessageCreate, guild::Permissi
 use std::error::Error;
 
 use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
     twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
-        discord_client::{ DiscordClient, MessageContent },
+        commands::context::{
+            ContextCommand,
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+            context_command::GuildConfigModel,
+        },
+        discord_client::DiscordClient,
+        utils::reply_command,
     },
     queries::guild_config_queries::GuildConfigQueries,
     default_queries::DefaultSeaQueries,
     router::routes::bot_guild_configs::RequestUpdateConfig,
+    utilities::utils::ColorResolvables,
 };
 
 pub struct ChangePrefixCommand;
@@ -41,14 +48,13 @@ impl ContextCommand for ChangePrefixCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+        let _ = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
         if let Some(ParsedArg::Arg(new_prefix)) = command_args.first() {
-            if new_prefix.is_empty() {
-                let message = client.get_locale_string(
-                    &config.locale,
-                    "command-prefix-invalid",
-                    None
-                );
-                let _ = client.send_message(msg.channel_id, MessageContent::Text(message)).await;
+            let mut args = FluentArgs::new();
+            let (key, color) = if new_prefix.is_empty() {
+                ("command-prefix-invalid", ColorResolvables::Red)
             } else {
                 let update_result = GuildConfigQueries::update_by_id(
                     &client.db,
@@ -60,25 +66,15 @@ impl ContextCommand for ChangePrefixCommand {
                 ).await;
 
                 if let Ok(updated_config) = update_result {
-                    let mut args = FluentArgs::new();
                     args.set("prefix", updated_config.prefix);
-                    let message = client.get_locale_string(
-                        &config.locale,
-                        "command-prefix-success",
-                        Some(&args)
-                    );
 
-                    let _ = client.send_message(
-                        msg.channel_id,
-                        MessageContent::Text(message)
-                    ).await;
+                    ("command-prefix-success", ColorResolvables::Green)
                 } else {
-                    let _ = client.send_message(
-                        msg.channel_id,
-                        MessageContent::Text("Failed to update prefix for this guild".to_string())
-                    ).await;
+                    ("command-prefix-failed", ColorResolvables::Red)
                 }
-            }
+            };
+
+            let _ = reply_command(&client, &config, &msg, key, Some(args), color).await;
         }
 
         Ok(())

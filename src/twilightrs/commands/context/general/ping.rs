@@ -2,12 +2,9 @@ use async_trait::async_trait;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::{ error::Error, time::Instant };
 
-use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
-    twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg },
-        discord_client::{ DiscordClient, MessageContent },
-    },
+use crate::twilightrs::{
+    commands::context::{ ContextCommand, ParsedArg, context_command::GuildConfigModel },
+    discord_client::{ DiscordClient, MessageContent },
 };
 pub struct PingCommand;
 

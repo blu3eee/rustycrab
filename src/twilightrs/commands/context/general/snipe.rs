@@ -3,9 +3,14 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
 use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
     twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
+        commands::context::{
+            ContextCommand,
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+            context_command::GuildConfigModel,
+        },
         discord_client::{ DiscordClient, MessageContent },
         messages::DiscordEmbed,
     },

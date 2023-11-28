@@ -2,13 +2,16 @@ use async_trait::async_trait;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
-use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
-    twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
-        discord_client::{ DiscordClient, MessageContent },
-        messages::DiscordEmbed,
+use crate::twilightrs::{
+    commands::context::{
+        ContextCommand,
+        ParsedArg,
+        ArgSpec,
+        ArgType,
+        context_command::GuildConfigModel,
     },
+    discord_client::{ DiscordClient, MessageContent },
+    messages::DiscordEmbed,
 };
 pub struct MathCommand;
 

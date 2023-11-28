@@ -3,7 +3,6 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::{ error::Error, collections::HashMap };
 
 use crate::{
-    database::bot_guild_configurations,
     twilightrs::{
         commands::context::{
             ContextCommand,
@@ -12,6 +11,7 @@ use crate::{
             ArgSpec,
             ArgType,
             ContextCommandHandler,
+            context_command::GuildConfigModel,
         },
         discord_client::{ DiscordClient, MessageContent },
         messages::{ DiscordEmbed, DiscordEmbedField },
@@ -28,7 +28,7 @@ impl HelpCommand {
     async fn display_general_help(
         &self,
         client: DiscordClient,
-        config: &bot_guild_configurations::Model,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         dispatcher: ContextCommandDispatcher
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
@@ -116,7 +116,7 @@ impl HelpCommand {
     async fn display_command_help(
         &self,
         client: DiscordClient,
-        config: &bot_guild_configurations::Model,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         command_handler: &ContextCommandHandler,
         args: &[String]
@@ -241,7 +241,7 @@ impl ContextCommand for HelpCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        config: &bot_guild_configurations::Model,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {

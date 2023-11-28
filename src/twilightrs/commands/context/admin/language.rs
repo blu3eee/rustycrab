@@ -3,9 +3,14 @@ use twilight_model::{ gateway::payload::incoming::MessageCreate, guild::Permissi
 use std::error::Error;
 
 use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
     twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
+        commands::context::{
+            ContextCommand,
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+            context_command::GuildConfigModel,
+        },
         discord_client::{ DiscordClient, MessageContent },
     },
     queries::guild_config_queries::GuildConfigQueries,
@@ -39,13 +44,13 @@ impl ContextCommand for ChangeLanguageCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+        let _ = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
         let available_locales = vec!["en", "vn"];
         if let Some(ParsedArg::Arg(language)) = command_args.first() {
-            if language.is_empty() || !available_locales.contains(&language.as_str()) {
-                let _ = client.send_message(
-                    msg.channel_id,
-                    MessageContent::Text("Invalid language".to_string())
-                ).await;
+            let content = if language.is_empty() || !available_locales.contains(&language.as_str()) {
+                "Invalid language".to_string()
             } else {
                 let update_result = GuildConfigQueries::update_by_id(
                     &client.db,
@@ -57,22 +62,16 @@ impl ContextCommand for ChangeLanguageCommand {
                 ).await;
 
                 if let Ok(updated_config) = update_result {
-                    let _ = client.send_message(
-                        msg.channel_id,
-                        MessageContent::Text(
-                            format!(
-                                "Language updated successfully. New language: `{}`",
-                                updated_config.prefix
-                            )
-                        )
-                    ).await;
+                    format!(
+                        "Language updated successfully. New language: `{}`",
+                        updated_config.prefix
+                    )
                 } else {
-                    let _ = client.send_message(
-                        msg.channel_id,
-                        MessageContent::Text("Failed to update language for this guild".to_string())
-                    ).await;
+                    "Failed to update language for this guild".to_string()
                 }
-            }
+            };
+
+            let _ = client.send_message(msg.channel_id, MessageContent::Text(content)).await;
         }
 
         Ok(())

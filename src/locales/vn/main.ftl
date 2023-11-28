@@ -71,13 +71,13 @@ command-ban-admin = Không thể ban { $user } do người dùng có quyền adm
 # Lệnh Unban
 command-unban = Unban người dùng
 command-unban-success=Người dùng không bị ban { $user }
-command-unban-fail = Đã xảy ra lỗi khi cố gắng unban { $user }
+command-unban-failed = Đã xảy ra lỗi khi cố gắng unban { $user }
 command-unban-notfound= Người dùng { $user } không bị ban
 
 # Lệnh Kick
 command-kick = Đá một hoặc nhiều thành viên
 command-kick-success=Đã đá { $user } ra khỏi máy chủ.
-command-kick-fail = Đã xảy ra lỗi khi cố gắng kick { $user } khỏi máy chủ.
+command-kick-failed = Đã xảy ra lỗi khi cố gắng kick { $user } khỏi máy chủ.
 command-kick-admin = Không thể kick người dùng { $user } với quyền Admin
 
 # Lệnh Timeout

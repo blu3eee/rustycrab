@@ -2,12 +2,15 @@ use async_trait::async_trait;
 use twilight_model::{ gateway::payload::incoming::MessageCreate, guild::Permissions };
 use std::error::Error;
 
-use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
-    twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
-        discord_client::DiscordClient,
+use crate::twilightrs::{
+    commands::context::{
+        ContextCommand,
+        ParsedArg,
+        ArgSpec,
+        ArgType,
+        context_command::GuildConfigModel,
     },
+    discord_client::DiscordClient,
 };
 
 pub struct PurgeCommand;
@@ -33,10 +36,13 @@ impl ContextCommand for PurgeCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        _: &GuildConfigModel,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+        let _ = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
         if let Some(ParsedArg::Number(amount)) = command_args.first() {
             // Ensure the amount is within a reasonable range
             let amount: u64 = (*amount).try_into().unwrap_or(100);

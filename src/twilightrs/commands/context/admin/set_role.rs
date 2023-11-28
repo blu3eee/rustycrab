@@ -9,12 +9,18 @@ use twilight_model::{
 use std::error::Error;
 use crate::{
     twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
+        commands::context::{
+            ContextCommand,
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+            context_command::GuildConfigModel,
+        },
         discord_client::DiscordClient,
         messages::DiscordEmbed,
+        utils::send_command_response,
     },
     utilities::utils::ColorResolvables,
-    database::bot_guild_configurations::Model as GuildConfigModel,
 };
 
 pub struct RoleCommand;
@@ -47,116 +53,77 @@ impl ContextCommand for RoleCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+        let guild_id = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
         if let Some(ParsedArg::Users(users)) = command_args.get(0) {
             if let Some(ParsedArg::Text(role_arg)) = command_args.get(1) {
-                if let Some(guild_id) = msg.guild_id {
-                    // Find the role by name, ID, or mention
-                    let role = client.find_role(guild_id, role_arg).await?;
+                // Find the role by name, ID, or mention
+                let role = client.find_role(guild_id, role_arg).await?;
+                let mut args = FluentArgs::new();
+                args.set("role", format!("<@&{}>", role.id.to_string()));
+                if
+                    !can_bot_manage_role(
+                        &client.http,
+                        guild_id,
+                        client.get_bot().await?.id,
+                        role.id
+                    ).await?
+                {
+                    let message = client.get_locale_string(
+                        &config.locale,
+                        "command-role-no-perm",
+                        Some(&args)
+                    );
+                    let _ = client.reply_message(
+                        msg.channel_id,
+                        msg.id,
+                        crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
+                            vec![DiscordEmbed {
+                                description: Some(message),
+                                color: Some(ColorResolvables::Red.as_u32()),
+                                ..Default::default()
+                            }]
+                        )
+                    ).await;
+                    return Ok(());
+                }
+
+                for user in users {
                     let mut args = FluentArgs::new();
                     args.set("role", format!("<@&{}>", role.id.to_string()));
-                    if
-                        !can_bot_manage_role(
-                            &client.http,
-                            guild_id,
-                            client.get_bot().await?.id,
-                            role.id
-                        ).await?
-                    {
-                        let message = client.get_locale_string(
-                            &config.locale,
-                            "command-role-no-perm",
-                            Some(&args)
-                        );
-                        let _ = client.reply_message(
-                            msg.channel_id,
-                            msg.id,
-                            crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
-                                vec![DiscordEmbed {
-                                    description: Some(message),
-                                    color: Some(ColorResolvables::Red.as_u32()),
-                                    ..Default::default()
-                                }]
-                            )
-                        ).await;
-                        return Ok(());
-                    }
+                    args.set("user", format!("<@{}>", user.id.to_string()));
+                    // Check if the user has the role
+                    let has_role = client.user_has_role(guild_id, user.id, role.id).await?;
 
-                    for user in users {
-                        args.set("user", format!("<@{}>", user.id.to_string()));
-                        // Check if the user has the role
-                        let has_role = client.user_has_role(guild_id, user.id, role.id).await?;
-
-                        // Add or remove the role based on whether the user already has it
-                        let (message, color) = if has_role {
-                            match
-                                client.http.remove_guild_member_role(
-                                    guild_id,
-                                    user.id,
-                                    role.id
-                                ).await
-                            {
-                                Ok(_) => {
-                                    (
-                                        client.get_locale_string(
-                                            &config.locale,
-                                            "command-role-remove-success",
-                                            Some(&args)
-                                        ),
-                                        ColorResolvables::Green,
-                                    )
-                                }
-                                Err(e) => {
-                                    args.set("err", format!("{:?}", e));
-                                    (
-                                        client.get_locale_string(
-                                            &config.locale,
-                                            "command-role-remove-fail",
-                                            Some(&args)
-                                        ),
-                                        ColorResolvables::Red,
-                                    )
-                                }
+                    // Add or remove the role based on whether the user already has it
+                    let (key, color) = if has_role {
+                        match
+                            client.http.remove_guild_member_role(guild_id, user.id, role.id).await
+                        {
+                            Ok(_) => { ("command-role-remove-success", ColorResolvables::Green) }
+                            Err(e) => {
+                                args.set("err", format!("{:?}", e));
+                                ("command-role-remove-fail", ColorResolvables::Red)
                             }
-                        } else {
-                            match
-                                client.http.add_guild_member_role(guild_id, user.id, role.id).await
-                            {
-                                Ok(_) => {
-                                    (
-                                        client.get_locale_string(
-                                            &config.locale,
-                                            "command-role-add-success",
-                                            Some(&args)
-                                        ),
-                                        ColorResolvables::Green,
-                                    )
-                                }
-                                Err(e) => {
-                                    args.set("err", format!("{:?}", e));
-                                    (
-                                        client.get_locale_string(
-                                            &config.locale,
-                                            "command-role-add-fail",
-                                            Some(&args)
-                                        ),
-                                        ColorResolvables::Red,
-                                    )
-                                }
+                        }
+                    } else {
+                        match client.http.add_guild_member_role(guild_id, user.id, role.id).await {
+                            Ok(_) => { ("command-role-add-success", ColorResolvables::Green) }
+                            Err(e) => {
+                                args.set("err", format!("{:?}", e));
+                                ("command-role-add-fail", ColorResolvables::Red)
                             }
-                        };
-
-                        let _ = client.reply_message(
-                            msg.channel_id,
-                            msg.id,
-                            crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
-                                vec![DiscordEmbed {
-                                    description: Some(message),
-                                    color: Some(color.as_u32()),
-                                    ..Default::default()
-                                }]
-                            )
-                        ).await;
-                    }
+                        }
+                    };
+                    let _ = send_command_response(
+                        &client,
+                        &config,
+                        &msg,
+                        key,
+                        Some(args),
+                        color
+                    ).await;
                 }
             }
         }

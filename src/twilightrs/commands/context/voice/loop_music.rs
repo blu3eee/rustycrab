@@ -13,7 +13,7 @@ use crate::{
         },
         discord_client::DiscordClient,
         bot::voice_music::voice_manager::PlayerLoopState,
-        utils::send_response_message,
+        utils::reply_command,
     },
     utilities::utils::ColorResolvables,
 };
@@ -71,7 +71,7 @@ impl ContextCommand for LoopMusicCommand {
             _ => { ("command-loop-invalid", ColorResolvables::Red) }
         };
 
-        send_response_message(&client, config, msg, key, color).await?;
+        reply_command(&client, config, msg, key, None, color).await?;
 
         Ok(())
     }

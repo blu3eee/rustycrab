@@ -1,11 +1,17 @@
 use async_trait::async_trait;
+use fluent_bundle::FluentArgs;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
 use crate::{
-    database::bot_guild_configurations,
     twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
+        commands::context::{
+            ContextCommand,
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+            context_command::GuildConfigModel,
+        },
         discord_client::{ DiscordClient, MessageContent },
         messages::DiscordEmbed,
     },
@@ -30,7 +36,7 @@ impl ContextCommand for AvatarCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        _: &bot_guild_configurations::Model,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
@@ -59,7 +65,17 @@ impl ContextCommand for AvatarCommand {
                         footer_text: if msg.author.id == user.id {
                             None
                         } else {
-                            Some(format!("Requested by: @{}", &msg.author.name))
+                            Some(
+                                client.get_locale_string(
+                                    &config.locale,
+                                    "requested-user",
+                                    Some(
+                                        &FluentArgs::from_iter(
+                                            vec![("username", msg.author.name.clone())]
+                                        )
+                                    )
+                                )
+                            )
                         },
                         footer_icon_url: if msg.author.id != user.id {
                             msg.author.avatar.as_ref().map(|hash| cdn_avatar!(msg.author.id, hash))

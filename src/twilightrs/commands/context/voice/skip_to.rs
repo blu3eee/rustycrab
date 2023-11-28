@@ -12,7 +12,7 @@ use crate::{
             ArgType,
         },
         discord_client::DiscordClient,
-        utils::send_response_message,
+        utils::reply_command,
     },
     utilities::utils::ColorResolvables,
 };
@@ -58,7 +58,7 @@ impl ContextCommand for SkipToTrackCommand {
             }
             _ => { ("command-skipto-nopos", ColorResolvables::Red) }
         };
-        send_response_message(&client, config, msg, key, color).await?;
+        reply_command(&client, config, msg, key, None, color).await?;
         Ok(())
     }
 }

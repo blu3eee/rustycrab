@@ -13,7 +13,7 @@ use crate::{
             ArgType,
         },
         discord_client::DiscordClient,
-        utils::send_response_message,
+        utils::reply_command,
     },
     utilities::utils::ColorResolvables,
 };
@@ -72,7 +72,7 @@ impl ContextCommand for JoinCommand {
             }
         };
 
-        send_response_message(&client, config, msg, key, color).await?;
+        reply_command(&client, config, msg, key, Some(args), color).await?;
 
         Ok(())
     }

@@ -4,11 +4,16 @@ use twilight_model::{ gateway::payload::incoming::MessageCreate, guild::Permissi
 use std::error::Error;
 
 use crate::{
-    database::bot_guild_configurations::Model as GuildConfigModel,
     twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
+        commands::context::{
+            ContextCommand,
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+            context_command::GuildConfigModel,
+        },
         discord_client::DiscordClient,
-        messages::{ DiscordEmbed, DiscordEmbedField },
+        utils::send_command_response,
     },
     utilities::utils::ColorResolvables,
 };
@@ -40,78 +45,33 @@ impl ContextCommand for UntimeoutMemberCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+        let guild_id = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
         if let Some(ParsedArg::Users(users)) = command_args.first() {
-            if let Some(guild_id) = msg.guild_id {
-                for user in users {
-                    let mut args = FluentArgs::new();
-                    args.set("user", format!("<@{}>", user.id.to_string()));
+            for user in users {
+                let mut args = FluentArgs::new();
+                args.set("user", format!("<@{}>", user.id.to_string()));
 
-                    if client.http.guild_member(guild_id, user.id).await?.model().await?.mute {
-                        match
-                            client.http
-                                .update_guild_member(guild_id, user.id)
-                                .communication_disabled_until(None)?.await
-                        {
-                            Ok(_) => {
-                                let message = client.get_locale_string(
-                                    &config.locale,
-                                    "command-untimeout-success",
-                                    Some(&args)
-                                );
-                                let _ = client.send_message(
-                                    msg.channel_id,
-                                    crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
-                                        vec![DiscordEmbed {
-                                            description: Some(message),
-                                            color: Some(ColorResolvables::Green.as_u32()),
-                                            ..Default::default()
-                                        }]
-                                    )
-                                ).await;
-                            }
-                            Err(e) => {
-                                let message = client.get_locale_string(
-                                    &config.locale,
-                                    "command-untimeout-fail",
-                                    Some(&args)
-                                );
-                                let _ = client.send_message(
-                                    msg.channel_id,
-                                    crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
-                                        vec![DiscordEmbed {
-                                            description: Some(message),
-                                            fields: Some(
-                                                vec![DiscordEmbedField {
-                                                    name: "Error".to_string(),
-                                                    value: format!("{}", e),
-                                                    inline: false,
-                                                }]
-                                            ),
-                                            color: Some(ColorResolvables::Red.as_u32()),
-                                            ..Default::default()
-                                        }]
-                                    )
-                                ).await;
-                            }
+                let (key, color) = if
+                    client.http.guild_member(guild_id, user.id).await?.model().await?.mute
+                {
+                    match
+                        client.http
+                            .update_guild_member(guild_id, user.id)
+                            .communication_disabled_until(None)?.await
+                    {
+                        Ok(_) => { ("command-untimeout-success", ColorResolvables::Green) }
+                        Err(e) => {
+                            args.set("err", format!("{}", e));
+                            ("command-untimeout-fail", ColorResolvables::Red)
                         }
-                    } else {
-                        let message = client.get_locale_string(
-                            &config.locale,
-                            "command-untimeout-notfound",
-                            Some(&args)
-                        );
-                        let _ = client.send_message(
-                            msg.channel_id,
-                            crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
-                                vec![DiscordEmbed {
-                                    description: Some(message),
-                                    color: Some(ColorResolvables::Green.as_u32()),
-                                    ..Default::default()
-                                }]
-                            )
-                        ).await;
                     }
-                }
+                } else {
+                    ("command-untimeout-notfound", ColorResolvables::Yellow)
+                };
+
+                let _ = send_command_response(&client, &config, &msg, key, Some(args), color).await;
             }
         }
 

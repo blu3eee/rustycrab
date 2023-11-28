@@ -4,9 +4,14 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
 use crate::{
-    database::bot_guild_configurations,
     twilightrs::{
-        commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
+        commands::context::{
+            ContextCommand,
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+            context_command::GuildConfigModel,
+        },
         discord_client::DiscordClient,
         bot::afk::UserAfkStatus,
     },
@@ -27,7 +32,7 @@ impl ContextCommand for AfkCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        config: &bot_guild_configurations::Model,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
