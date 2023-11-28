@@ -168,9 +168,10 @@ command-resume-notpaused = Music player is not paused
 command-skip = Skip the current track
 command-skip-skipped = [{ $title }]{$ url } has been skipped
 command-skip-author = Skipped by @{ $username }
-command-skip-requested-by = Track was requested by { $user }
+command-skip-requested-by = Track was requested by
 command-skip-no-metadata = Skipped a track, no skipped track info found
 command-skip-failed = Failed to skip current track
+
 # Skip to
 command-skipto = Skip to the track at a position
 command-skipto-nopos = Please provide a valid position to skip to

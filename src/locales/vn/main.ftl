@@ -156,3 +156,23 @@ music-queue-empty = Hàng đợi trống.
 music-queue-title = Hàng đợi: { $count } bài hát.
 music-queue-prev = Trang Trước
 music-queue-next = Trang Sau
+
+# Resume (Tiếp Tục)
+command-resume = Tiếp tục phát bài hát đã tạm dừng.
+command-resume-success = Đã tiếp tục phát bài hát.
+command-resume-failed = Không thể tiếp tục phát bài hát.
+command-resume-notpaused = Máy phát nhạc không bị tạm dừng.
+
+# Skip (Bỏ Qua)
+command-skip = Bỏ qua bài hát hiện tại.
+command-skip-skipped = [{ $title }]{$ url } đã bị bỏ qua.
+command-skip-author = Được bỏ qua bởi @{ $username }.
+command-skip-requested-by = Bài hát được yêu cầu bởi.
+command-skip-no-metadata = Đã bỏ qua một bài hát, không tìm thấy thông tin bài hát bị bỏ qua.
+command-skip-failed = Không thể bỏ qua bài hát hiện tại.
+
+# Skip to
+command-skipto = Bỏ qua đến bài hát ở một vị trí cụ thể.
+command-skipto-nopos = Vui lòng cung cấp một vị trí hợp lệ để bỏ qua đến.
+command-skipto-invalid = Vị trí không hợp lệ: chỉ có { $count } bài hát trong hàng đợi.
+command-skipto-success = Đã bỏ qua đến bài hát ở vị trí { $position }.
