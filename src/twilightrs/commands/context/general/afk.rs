@@ -7,7 +7,8 @@ use crate::{
     database::bot_guild_configurations,
     twilightrs::{
         commands::context::{ ContextCommand, ParsedArg, ArgSpec, ArgType },
-        discord_client::{ DiscordClient, UserAfkStatus },
+        discord_client::DiscordClient,
+        bot::afk::UserAfkStatus,
     },
     utilities::utils::current_unix_timestamp,
 };

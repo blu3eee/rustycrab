@@ -14,7 +14,7 @@ use twilight_model::{
 };
 use twilight_http::{ Client as HttpClient, Response, request::channel::message::CreateMessage };
 use twilight_standby::Standby;
-use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap };
+use std::{ sync::{ Arc, RwLock }, collections::HashMap };
 
 use crate::{
     database::embed_info::Model as EmbedModel,
@@ -27,7 +27,7 @@ use crate::{
 use super::{
     messages::DiscordEmbed,
     commands::context::context_command::GuildConfigModel,
-    bot::voice_music::voice_manager::VoiceManager,
+    bot::{ voice_music::voice_manager::VoiceManager, afk::UserAfkStatus },
 };
 
 use fluent::FluentResource;
@@ -75,24 +75,6 @@ pub struct DiscordClientRef {
 
     /// Default localization bundle used when a specific guild's bundle is not found.
     pub default_bundle: FluentBundle<FluentResource, IntlLangMemoizer>,
-}
-
-pub struct UserAfkStatus {
-    pub message: Option<String>,
-    pub since: u32,
-    pub activities_count: u8,
-    pub notify: Vec<Id<UserMarker>>,
-}
-
-impl UserAfkStatus {
-    pub fn new(message: Option<String>, since: u32) -> Self {
-        Self {
-            message,
-            since,
-            activities_count: 0,
-            notify: vec![],
-        }
-    }
 }
 
 impl DiscordClientRef {
