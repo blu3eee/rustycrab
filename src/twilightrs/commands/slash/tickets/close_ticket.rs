@@ -13,7 +13,7 @@ use crate::{
     twilightrs::{
         commands::slash::slash_command::SlashCommand,
         discord_client::DiscordClient,
-        bot::closeticket::close_ticket_handler,
+        bot::tickets::close_ticket_handler,
     },
     queries::tickets_system::ticket_queries::TicketQueries,
 };

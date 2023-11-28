@@ -22,7 +22,7 @@ impl ContextCommand for CurrentSongCommand {
     }
 
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["currentsong", "track", "playing"]
+        vec!["nowplaying", "track", "playing"]
     }
 
     async fn run(
@@ -43,12 +43,15 @@ impl ContextCommand for CurrentSongCommand {
             return Ok(());
         }
 
-        if let Some((metadata, requested_by)) = client.voice_manager.get_current_song(guild_id) {
+        if
+            let Some((metadata, requested_by)) =
+                client.voice_music_manager.get_current_song(guild_id)
+        {
             client.http.create_message(msg.channel_id).embeds(
                 &vec![
                     Embed::from(DiscordEmbed {
                         author_name: Some("Now playing".to_string()),
-                        author_icon_url: Some(client.voice_manager.spinning_disk.clone()),
+                        author_icon_url: Some(client.voice_music_manager.spinning_disk.clone()),
                         title: Some(
                             metadata.title.as_ref().unwrap_or(&"<UNKNOWN>".to_string()).to_string()
                         ),

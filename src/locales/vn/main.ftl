@@ -6,7 +6,13 @@ commonError-noBotGuildConfig = Không tìm thấy cấu hình bang hội.
 commonError-noTag = Gắn thẻ ít nhất một người.
 commonError-tag1 = Gắn thẻ một người
 
+# Utilities
+interaction-denied = Bạn không đủ quyền.
+requested-user = Được yêu cầu bởi @{ $username }
+
 # Commands 
+command-error = Đã có lỗi xảy ra khi xử lí lệnh.
+command-guildonly = Lệnh chỉ được sử dụng ở server.
 
 # Lệnh của chủ sở hữu Bot
 command-botowner = Quản lý quyền của BotOwner
@@ -103,3 +109,50 @@ afk-notifyme = Notify me
 afk-is-back = { $user } không còn ở trạng thái AFK nữa
 afk-notify-added = Bạn sẽ nhận được thông báo khi người dùng này trở lại.
 afk-notfound = Người dùng này không còn ở trạng thái AFK nữa.
+
+# VOICE & MUSIC
+music-note = Tính năng này chỉ chấp nhận URL của Youtube (bài hát và danh sách phát) và URL bản nhạc đơn từ SoundCloud. Kết quả tìm kiếm sẽ lấy video đầu tiên từ tìm kiếm Youtube và thêm vào hàng đợi.
+music-not-same-channel = Bạn cần ở trong cùng kênh voice với bot để sử dụng lệnh này.
+music-not-playing = Tớ đang không phát nhạc ở kênh nào cả.
+music-no-voice = Tớ đang không ở trong kênh voice nào.
+music-user-novoice = Bạn cần ở trong kênh voice để sử dụng lệnh.
+music-cannot-connect = Tớ không thể kết nối với kênh của bạn.
+music-error-track = Lỗi khi truy xuất thông tin bài hát.
+music-duration = Thời lượng
+music-position-inqueue = Vị trí trong hàng đợi
+music-playlist-fetch-error = Lỗi khi lấy bài hát từ danh sách phát, vui lòng kiểm tra lại link hoặc tính khả dụng của video/danh sách phát.
+music-nowplaying = Đang phát
+# Join Command
+command-join = Yêu cầu bot tham gia kênh voice.
+command-join-nochannel = Bạn cần ở trong kênh voice để sử dụng lệnh.
+command-join-joined = Đã tham gia { $channel }
+command-join-failed = Không thể tham gia { $channel }! Lỗi: { $err }
+
+# Leave Command
+command-leave = Yêu cầu bot rời kênh voice.
+command-leave-left = Đã rời kênh voice.
+command-leave-failed = Không thể rời kênh voice.
+
+# Loop Command
+command-loop = Lặp lại bài nhạc hoặc danh sách nhạc
+command-loop-track = Đang lặp bài hát hiện tại.
+command-loop-track-failed = Không thể lặp bài hát hiện tại.
+command-loop-queue = Lặp toàn bộ hàng đợi.
+command-loop-invalid =  Invalid loop type. accepts: current/one/all/queue
+
+# Pause Command
+command-pause = Tạm dừng bài hát đang phát.
+command-pause-paused = Đã tạm dừng bài hát.
+command-pause-unpaused = Đã tiếp tục phát bài hát.
+
+# Play Command
+command-play = Phát nhạc.
+command-play-invalid-url = Vui lòng cung cấp URL hoặc truy vấn tìm kiếm hợp lệ để phát.
+command-play-added-tracks = Đã thêm { $count } bài hát vào hàng đợi.
+command-play-added-track = Đã thêm bài hát.
+
+# Queue
+music-queue-empty = Hàng đợi trống.
+music-queue-title = Hàng đợi: { $count } bài hát.
+music-queue-prev = Trang Trước
+music-queue-next = Trang Sau

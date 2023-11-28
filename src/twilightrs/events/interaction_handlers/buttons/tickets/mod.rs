@@ -10,7 +10,7 @@ use crate::{
     twilightrs::{
         discord_client::DiscordClient,
         dispatchers::ClientDispatchers,
-        bot::closeticket::close_ticket_handler,
+        bot::tickets::close_ticket_handler,
     },
     queries::tickets_system::ticket_queries::TicketQueries,
     default_queries::DefaultSeaQueries,

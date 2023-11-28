@@ -24,6 +24,7 @@ use default_queries::DefaultSeaQueries;
 use queries::bot_queries::BotQueries;
 use sea_orm::DatabaseConnection;
 
+use twilight_standby::Standby;
 use utilities::app_error::AppError;
 use std::future::Future;
 use std::{ collections::HashMap, error::Error };
@@ -124,6 +125,8 @@ pub async fn running_bots(
             InMemoryCache::builder().resource_types(ResourceType::all()).build()
         );
 
+        let standby = Arc::new(Standby::new());
+
         let shards: Vec<Shard> = stream
             ::create_recommended(&http, config, |_, builder| builder.build()).await?
             .collect();
@@ -138,7 +141,13 @@ pub async fn running_bots(
         let songbird = Arc::new(Songbird::twilight(Arc::new(senders), user_id));
         // Only HTTP client is stored in DiscordClient
         let client = Arc::new(
-            DiscordClientRef::new(db.clone(), http.clone(), cache.clone(), songbird.clone())
+            DiscordClientRef::new(
+                db.clone(),
+                http.clone(),
+                cache.clone(),
+                standby.clone(),
+                songbird.clone()
+            )
         );
 
         discord_clients.insert(bot.bot_id, client.clone());

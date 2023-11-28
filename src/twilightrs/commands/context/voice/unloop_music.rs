@@ -6,7 +6,7 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 use crate::twilightrs::{
     commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
     discord_client::{ DiscordClient, MessageContent },
-    bot::voice_manager::PlayerLoopState,
+    bot::voice_music::voice_manager::PlayerLoopState,
 };
 pub struct UnloopMusicCommand {}
 
@@ -34,16 +34,20 @@ impl ContextCommand for UnloopMusicCommand {
             return Ok(());
         }
 
-        match client.voice_manager.get_loop_state(guild_id) {
+        match client.voice_music_manager.get_loop_state(guild_id) {
             PlayerLoopState::LoopCurrentTrack => {
-                if let Some(track_handle) = client.voice_manager.get_play_queue(guild_id).current() {
+                if
+                    let Some(track_handle) = client.voice_music_manager
+                        .get_play_queue(guild_id)
+                        .current()
+                {
                     track_handle.disable_loop()?;
                 }
             }
             _ => {}
         }
 
-        client.voice_manager.set_loop_state(guild_id, PlayerLoopState::NoLoop);
+        client.voice_music_manager.set_loop_state(guild_id, PlayerLoopState::NoLoop);
         client.reply_message(
             msg.channel_id,
             msg.id,

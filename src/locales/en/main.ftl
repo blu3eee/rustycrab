@@ -4,7 +4,15 @@ permission-missing = Missing permission(s) to use the command
 commonError-noUserInfo = Can't find { $user } information.
 commonError-noBotGuildConfig = Not Guild Configuration found.
 commonError-noTag = Tag at least one person.
-commonError-tag1 = Tag one person
+commonError-tag1 = Tag one permission
+
+# Utilities
+interaction-denied = You're not allowed to use this.
+requested-user = Requested by @{ $username }
+
+# Commands 
+command-error = An error happened when trying to process the command.
+command-guildonly = Command not used in a guild.
 
 # Bot Owner Commands
 command-botowner = Manage BotOwner permission
@@ -101,3 +109,51 @@ afk-notifyme = Notify me
 afk-is-back = { $user } is no longer afk
 afk-notify-added = You will be notified when this user is back
 afk-notfound = This user is no longer AFK
+
+# VOICE & MUSIC
+music-note = This feature only accepts Youtube URLs (track and playlist) and SoundCloud single track URL at the moment. Search results will get the first video from youtube search and add it to the queue.
+music-not-same-channel = You need to be in the same voice channel as the bot to use this command.
+music-not-playing = I'm not playing any music.
+music-no-voice = I'm not in any voice channel.
+music-user-novoice = You need to be in a voice channel to use the command
+music-cannot-connect = I can't connect to your channel
+music-error-track = Error retrieving track information.
+music-duration = Duration
+music-position-inqueue = Position in queue
+music-playlist-fetch-error = Error getting tracks from playlist, please check the link or the video/playlist availablity.
+music-nowplaying = Now playing
+
+# Join Command
+command-join = Ask the bot to join a voice channel
+command-join-nochannel = You need to be in a voice channel to use the command
+command-join-joined = Join { $channel }
+command-join-failed = Failed to join { $channel }! Reason: { $err }
+
+# Leave Command
+command-leave = Nicely ask the bot to leave the channel
+command-leave-left = Left the voice channel.
+command-leave-failed = Failed to leave the voice channel
+
+# Loop Command
+command-loop = Loop music
+command-loop-track = Looping current track
+command-loop-track-failed = Failed to loop current track
+command-loop-queue = Looping entire queue
+command-loop-invalid = Invalid loop type. accepts: current/one/all/queue
+
+# Pause Command
+command-pause = Pause the current playing track
+command-pause-paused = Paused the track.
+command-pause-unpaused = Unpaused the track.
+
+# Play Command
+command-play = Play music
+command-play-invalid-url = Please provide a valid URL or search query to play.
+command-play-added-tracks = Added { $count } tracks to the queue
+command-play-added-track = Added track
+
+# Queue
+music-queue-empty = Queue is empty
+music-queue-title = Queue: { $count } songs
+music-queue-prev = Prev Page
+music-queue-next = Next Page

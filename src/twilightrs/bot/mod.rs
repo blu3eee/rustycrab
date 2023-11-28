@@ -1,3 +1,2 @@
-pub mod closeticket;
-pub mod voice_manager;
-pub mod youtube_api;
+pub mod tickets;
+pub mod voice_music;

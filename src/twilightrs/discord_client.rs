@@ -12,6 +12,7 @@ use twilight_model::{
     guild::Role,
 };
 use twilight_http::{ Client as HttpClient, Response, request::channel::message::CreateMessage };
+use twilight_standby::Standby;
 use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap };
 
 use crate::{
@@ -24,7 +25,7 @@ use crate::{
 use super::{
     messages::DiscordEmbed,
     commands::context::context_command::GuildConfigModel,
-    bot::voice_manager::VoiceManager,
+    bot::voice_music::voice_manager::VoiceManager,
 };
 
 use fluent::FluentResource;
@@ -55,6 +56,9 @@ pub struct DiscordClientRef {
     /// In-memory cache of Discord entities.
     pub cache: Arc<InMemoryCache>,
 
+    /// Standby
+    pub standby: Arc<Standby>,
+
     /// Record of deleted messages.
     pub deleted_messages: RwLock<HashMap<Id<ChannelMarker>, Vec<CachedMessage>>>,
 
@@ -62,7 +66,7 @@ pub struct DiscordClientRef {
     pub afk_users: RwLock<HashMap<Id<GuildMarker>, HashMap<Id<UserMarker>, UserAfkStatus>>>,
 
     /// Manager for voice-related features.
-    pub voice_manager: Arc<VoiceManager>,
+    pub voice_music_manager: Arc<VoiceManager>,
 
     /// Localization bundles for multi-language support.
     pub bundles: HashMap<String, FluentBundle<FluentResource, IntlLangMemoizer>>,
@@ -106,6 +110,7 @@ impl DiscordClientRef {
         db: DatabaseConnection,
         http: Arc<HttpClient>,
         cache: Arc<InMemoryCache>,
+        standby: Arc<Standby>,
         songbird: Arc<Songbird>
     ) -> Self {
         let mut bundles: HashMap<
@@ -121,7 +126,8 @@ impl DiscordClientRef {
             db,
             http,
             cache,
-            voice_manager: Arc::new(VoiceManager::new(songbird)),
+            standby,
+            voice_music_manager: Arc::new(VoiceManager::new(songbird)),
             deleted_messages: HashMap::new().into(),
             bundles,
             default_bundle: load_localization("en"),
@@ -154,7 +160,12 @@ impl DiscordClientRef {
         if let Some(result) = get_localized_string(bundle, key, args) {
             result
         } else {
-            key.to_string()
+            let bundle = self.get_bundle("en");
+            if let Some(result) = get_localized_string(bundle, key, args) {
+                result
+            } else {
+                key.to_string()
+            }
         }
     }
 

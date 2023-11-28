@@ -11,6 +11,7 @@ mod queue;
 mod song;
 mod skip_to;
 mod loop_music;
+mod loopq_music;
 mod unloop_music;
 
 use self::{
@@ -27,6 +28,7 @@ use self::{
     loop_music::LoopMusicCommand,
     unloop_music::UnloopMusicCommand,
     music::MusicHelpCommand,
+    loopq_music::LoopQueueMusicCommand,
 };
 
 use super::{ ContextCommandCategory, context_command::ContextCommand };
@@ -52,6 +54,7 @@ impl ContextCommandCategory for VoiceCommands {
             Box::new(CurrentSongCommand {}) as Box<dyn ContextCommand>,
             Box::new(SkipToTrackCommand {}) as Box<dyn ContextCommand>,
             Box::new(LoopMusicCommand {}) as Box<dyn ContextCommand>,
+            Box::new(LoopQueueMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(UnloopMusicCommand {}) as Box<dyn ContextCommand>,
         ])
     }

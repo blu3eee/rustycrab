@@ -60,9 +60,9 @@ impl ContextCommand for SkipToTrackCommand {
         };
 
         // Skips to the specified track position (indexed-1)
-        if client.voice_manager.skip_to_position(guild_id, position) {
+        if client.voice_music_manager.skip_to_position(guild_id, position) {
             // Skip the current track
-            if let Some(handle) = client.voice_manager.get_play_queue(guild_id).current() {
+            if let Some(handle) = client.voice_music_manager.get_play_queue(guild_id).current() {
                 let _ = handle.stop();
             }
 

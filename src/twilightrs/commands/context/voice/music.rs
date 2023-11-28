@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use fluent_bundle::FluentArgs;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
@@ -45,7 +46,9 @@ impl ContextCommand for MusicHelpCommand {
         msg: &MessageCreate,
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let _ = msg.guild_id.ok_or("Command not used in a guild")?;
+        let _ = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
         let bot = client.get_bot().await?;
         let music_commands: Vec<Box<dyn ContextCommand>> = Vec::from([
             Box::new(PlayCommand {}) as Box<dyn ContextCommand>,
@@ -85,14 +88,27 @@ impl ContextCommand for MusicHelpCommand {
             crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
                 vec![DiscordEmbed {
                     author_name: Some(format!("Music commands - Prefix: {}", config.prefix)),
-                    author_icon_url: Some(
-                        "https://cdn.darrennathanael.com/icons/spinning_disk.gif".to_string()
-                    ),
+                    author_icon_url: Some(client.voice_music_manager.spinning_disk.clone()),
                     thumbnail: bot.avatar.map(|avatar_hash| cdn_avatar!(bot.id, avatar_hash)),
                     description: Some(
-                        format!("This feature only accepts Youtube URLs at the moment. Search results will get the first video from youtube search and add it to the queue.\n```fix\n{}```", description)
+                        format!(
+                            "{}\n```fix\n{}```",
+                            client.get_locale_string(&config.locale, "music-note", None),
+                            description
+                        )
                     ),
+
                     color: Some(ColorResolvables::Blue.as_u32()),
+                    footer_text: Some(
+                        client.get_locale_string(
+                            &config.locale,
+                            "requested-user",
+                            Some(
+                                &FluentArgs::from_iter(vec![("username", msg.author.name.clone())])
+                            )
+                        )
+                    ),
+                    footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
                     ..Default::default()
                 }]
             )

@@ -20,6 +20,10 @@ impl ContextCommand for SkipCurrentTrackCommand {
         "skip"
     }
 
+    fn aliases(&self) -> Vec<&'static str> {
+        vec!["next"]
+    }
+
     async fn run(
         &self,
         client: DiscordClient,
@@ -40,13 +44,13 @@ impl ContextCommand for SkipCurrentTrackCommand {
 
         // Scope to limit the lock guard
         let trackqueue = {
-            let store = client.voice_manager.trackqueues.read().unwrap();
+            let store = client.voice_music_manager.trackqueues.read().unwrap();
             store.get(&guild_id).cloned()
         };
 
         if let Some(trackqueue) = trackqueue {
             if let Some(_) = trackqueue.current() {
-                let skipped_track = client.voice_manager.get_current_song(guild_id);
+                let skipped_track = client.voice_music_manager.get_current_song(guild_id);
                 match trackqueue.skip() {
                     Ok(_) => {
                         if let Some((metadata, requested_user)) = skipped_track {

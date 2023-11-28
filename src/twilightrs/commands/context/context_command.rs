@@ -1,10 +1,12 @@
 use crate::{
     database::bot_guild_configurations,
     twilightrs::{
-        discord_client::DiscordClient,
+        discord_client::{ DiscordClient, MessageContent },
         utils::greedy::{ greedy_user, greedy_users, greedy_channel, greedy_channels },
+        messages::DiscordEmbed,
     },
     locales::{ load_localization, get_localized_string },
+    utilities::utils::ColorResolvables,
 };
 
 use twilight_http::Client as HttpClient;
@@ -14,7 +16,7 @@ use twilight_model::{
     channel::Channel,
     guild::Permissions,
 };
-use std::error::Error;
+use std::{ error::Error, sync::Arc };
 
 use async_trait::async_trait;
 
@@ -157,12 +159,23 @@ pub trait ContextCommand: Send + Sync {
         match parsed_args {
             Ok(args) => {
                 // client.set_bundle(&config.locale);
-                let _: Result<(), Box<dyn Error + Send + Sync + 'static>> = self.run(
-                    client,
-                    config,
-                    msg,
-                    args
-                ).await;
+                if let Err(err) = self.run(Arc::clone(&client), config, msg, args).await {
+                    let content = client.get_locale_string(&config.locale, "command-error", None);
+                    if !content.is_empty() {
+                        client.reply_message(
+                            msg.channel_id,
+                            msg.id,
+                            MessageContent::DiscordEmbeds(
+                                vec![DiscordEmbed {
+                                    description: Some(err.to_string()),
+                                    color: Some(ColorResolvables::Red.as_u32()),
+                                    ..Default::default()
+                                }]
+                            )
+                        ).await?;
+                    }
+                    // report error
+                }
             }
             Err(_) => {
                 let _ = client.reply_message(

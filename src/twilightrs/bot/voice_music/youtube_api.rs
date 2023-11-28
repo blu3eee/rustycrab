@@ -46,6 +46,11 @@ pub async fn search_youtube(query: &str) -> Result<String, Box<dyn Error + Sync 
 }
 
 use url::Url;
+
+pub fn is_youtube_url(url: &str) -> bool {
+    url.contains("youtube.com")
+}
+
 pub fn is_youtube_playlist_url(url: &str) -> bool {
     let parsed_url = Url::parse(url).unwrap();
     parsed_url.query_pairs().any(|(key, _)| key == "list")

@@ -6,12 +6,7 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
     twilightrs::{
-        commands::context::{
-            context_command::{ ContextCommand, GuildConfigModel },
-            ParsedArg,
-            ArgSpec,
-            ArgType,
-        },
+        commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
         discord_client::{ DiscordClient, MessageContent },
         messages::DiscordEmbed,
         bot::voice_music::voice_manager::PlayerLoopState,
@@ -19,16 +14,12 @@ use crate::{
     utilities::utils::ColorResolvables,
     cdn_avatar,
 };
-pub struct LoopMusicCommand {}
+pub struct LoopQueueMusicCommand {}
 
 #[async_trait]
-impl ContextCommand for LoopMusicCommand {
+impl ContextCommand for LoopQueueMusicCommand {
     fn name(&self) -> &'static str {
-        "loop"
-    }
-
-    fn args(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::new("type: current/one/all/queue", ArgType::Arg, true)]
+        "loopq"
     }
 
     async fn run(
@@ -36,7 +27,7 @@ impl ContextCommand for LoopMusicCommand {
         client: DiscordClient,
         config: &GuildConfigModel,
         msg: &MessageCreate,
-        command_args: Vec<ParsedArg>
+        _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         let guild_id = msg.guild_id.ok_or(
             client.get_locale_string(&config.locale, "command-guildonly", None)
@@ -46,39 +37,8 @@ impl ContextCommand for LoopMusicCommand {
             if !client.is_user_in_same_channel_as_bot(guild_id, msg.author.id).await? {
                 ("music-not-same-channel", ColorResolvables::Red)
             } else {
-                let loop_type = if let Some(ParsedArg::Arg(state)) = command_args.first() {
-                    state
-                } else {
-                    "queue"
-                };
-
-                match loop_type {
-                    "current" | "song" | "track" | "one" | "1" => {
-                        if
-                            let Some(track_handle) = client.voice_music_manager
-                                .get_play_queue(guild_id)
-                                .current()
-                        {
-                            track_handle.enable_loop()?;
-                            client.voice_music_manager.set_loop_state(
-                                guild_id,
-                                PlayerLoopState::LoopCurrentTrack
-                            );
-                            ("command-loop-track", ColorResolvables::Green)
-                        } else {
-                            ("command-loop-track-failed", ColorResolvables::Red)
-                        }
-                    }
-                    "queue" | "all" => {
-                        client.voice_music_manager.set_loop_state(
-                            guild_id,
-                            PlayerLoopState::LoopQueue
-                        );
-
-                        ("command-loop-queue", ColorResolvables::Green)
-                    }
-                    _ => { ("command-loop-invalid", ColorResolvables::Red) }
-                }
+                client.voice_music_manager.set_loop_state(guild_id, PlayerLoopState::LoopQueue);
+                ("command-loop-queue", ColorResolvables::Green)
             }
         } else {
             ("music-no-voice", ColorResolvables::Red)

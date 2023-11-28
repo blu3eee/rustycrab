@@ -1,16 +1,22 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use fluent_bundle::FluentArgs;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
-use crate::twilightrs::{
-    commands::context::{
-        context_command::{ ContextCommand, GuildConfigModel },
-        ParsedArg,
-        ArgSpec,
-        ArgType,
+use crate::{
+    twilightrs::{
+        commands::context::{
+            context_command::{ ContextCommand, GuildConfigModel },
+            ParsedArg,
+            ArgSpec,
+            ArgType,
+        },
+        discord_client::{ DiscordClient, MessageContent },
+        messages::DiscordEmbed,
     },
-    discord_client::{ DiscordClient, MessageContent },
+    utilities::utils::ColorResolvables,
+    cdn_avatar,
 };
 
 pub struct JoinCommand {}
@@ -28,48 +34,68 @@ impl ContextCommand for JoinCommand {
     async fn run(
         &self,
         client: DiscordClient,
-        _: &GuildConfigModel,
+        config: &GuildConfigModel,
         msg: &MessageCreate,
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        // Ensure the user is in a voice channel
-        let guild_id = match msg.guild_id {
-            Some(id) => id,
-            None => {
-                return Ok(());
-            } // Command not used in a guild
-        };
+        let guild_id = msg.guild_id.ok_or(
+            client.get_locale_string(&config.locale, "command-guildonly", None)
+        )?;
+        let mut args = FluentArgs::new();
 
-        let channel_id = match client.cache.voice_state(msg.author.id, guild_id) {
-            Some(state) => state.channel_id(),
+        let (key, color) = match client.cache.voice_state(msg.author.id, guild_id) {
+            Some(state) => {
+                // Ensure the user is in a voice channel
+                let channel_id = state.channel_id();
+                args.set("channel", format!("<#{}>", channel_id));
+
+                let join_result = client.voice_music_manager.songbird.join(
+                    guild_id,
+                    channel_id
+                ).await;
+
+                match join_result {
+                    Ok(_call_lock) => {
+                        // Successfully joined the channel
+                        ("command-join-joined", ColorResolvables::Green)
+                    }
+                    Err(e) => {
+                        // Failed to join the channel
+                        args.set("err", e.to_string());
+                        ("command-join-failed", ColorResolvables::Red)
+                    }
+                }
+            }
             None => {
                 // Notify user they need to be in a voice channel
-                client.reply_message(
-                    msg.channel_id,
-                    msg.id,
-                    MessageContent::Text(
-                        "You need to be in a voice channel to use the command".to_string()
-                    )
-                ).await?;
-                return Ok(());
+
+                ("command-join-nochannel", ColorResolvables::Red)
             }
         };
 
-        let join_result = client.voice_manager.songbird.join(guild_id, channel_id).await;
-
-        let content = match join_result {
-            Ok(_call_lock) => {
-                // Successfully joined the channel
-                format!("Joined <#{}>!", channel_id)
-            }
-            Err(e) => {
-                // Failed to join the channel
-                format!("Failed to join <#{}>! Why: {:?}", channel_id, e)
-            }
-        };
-
+        let content = client.get_locale_string(&config.locale, key, Some(&args));
         // Notify user about the result
-        client.reply_message(msg.channel_id, msg.id, MessageContent::Text(content)).await?;
+        client.reply_message(
+            msg.channel_id,
+            msg.id,
+            MessageContent::DiscordEmbeds(
+                vec![DiscordEmbed {
+                    description: Some(content),
+                    color: Some(color.as_u32()),
+                    footer_text: Some(
+                        client.get_locale_string(
+                            &config.locale,
+                            "requested-user",
+                            Some(
+                                &FluentArgs::from_iter(vec![("username", msg.author.name.clone())])
+                            )
+                        )
+                    ),
+                    footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
+                    ..Default::default()
+                }]
+            )
+        ).await?;
 
         Ok(())
     }

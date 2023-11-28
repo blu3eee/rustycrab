@@ -1,4 +1,4 @@
-mod buttons;
+pub mod buttons;
 
 use std::{ error::Error, sync::Arc };
 

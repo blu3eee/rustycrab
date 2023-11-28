@@ -1,4 +1,5 @@
 use std::time::Duration;
+use rand::{ distributions::Alphanumeric, Rng };
 
 pub mod app_error;
 pub mod utils;
@@ -22,4 +23,24 @@ pub fn format_duration(duration: &Duration) -> String {
     } else {
         format!("{:02}:{:02}", minutes, seconds)
     }
+}
+
+/// Generates a random alphanumeric string of a given length.
+///
+/// # Arguments
+///
+/// * `length` - The length of the string to generate.
+///
+/// # Returns
+///
+/// A random alphanumeric string of the specified length.
+///
+/// # Examples
+///
+/// ```rust, ignore
+/// let random_string = generate_random_string(10);
+/// println!("Random String: {}", random_string);
+/// ```
+pub fn generate_random_string(length: usize) -> String {
+    rand::thread_rng().sample_iter(&Alphanumeric).take(length).map(char::from).collect()
 }

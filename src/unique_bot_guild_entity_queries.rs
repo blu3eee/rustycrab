@@ -28,7 +28,7 @@ pub trait UniqueBotGuildEntityQueries: DefaultSeaQueries {
     /// It is used in join operations to query data based on the relationship between these entities.
     ///
     /// ### Example
-    /// ```rust,ignore
+    /// ```rust, ignore
     /// impl UniqueBotGuildEntityQueries for MyEntityQueries {
     ///     fn bot_relation() -> sea_orm::entity::RelationDef {
     ///         MyEntity::Relation::Bots.def()
