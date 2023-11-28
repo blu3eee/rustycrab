@@ -160,21 +160,17 @@ pub trait ContextCommand: Send + Sync {
             Ok(args) => {
                 // client.set_bundle(&config.locale);
                 if let Err(err) = self.run(Arc::clone(&client), config, msg, args).await {
-                    let content = client.get_locale_string(&config.locale, "command-error", None);
-                    if !content.is_empty() {
-                        client.reply_message(
-                            msg.channel_id,
-                            msg.id,
-                            MessageContent::DiscordEmbeds(
-                                vec![DiscordEmbed {
-                                    description: Some(err.to_string()),
-                                    color: Some(ColorResolvables::Red.as_u32()),
-                                    ..Default::default()
-                                }]
-                            )
-                        ).await?;
-                    }
-                    // report error
+                    client.reply_message(
+                        msg.channel_id,
+                        msg.id,
+                        MessageContent::DiscordEmbeds(
+                            vec![DiscordEmbed {
+                                description: Some(err.to_string()),
+                                color: Some(ColorResolvables::Red.as_u32()),
+                                ..Default::default()
+                            }]
+                        )
+                    ).await?;
                 }
             }
             Err(_) => {

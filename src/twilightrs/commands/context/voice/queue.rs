@@ -223,9 +223,11 @@ impl ContextCommand for QueueCommand {
                                     current_page -= 1;
                                 }
                                 if current_page == pages - 1 {
+                                    buttons[0].disabled = false;
                                     buttons[1].disabled = true;
                                 } else if current_page == 0 {
-                                    buttons[0].disabled = false;
+                                    buttons[0].disabled = true;
+                                    buttons[1].disabled = false;
                                 } else {
                                     buttons[0].disabled = false;
                                     buttons[1].disabled = false;

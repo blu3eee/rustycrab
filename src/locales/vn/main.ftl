@@ -48,7 +48,7 @@ command-math-invalid = Phép học không hợp lệ
 command-prefix = Thay đổi prefix máy chủ của bot
 command-prefix-invalid = prefix không hợp lệ, prefix không được để trống
 command-prefix-success = prefix được cập nhật thành công. Prefix: `{ $prefix }`
-
+command-prefix-failed = thất bại khi cập nhật prefix
 # Lệnh check banner
 command-banner = Kiểm tra banner người dùng
 
@@ -111,7 +111,7 @@ afk-notify-added = Bạn sẽ nhận được thông báo khi người dùng nà
 afk-notfound = Người dùng này không còn ở trạng thái AFK nữa.
 
 # VOICE & MUSIC
-music-note = Tính năng này chỉ chấp nhận URL của Youtube (bài hát và danh sách phát) và URL bản nhạc đơn từ SoundCloud. Kết quả tìm kiếm sẽ lấy video đầu tiên từ tìm kiếm Youtube và thêm vào hàng đợi.
+music-note = Tính năng này chỉ chấp nhận URL từ SoundCloud và Youtube hoặc tìm kiếm trên Youtube. Kết quả tìm kiếm sẽ lấy video đầu tiên từ tìm kiếm Youtube và thêm vào hàng đợi.
 music-not-same-channel = Bạn cần ở trong cùng kênh voice với bot để sử dụng lệnh này.
 music-not-playing = Tớ đang không phát nhạc ở kênh nào cả.
 music-no-voice = Tớ đang không ở trong kênh voice nào.
@@ -157,15 +157,15 @@ music-queue-title = Hàng đợi: { $count } bài hát.
 music-queue-prev = Trang Trước
 music-queue-next = Trang Sau
 
-# Resume (Tiếp Tục)
+# Resume 
 command-resume = Tiếp tục phát bài hát đã tạm dừng.
 command-resume-success = Đã tiếp tục phát bài hát.
 command-resume-failed = Không thể tiếp tục phát bài hát.
 command-resume-notpaused = Máy phát nhạc không bị tạm dừng.
 
-# Skip (Bỏ Qua)
+# Skip 
 command-skip = Bỏ qua bài hát hiện tại.
-command-skip-skipped = [{ $title }]{$ url } đã bị bỏ qua.
+command-skip-skipped = { $title } đã bị bỏ qua.
 command-skip-author = Được bỏ qua bởi @{ $username }.
 command-skip-requested-by = Bài hát được yêu cầu bởi.
 command-skip-no-metadata = Đã bỏ qua một bài hát, không tìm thấy thông tin bài hát bị bỏ qua.

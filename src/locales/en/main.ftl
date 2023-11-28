@@ -111,8 +111,9 @@ afk-notify-added = You will be notified when this user is back
 afk-notfound = This user is no longer AFK
 
 # VOICE & MUSIC
-music-note = This feature only accepts Youtube URLs (track and playlist) and SoundCloud single track URL at the moment. Search results will get the first video from youtube search and add it to the queue.
+music-note = This feature only accepts Youtube and Soundcloud. Search results will get the first video from youtube search and add it to the queue.
 music-not-same-channel = You need to be in the same voice channel as the bot to use this command.
+music-nowplaying = Now playing
 music-not-playing = I'm not playing any music.
 music-no-voice = I'm not in any voice channel.
 music-user-novoice = You need to be in a voice channel to use the command
@@ -120,8 +121,11 @@ music-cannot-connect = I can't connect to your channel
 music-error-track = Error retrieving track information.
 music-duration = Duration
 music-position-inqueue = Position in queue
+music-content-credits = Credits
+music-content-credits-soundcloud = Listen on Soundcloud
+music-content-credits-youtube = Listen on Youtube
+music-content-creator = Content creator
 music-playlist-fetch-error = Error getting tracks from playlist, please check the link or the video/playlist availablity.
-music-nowplaying = Now playing
 
 # Join Command
 command-join = Ask the bot to join a voice channel
@@ -152,21 +156,21 @@ command-play-invalid-url = Please provide a valid URL or search query to play
 command-play-added-tracks = Added { $count } tracks to the queue
 command-play-added-track = Added track
 
-# Queue
+# Queue Command
 music-queue-empty = Queue is empty
 music-queue-title = Queue: { $count } songs
 music-queue-prev = Prev Page
 music-queue-next = Next Page
 
-# Resume
+# Resume Command
 command-resume = Resume the paused track
 command-resume-success = Resumed the track
 command-resume-failed = Failed to resume the track
 command-resume-notpaused = Music player is not paused
 
-# Skip
+# Skip Command
 command-skip = Skip the current track
-command-skip-skipped = [{ $title }]{$ url } has been skipped
+command-skip-skipped = { $title } has been skipped
 command-skip-author = Skipped by @{ $username }
 command-skip-requested-by = Track was requested by
 command-skip-no-metadata = Skipped a track, no skipped track info found

@@ -48,14 +48,9 @@ impl ContextCommand for SkipCurrentTrackCommand {
 
         let embed = if let Ok(_) = handle.stop() {
             if let Some((metadata, requested_user)) = skipped_track {
-                args.set("title", metadata.title.unwrap_or("Unknown".to_string()));
-                args.set(
-                    "url",
-                    metadata.source_url.map_or_else(
-                        || format!(""),
-                        |source_url| format!("({})", source_url)
-                    )
-                );
+                let title = metadata.title.unwrap_or("Unknown".to_string());
+                let url = metadata.source_url.unwrap_or("Unknown".to_string());
+                args.set("title", format!("[{}]({})", title, url));
                 DiscordEmbed {
                     description: Some(
                         client.get_locale_string(
@@ -72,7 +67,7 @@ impl ContextCommand for SkipCurrentTrackCommand {
                         vec![DiscordEmbedField {
                             name: client.get_locale_string(
                                 &config.locale,
-                                "command-requested-by",
+                                "command-skip-requested-by",
                                 Some(&args)
                             ),
                             value: format!("<@{}>", requested_user.id),

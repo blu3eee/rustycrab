@@ -465,11 +465,42 @@ pub fn track_info_fields(
             inline: true,
         }
     ];
+
+    if let Some(creator) = &metadata.artist {
+        result.push(DiscordEmbedField {
+            name: client.get_locale_string(&locale, "music-content-creator", None),
+            value: creator.clone(),
+            inline: true,
+        });
+    }
     if let Some(position) = position_inqueue {
         result.push(DiscordEmbedField {
             name: client.get_locale_string(&locale, "music-position-inqueue", None),
             value: position.to_string(),
             inline: true,
+        });
+    }
+    if let Some(url) = &metadata.source_url {
+        result.push(DiscordEmbedField {
+            name: client.get_locale_string(&locale, "music-content-credits", None),
+            value: if url.contains("soundcloud") {
+                format!(
+                    "[{}]({})",
+                    client.get_locale_string(&locale, "music-content-credits-soundcloud", None),
+                    url
+                )
+            } else {
+                format!(
+                    "[{}]({})",
+                    format!(
+                        "[{}]({})",
+                        client.get_locale_string(&locale, "music-content-credits-youtube", None),
+                        url
+                    ),
+                    url
+                )
+            },
+            inline: false,
         });
     }
     result

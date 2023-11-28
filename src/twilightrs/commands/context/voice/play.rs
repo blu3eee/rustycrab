@@ -82,18 +82,43 @@ impl ContextCommand for PlayCommand {
         let mut args = FluentArgs::new();
         args.set("count", urls.len());
         let embed = if track_queue.is_empty() {
-            let first_url = &urls[0];
-            let remaining_urls = urls.clone().into_iter().skip(1).collect::<Vec<_>>();
+            let mut count: usize = 0;
+
+            // Add track to the queue
+            loop {
+                let url = urls.get(count);
+                if let Some(url) = url {
+                    if
+                        let Err(_) = add_track_to_queue(
+                            Arc::clone(&client),
+                            Arc::clone(&client.voice_music_manager),
+                            msg.channel_id,
+                            guild_id.clone(),
+                            &msg.author,
+                            url.clone()
+                        ).await
+                    {
+                        count += 1;
+                    } else {
+                        break;
+                    }
+                } else {
+                    return Err(
+                        client
+                            .get_locale_string(&config.locale, "command-play-invalid-url", None)
+                            .into()
+                    );
+                }
+            }
+
+            let remaining_urls = urls
+                .clone()
+                .into_iter()
+                .skip(count + 1)
+                .collect::<Vec<_>>();
             client.voice_music_manager.extend_waiting_queue(guild_id, &remaining_urls);
-            let _ = add_track_to_queue(
-                Arc::clone(&client),
-                Arc::clone(&client.voice_music_manager),
-                msg.channel_id,
-                guild_id.clone(),
-                &msg.author,
-                first_url.clone()
-            ).await;
-            if urls.len() > 1 {
+            if remaining_urls.len() + 1 > 1 {
+                args.set("count", remaining_urls.len() + 1);
                 Some(DiscordEmbed {
                     author_name: Some(
                         client.get_locale_string(
