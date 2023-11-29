@@ -18,9 +18,9 @@ pub async fn handle_message_delete(
             .or_insert_with(Vec::new)
             .push(cached_message.value().clone());
 
-        println!("saved deleted cached message {}", cached_message.value().content());
+        // println!("saved deleted cached message {}", cached_message.value().content());
     } else {
-        println!("can't find cached message with id {}", event.id.to_string());
+        // println!("can't find cached message with id {}", event.id.to_string());
     }
 
     Ok(())

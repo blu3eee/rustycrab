@@ -130,6 +130,7 @@ dependencies = [
  "num-traits 0.2.17",
  "opus",
  "rand",
+ "regex",
  "reqwest",
  "sea-orm",
  "serde",

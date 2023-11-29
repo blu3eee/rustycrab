@@ -9,8 +9,8 @@ use crate::{
         discord_client::DiscordClient,
         dispatchers::ClientDispatchers,
         utils::afk::check_afk,
+        bot::auto_response::check_autores,
     },
-    unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
 };
 
 pub async fn handle_message_create(
@@ -22,26 +22,23 @@ pub async fn handle_message_create(
     // For example, send a response message
     // check for commands
     if let Some(guild_id) = msg.guild_id {
-        let bot_id: String = client.http.current_user().await?.model().await?.id.get().to_string();
-        if bot_id == msg.author.id.get().to_string() {
+        let bot = client.get_bot().await?;
+        if bot.id == msg.author.id {
             return Ok(());
         }
 
-        let guild_id_str: String = guild_id.get().to_string();
-
-        let config = GuildConfigQueries::find_by_discord_ids(
+        let config = GuildConfigQueries::get_or_create_config(
             &client.db,
-            &bot_id,
-            &guild_id_str
+            &bot.id.to_string(),
+            &guild_id.get().to_string()
         ).await?;
-        // println!("{}", config.prefix);
 
         let content = msg.content.trim().to_string();
 
         let command_prefix = if content.starts_with(&config.prefix) {
             Some(config.prefix.clone())
-        } else if content.starts_with(&format!("<@{}>", bot_id)) {
-            Some(format!("<@{}>", bot_id))
+        } else if content.starts_with(&format!("<@{}>", bot.id)) {
+            Some(format!("<@{}>", bot.id))
         } else {
             None
         };
@@ -65,7 +62,11 @@ pub async fn handle_message_create(
             }
         }
 
+        // check afk
         let _ = check_afk(Arc::clone(&client), &config, msg, guild_id).await;
+
+        // check for auto-responses
+        let _ = check_autores(Arc::clone(&client), msg, &config).await;
     }
 
     Ok(())

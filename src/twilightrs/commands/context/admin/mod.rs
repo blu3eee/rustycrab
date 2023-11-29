@@ -7,6 +7,7 @@ mod kick;
 mod timeout;
 mod untimeout;
 mod set_role;
+mod auto_response;
 
 use self::{
     prefix::ChangePrefixCommand,
@@ -18,6 +19,7 @@ use self::{
     timeout::TimeoutMemberCommand,
     untimeout::UntimeoutMemberCommand,
     set_role::RoleCommand,
+    auto_response::AutoResCommand,
 };
 use super::{ ContextCommandCategory, context_command::ContextCommand };
 
@@ -39,6 +41,7 @@ impl ContextCommandCategory for AdminCommands {
             Box::new(TimeoutMemberCommand) as Box<dyn ContextCommand>,
             Box::new(UntimeoutMemberCommand) as Box<dyn ContextCommand>,
             Box::new(RoleCommand) as Box<dyn ContextCommand>,
+            Box::new(AutoResCommand) as Box<dyn ContextCommand>,
         ])
     }
 }

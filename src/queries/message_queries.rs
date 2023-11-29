@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use sea_orm::{ DatabaseConnection, Set, EntityTrait, ActiveValue };
+use sea_orm::{ DatabaseConnection, Set, EntityTrait, ActiveValue, PrimaryKeyTrait, DeleteResult };
 
 use crate::{
     database::{
@@ -52,14 +52,6 @@ impl DefaultSeaQueries for MessageQueries {
 
         // Insert the new message into the database
         Ok(Self::save_active_model(db, new_message).await?)
-
-        // // Construct the response
-        // let response: ResponseMessage = ResponseMessage {
-        //     id: message.id,
-        //     r#type: message.r#type, // Assuming `type` is wrapped in `Set`
-        //     content: message.content, // Assuming `content` is wrapped in `Set`
-        //     embed: embed_model.map(|e| { e.into() }),
-        // };
     }
 
     async fn apply_updates(
@@ -86,6 +78,28 @@ impl DefaultSeaQueries for MessageQueries {
             }
         }
         Ok(())
+    }
+
+    async fn delete_by_id<K>(db: &DatabaseConnection, id: K) -> Result<DeleteResult, AppError>
+        where
+            K: Into<<<Self::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType> +
+                Send +
+                Sync
+    {
+        let model = Self::Entity::find_by_id(id.into())
+            .one(db).await
+            .map_err(AppError::from)?
+            .ok_or_else(|| AppError::not_found("Message not found"))?;
+
+        let embed_id = model.embed_id;
+
+        let result = Self::Entity::delete_by_id(model.id).exec(db).await.map_err(AppError::from);
+        // Delete related message
+        if let Some(embed_id) = embed_id {
+            MessageEmbedQueries::delete_by_id(db, embed_id).await?;
+        }
+
+        result
     }
 }
 

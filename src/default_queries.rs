@@ -114,7 +114,7 @@ pub trait DefaultSeaQueries {
     async fn update_by_id(
         db: &DatabaseConnection,
         id: i32,
-        update_data: Self::UpdateData
+        update_data: <Self as DefaultSeaQueries>::UpdateData
     )
         -> Result<<Self::Entity as EntityTrait>::Model, AppError>
         where

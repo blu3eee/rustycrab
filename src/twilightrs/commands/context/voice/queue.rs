@@ -16,6 +16,7 @@ use crate::{
         commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
         discord_client::{ DiscordClient, MessageContent },
         messages::DiscordEmbed,
+        utils::make_components,
     },
     utilities::{ utils::{ ColorResolvables, color_to_button_style }, generate_random_string },
 };
@@ -129,13 +130,6 @@ impl ContextCommand for QueueCommand {
                 .join("\n");
 
             Ok(list)
-        }
-
-        fn make_components(buttons: &Vec<Button>) -> Vec<Component> {
-            buttons
-                .iter()
-                .map(|button| Component::Button(button.clone()))
-                .collect::<Vec<Component>>()
         }
 
         let mut current_page: usize = 0;

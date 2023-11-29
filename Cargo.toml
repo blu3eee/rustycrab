@@ -10,10 +10,11 @@ voice = ["opus", "sodiumoxide", "byteorder"]
 [dependencies]
 log = "0.4.20"
 env_logger = "0.10"
-sea-orm = { version = "0.12.6", features = ["sqlx-mysql", "runtime-tokio-rustls"] }
+sea-orm = { version = "0.12.6", features = [
+    "sqlx-mysql",
+    "runtime-tokio-rustls",
+] }
 axum = { version = "0.6.20", features = ["macros", "headers"] }
-# mysql = "24.0" # This is the MySQL client, not required if you're using SeaORM
-# actix-web = "4.4" # Or any other web framework you prefer
 dotenv = "0.15.0" # To manage environment variables
 serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
@@ -23,22 +24,34 @@ validator = { version = "0.16.0", features = ["derive"] }
 twilight-gateway = "0.15.4"
 twilight-http = "0.15.4"
 twilight-model = "0.15.4"
-twilight-cache-inmemory = {version = "0.15.4", features = ["permission-calculator"]}
+twilight-cache-inmemory = { version = "0.15.4", features = [
+    "permission-calculator",
+] }
 twilight-standby = "0.15.4"
-futures-util = "0.3.29"
-songbird = {version =  "0.4.0-rc", features = ["twilight"]}
-symphonia = { features = ["aac", "mp3", "isomp4", "alac"], version = "0.5.3" } # needed for soundbird
+
+# music feature
+songbird = { version = "0.4.0-rc", features = ["twilight"] }
+symphonia = { features = [
+    "aac",
+    "mp3",
+    "isomp4",
+    "alac",
+], version = "0.5.3" } # needed for soundbird
+opus = { version = "0.3.0", optional = true }
 headless_chrome = "1.0.8"
 
+# utils
 futures = "0.3.29"
+futures-util = "0.3.29"
 chrono = "0.4.31"
-opus = { version = "0.3.0", optional = true }
 byteorder = { version = "1.3", optional = true }
 async-trait = "0.1"
 reqwest = { version = "0.11.22", features = ["json"] }
 enum-primitive-derive = "0.3.0"
 num-traits = "0.2.17"
 url = "2.5.0"
+regex = "1.10.2"
+
 # math
 meval = "0.2"
 rand = "0.8.5"
@@ -54,6 +67,3 @@ version = "0.2.5"
 default-features = false
 features = ["std"]
 optional = true
-
-# [patch.crates-io]
-# zeroize = { version = "1.3.0" }

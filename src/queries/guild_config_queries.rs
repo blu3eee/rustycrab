@@ -33,6 +33,30 @@ impl GuildConfigQueries {
             .all(db).await
             .map_err(AppError::from)
     }
+
+    pub async fn get_or_create_config(
+        db: &DatabaseConnection,
+        bot_discord_id: &str,
+        guild_discord_id: &str
+    ) -> Result<GuildConfigModel, AppError> {
+        // Find the configuration for the given bot_id and guild_id.
+        if
+            let Ok(config) = <Self as UniqueBotGuildEntityQueries>::find_by_discord_ids(
+                db,
+                bot_discord_id,
+                guild_discord_id
+            ).await
+        {
+            Ok(config)
+        } else {
+            Ok(
+                Self::create_entity(db, RequestCreateConfig {
+                    bot_discord_id: bot_discord_id.to_string(),
+                    guild_discord_id: guild_discord_id.to_string(),
+                }).await?
+            )
+        }
+    }
 }
 
 impl UniqueBotGuildEntityQueries for GuildConfigQueries {

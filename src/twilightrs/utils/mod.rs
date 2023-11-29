@@ -1,7 +1,10 @@
 use std::error::Error;
 
 use fluent_bundle::FluentArgs;
-use twilight_model::gateway::payload::incoming::MessageCreate;
+use twilight_model::{
+    gateway::payload::incoming::MessageCreate,
+    channel::message::{ component::Button, Component },
+};
 
 use crate::{ utilities::utils::ColorResolvables, cdn_avatar };
 
@@ -76,4 +79,11 @@ pub async fn send_command_response(
     ).await?;
 
     Ok(())
+}
+
+pub fn make_components(buttons: &Vec<Button>) -> Vec<Component> {
+    buttons
+        .iter()
+        .map(|button| Component::Button(button.clone()))
+        .collect::<Vec<Component>>()
 }

@@ -9,6 +9,7 @@ pub mod message_embed_queries;
 pub mod message_queries;
 pub mod guild_logs;
 pub mod tickets_system;
+pub mod auto_responses_queries;
 
 use crate::utilities::app_error::AppError;
 use axum::http::StatusCode;

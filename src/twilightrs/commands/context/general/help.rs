@@ -44,10 +44,24 @@ impl HelpCommand {
         // Display a list of commands with brief descriptions
         let mut categories: HashMap<String, Vec<String>> = HashMap::new();
 
+        // let user_permissions = client.cache
+        //     .permissions()
+        //     .in_channel(msg.author.id, msg.channel_id)?;
+
         for (command_name, command_handler) in &dispatcher.handlers {
             let category = command_handler.category_name.to_lowercase();
             let command = command_name.to_lowercase();
 
+            // let required_permissions = command_handler.command.permissions();
+            // if !required_permissions.is_empty() {
+            //     let has_permission = required_permissions
+            //         .iter()
+            //         .any(|&req_perm| user_permissions.contains(req_perm));
+            //     if !has_permission {
+            //         // User does not have any of the required permissions
+            //         continue;
+            //     }
+            // }
             categories
                 .entry(category)
                 .and_modify(|commands| commands.push(command.clone()))
@@ -68,6 +82,7 @@ impl HelpCommand {
                     fields: Some(
                         categories
                             .into_iter()
+                            // .filter(|x| )
                             .map(|(category, command_names)| {
                                 let capitalized_category =
                                     category

@@ -114,11 +114,13 @@ impl DefaultSeaQueries for GuildWelcomeQueries {
             .map_err(AppError::from)?
             .ok_or_else(|| AppError::not_found("Guild welcome not found"))?;
 
+        let result = Self::Entity::delete_by_id(model.id).exec(db).await.map_err(AppError::from);
+
         // Delete related message
         if let Some(message_id) = model.message_id {
             MessageQueries::delete_by_id(db, message_id).await?;
         }
 
-        Self::Entity::delete_by_id(model.id).exec(db).await.map_err(AppError::from)
+        result
     }
 }

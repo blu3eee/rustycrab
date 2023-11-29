@@ -8,6 +8,7 @@ pub mod bot_users;
 pub mod bot_guild_welcomes;
 pub mod bot_logs;
 pub mod tickets;
+pub mod auto_responses;
 
 use std::time::{ SystemTime, UNIX_EPOCH };
 
@@ -130,14 +131,14 @@ impl From<ButtonModel> for ResponseButton {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RequestCreateUpdateMessage {
     pub r#type: Option<String>,
     pub content: Option<String>,
     pub embed: Option<RequestCreateUpdateEmbed>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RequestCreateUpdateEmbed {
     pub title: Option<String>,
     pub url: Option<String>,

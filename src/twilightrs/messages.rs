@@ -1,4 +1,4 @@
-use std::time::{ SystemTime, UNIX_EPOCH };
+use std::{ time::{ SystemTime, UNIX_EPOCH }, sync::Arc };
 
 use twilight_http::Client;
 use twilight_model::{
@@ -16,7 +16,7 @@ use twilight_model::{
 
 use crate::{
     database::embed_info::Model as EmbedModel,
-    utilities::utils::replace_placeholders_sync,
+    utilities::utils::process_placeholders_sync,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -42,7 +42,7 @@ impl DiscordEmbed {
 
     pub async fn to_embed(
         self,
-        http: &Client,
+        http: &Arc<Client>,
         guild_id: Option<Id<GuildMarker>>,
         user_id: Option<Id<UserMarker>>
     ) -> Embed {
@@ -68,9 +68,9 @@ impl DiscordEmbed {
 
         Embed {
             author: self.author_name.map(|name| EmbedAuthor {
-                name: replace_placeholders_sync(name, &guild, &user),
+                name: process_placeholders_sync(name, &guild, &user),
                 icon_url: self.author_icon_url.map(|url|
-                    replace_placeholders_sync(url, &guild, &user)
+                    process_placeholders_sync(url, &guild, &user)
                 ),
                 proxy_icon_url: None,
                 url: None, // If you have a corresponding URL in EmbedModel, use it here
@@ -83,21 +83,21 @@ impl DiscordEmbed {
                 )
             ),
             description: self.description.map(|text|
-                replace_placeholders_sync(text, &guild, &user)
+                process_placeholders_sync(text, &guild, &user)
             ),
             fields: self.fields.map_or_else(
                 || vec![],
                 |f| f.into_iter().map(EmbedField::from).collect()
             ), // Assuming you have a way to convert model fields to Vec<EmbedField>
             footer: self.footer_text.map(|text| EmbedFooter {
-                text: replace_placeholders_sync(text, &guild, &user),
+                text: process_placeholders_sync(text, &guild, &user),
                 icon_url: self.footer_icon_url.map(|text|
-                    replace_placeholders_sync(text, &guild, &user)
+                    process_placeholders_sync(text, &guild, &user)
                 ),
                 proxy_icon_url: None, // Proxy URLs are generally provided by Discord, not by the user
             }),
             image: self.image.map(|url| EmbedImage {
-                url: replace_placeholders_sync(url, &guild, &user),
+                url: process_placeholders_sync(url, &guild, &user),
                 proxy_url: None, // Proxy URLs are generally provided by Discord, not by the user
                 height: None, // You may not have this information
                 width: None, // You may not have this information
@@ -105,13 +105,13 @@ impl DiscordEmbed {
             kind: "rich".to_string(), // "rich" is a commonly used kind
             provider: None, // This is generally set by Discord when using links from known providers
             thumbnail: self.thumbnail.map(|url| EmbedThumbnail {
-                url: replace_placeholders_sync(url, &guild, &user),
+                url: process_placeholders_sync(url, &guild, &user),
                 proxy_url: None,
                 height: None,
                 width: None,
             }),
-            title: self.title.map(|text| replace_placeholders_sync(text, &guild, &user)),
-            url: self.url.map(|text| replace_placeholders_sync(text, &guild, &user)),
+            title: self.title.map(|text| process_placeholders_sync(text, &guild, &user)),
+            url: self.url.map(|text| process_placeholders_sync(text, &guild, &user)),
             video: None, // Assuming you don't have video information in your model
             timestamp: self.timestamp
                 .map(|t| {
@@ -126,6 +126,73 @@ impl DiscordEmbed {
                     }
                 })
                 .flatten(),
+        }
+    }
+
+    pub async fn process_placeholders(
+        self,
+        http: &Arc<Client>,
+        guild_id: Option<Id<GuildMarker>>,
+        user_id: Option<Id<UserMarker>>
+    ) -> Self {
+        let guild = if let Some(guild_id) = guild_id {
+            if let Ok(guild) = http.guild(guild_id).await {
+                if let Ok(guild) = guild.model().await { Some(guild) } else { None }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let user = if let Some(user_id) = user_id {
+            if let Ok(user) = http.user(user_id).await {
+                if let Ok(user) = user.model().await { Some(user) } else { None }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        Self {
+            author_name: self.author_name.map(|name|
+                process_placeholders_sync(name, &guild, &user)
+            ),
+            author_icon_url: self.author_icon_url.map(|url|
+                process_placeholders_sync(url, &guild, &user)
+            ),
+            // color: model.color.and_then(|c| Some(c as u32)),
+            color: Some(
+                self.color.map_or_else(
+                    || u32::from_str_radix("2B2D31", 16).unwrap_or_default(),
+                    |c| c as u32
+                )
+            ),
+            description: self.description.map(|text|
+                process_placeholders_sync(text, &guild, &user)
+            ),
+            footer_text: self.footer_text.map(|text|
+                process_placeholders_sync(text, &guild, &user)
+            ),
+            image: self.image.map(|url| process_placeholders_sync(url, &guild, &user)),
+            title: self.title.map(|text| process_placeholders_sync(text, &guild, &user)),
+            url: self.url.map(|text| process_placeholders_sync(text, &guild, &user)),
+            thumbnail: self.thumbnail.map(|url| process_placeholders_sync(url, &guild, &user)),
+            footer_icon_url: self.footer_icon_url.map(|url|
+                process_placeholders_sync(url, &guild, &user)
+            ),
+            fields: self.fields.map(|fields|
+                fields
+                    .iter()
+                    .map(|field| DiscordEmbedField {
+                        name: process_placeholders_sync(field.name.clone(), &guild, &user),
+                        value: process_placeholders_sync(field.value.clone(), &guild, &user),
+                        inline: field.inline,
+                    })
+                    .collect::<Vec<DiscordEmbedField>>()
+            ),
+            timestamp: self.timestamp,
         }
     }
 }
