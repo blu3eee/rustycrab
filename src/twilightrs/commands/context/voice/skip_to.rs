@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use fluent_bundle::FluentArgs;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
@@ -44,21 +45,25 @@ impl ContextCommand for SkipToTrackCommand {
 
         let handle = client.fetch_trackhandle(guild_id, Some(&config.locale)).await?;
 
+        let mut args = FluentArgs::new();
+
         let (key, color) = match command_args.first() {
             Some(ParsedArg::Number(position)) => {
                 // Skips to the specified track position (indexed-1)
                 if client.voice_music_manager.skip_to_position(guild_id, *position as usize) {
+                    args.set("position", position);
                     // Skip the current track
                     let _ = handle.stop();
 
                     ("command-skipto-success", ColorResolvables::Red)
                 } else {
+                    args.set("count", client.voice_music_manager.get_waiting_queue(guild_id).len());
                     ("command-skipto-invalid", ColorResolvables::Red)
                 }
             }
             _ => { ("command-skipto-nopos", ColorResolvables::Red) }
         };
-        reply_command(&client, config, msg, key, None, color).await?;
+        reply_command(&client, config, msg, key, Some(&args), color).await?;
         Ok(())
     }
 }

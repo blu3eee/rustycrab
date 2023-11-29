@@ -46,60 +46,63 @@ impl ContextCommand for SkipCurrentTrackCommand {
         let mut args = FluentArgs::new();
         args.set("username", msg.author.name.clone());
 
-        let embed = if let Ok(_) = handle.stop() {
-            if let Some((metadata, requested_user)) = skipped_track {
-                let title = metadata.title.unwrap_or("Unknown".to_string());
-                let url = metadata.source_url.unwrap_or("Unknown".to_string());
-                args.set("title", format!("[{}]({})", title, url));
-                DiscordEmbed {
-                    description: Some(
-                        client.get_locale_string(
+        handle
+            .stop()
+            .map_err(|_|
+                client.get_locale_string(&config.locale, "command-skip-failed", Some(&args))
+            );
+        // let embed = if let Ok(_) = handle.stop() {
+
+        // } else {
+        //     DiscordEmbed {
+        //         description: Some(
+        //             client.get_locale_string(&config.locale, "command-skip-failed", Some(&args))
+        //         ),
+        //         color: Some(ColorResolvables::Red.as_u32()),
+        //         ..Default::default()
+        //     }
+        // };
+
+        let embed = if let Some((metadata, requested_user)) = skipped_track {
+            let title = metadata.title.unwrap_or("Unknown".to_string());
+            let url = metadata.source_url.unwrap_or("Unknown".to_string());
+            args.set("title", format!("[{}]({})", title, url));
+            DiscordEmbed {
+                description: Some(
+                    client.get_locale_string(&config.locale, "command-skip-skipped", Some(&args))
+                ),
+                footer_text: Some(
+                    client.get_locale_string(&config.locale, "command-skip-author", Some(&args))
+                ),
+                footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
+                fields: Some(
+                    vec![DiscordEmbedField {
+                        name: client.get_locale_string(
                             &config.locale,
-                            "command-skip-skipped",
+                            "command-skip-requested-by",
                             Some(&args)
-                        )
-                    ),
-                    footer_text: Some(
-                        client.get_locale_string(&config.locale, "command-skip-author", Some(&args))
-                    ),
-                    footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
-                    fields: Some(
-                        vec![DiscordEmbedField {
-                            name: client.get_locale_string(
-                                &config.locale,
-                                "command-skip-requested-by",
-                                Some(&args)
-                            ),
-                            value: format!("<@{}>", requested_user.id),
-                            inline: false,
-                        }]
-                    ),
-                    color: Some(ColorResolvables::Yellow.as_u32()),
-                    ..Default::default()
-                }
-            } else {
-                DiscordEmbed {
-                    description: Some(
-                        client.get_locale_string(
-                            &config.locale,
-                            "command-skip-no-metadata",
-                            Some(&args)
-                        )
-                    ),
-                    footer_text: Some(
-                        client.get_locale_string(&config.locale, "command-skip-author", Some(&args))
-                    ),
-                    footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
-                    color: Some(ColorResolvables::Yellow.as_u32()),
-                    ..Default::default()
-                }
+                        ),
+                        value: format!("<@{}>", requested_user.id),
+                        inline: false,
+                    }]
+                ),
+                color: Some(ColorResolvables::Yellow.as_u32()),
+                ..Default::default()
             }
         } else {
             DiscordEmbed {
                 description: Some(
-                    client.get_locale_string(&config.locale, "command-skip-failed", Some(&args))
+                    client.get_locale_string(
+                        &config.locale,
+                        "command-skip-no-metadata",
+                        Some(&args)
+                    )
                 ),
-                color: Some(ColorResolvables::Red.as_u32()),
+                footer_text: Some(
+                    client.get_locale_string(&config.locale, "command-skip-author", Some(&args))
+                ),
+                footer_icon_url: msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash)),
+                color: Some(ColorResolvables::Yellow.as_u32()),
                 ..Default::default()
             }
         };

@@ -91,12 +91,7 @@ impl ContextCommand for MusicHelpCommand {
                     author_name: Some(format!("Music commands - Prefix: {}", config.prefix)),
                     author_icon_url: Some(client.voice_music_manager.spinning_disk.clone()),
                     thumbnail: bot.avatar.map(|avatar_hash| cdn_avatar!(bot.id, avatar_hash)),
-                    description: Some(
-                        format!(
-                            "{}\n\n**Disclaimer:**\nThis is a project developed for educational purposes only. This bot is not affiliated, associated, authorized, endorsed by, or in any way officially connected with YouTube, SoundCloud, or Discord, or any of their subsidiaries or affiliates.\n\nThis bot is intended to be used in compliance with all applicable copyright laws and the terms of service of the platforms it interacts with. As the developer of this bot, I assume no liability for any misuse of this bot by others and encourage all users to ensure they adhere to the legal terms of the platforms involved.\n\nUsers of this bot should be aware that they are responsible for ensuring their use of the bot is compliant with YouTube, SoundCloud, and Discord's terms of service, as well as applicable laws. The developer of this bot does not endorse or condone any unauthorized use of copyrighted content.",
-                            client.get_locale_string(&config.locale, "music-note", None)
-                        )
-                    ),
+                    description: Some(client.get_locale_string(&config.locale, "music-note", None)),
                     color: Some(ColorResolvables::Blue.as_u32()),
                     footer_text: Some(
                         client.get_locale_string(

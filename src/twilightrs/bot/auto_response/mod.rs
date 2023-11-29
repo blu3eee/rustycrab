@@ -64,73 +64,37 @@ pub async fn build_response(
     guild: &Option<twilight_model::guild::Guild>,
     user: &Option<twilight_model::user::User>
 ) -> Result<Option<MessageContent>, BoxedError> {
-    let message: Option<MessageContent> = match message_details.r#type.to_lowercase().as_str() {
-        "message" | "text" | "1" => {
-            if let Some(content) = message_details.content {
-                Some(MessageContent::Text(process_placeholders_sync(content, guild, user)))
-            } else {
-                None
-            }
-        }
-        "embed" | "2" => {
-            if let Some(embed_id) = message_details.embed_id {
-                if
-                    let Ok(embed_model) = MessageEmbedQueries::find_by_id(
-                        &client.db,
-                        embed_id
-                    ).await
-                {
-                    Some(
-                        MessageContent::DiscordEmbeds(
-                            vec![
-                                DiscordEmbed::from(embed_model).process_placeholders(
-                                    &client.http,
-                                    guild.as_ref().map(|guild| guild.id),
-                                    user.as_ref().map(|user| user.id)
-                                ).await
-                            ]
-                        )
-                    )
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        }
-        "embed and text" | "3" => {
-            let text = if let Some(content) = message_details.content {
-                Some(process_placeholders_sync(content, guild, user))
-            } else {
-                None
-            };
-            if let Some(embed_id) = message_details.embed_id {
-                if
-                    let Ok(embed_model) = MessageEmbedQueries::find_by_id(
-                        &client.db,
-                        embed_id
-                    ).await
-                {
-                    let embed = DiscordEmbed::from(embed_model).process_placeholders(
-                        &client.http,
-                        guild.as_ref().map(|guild| guild.id),
-                        user.as_ref().map(|user| user.id)
-                    ).await;
-                    Some(
-                        text.map_or(MessageContent::DiscordEmbeds(vec![embed.clone()]), |text|
-                            MessageContent::TextAndDiscordEmbeds(text, vec![embed])
-                        )
-                    )
-                } else {
-                    text.map(|text| MessageContent::Text(text))
-                }
-            } else {
-                text.map(|text| MessageContent::Text(text))
-            }
-        }
+    let message_type = message_details.r#type.to_lowercase();
 
-        _ => { None }
-    };
+    let text_content = message_details.content.map(|content|
+        process_placeholders_sync(content, guild, user)
+    );
 
-    return Ok(message);
+    let embed = (async {
+        if let Some(embed_id) = message_details.embed_id {
+            if let Ok(embed_model) = MessageEmbedQueries::find_by_id(&client.db, embed_id).await {
+                let embed = DiscordEmbed::from(embed_model).process_placeholders(
+                    &client.http,
+                    guild.as_ref().map(|guild| guild.id),
+                    user.as_ref().map(|user| user.id)
+                ).await;
+                return Some(embed);
+            }
+        }
+        None
+    }).await;
+
+    match message_type.as_str() {
+        "message" | "text" | "1" => Ok(text_content.map(MessageContent::Text)),
+        "embed" | "2" => Ok(embed.map(|embed| MessageContent::DiscordEmbeds(vec![embed]))),
+        "embed and text" | "3" =>
+            match (text_content, embed) {
+                (Some(text), Some(embed)) =>
+                    Ok(Some(MessageContent::TextAndDiscordEmbeds(text, vec![embed]))),
+                (Some(text), None) => Ok(Some(MessageContent::Text(text))),
+                (None, Some(embed)) => Ok(Some(MessageContent::DiscordEmbeds(vec![embed]))),
+                (None, None) => Ok(None),
+            }
+        _ => Ok(None),
+    }
 }
