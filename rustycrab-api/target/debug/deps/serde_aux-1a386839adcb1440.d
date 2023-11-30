@@ -1,0 +1,8 @@
+/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/libserde_aux-1a386839adcb1440.rmeta: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/container_attributes.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/field_attributes.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/serde_introspection.rs
+
+/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/serde_aux-1a386839adcb1440.d: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/container_attributes.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/field_attributes.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/serde_introspection.rs
+
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/lib.rs:
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/container_attributes.rs:
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/field_attributes.rs:
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-aux-4.2.0/src/serde_introspection.rs:

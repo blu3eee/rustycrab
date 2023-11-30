@@ -1,0 +1,9 @@
+/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/libvalidator_derive-63b6e35dcdbf1dbe.dylib: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/asserts.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/lit.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/quoting.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/validation.rs
+
+/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/validator_derive-63b6e35dcdbf1dbe.d: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/asserts.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/lit.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/quoting.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/validation.rs
+
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/lib.rs:
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/asserts.rs:
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/lit.rs:
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/quoting.rs:
+/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/validator_derive-0.16.0/src/validation.rs:
