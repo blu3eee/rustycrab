@@ -1,8 +1,0 @@
-/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/libsymphonia_utils_xiph-ca27f5437bd968ab.rmeta: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/flac/mod.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/flac/metadata.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/vorbis/mod.rs
-
-/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/symphonia_utils_xiph-ca27f5437bd968ab.d: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/flac/mod.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/flac/metadata.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/vorbis/mod.rs
-
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/lib.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/flac/mod.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/flac/metadata.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-utils-xiph-0.5.3/src/vorbis/mod.rs:

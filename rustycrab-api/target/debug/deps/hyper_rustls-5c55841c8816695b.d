@@ -1,9 +1,0 @@
-/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/libhyper_rustls-5c55841c8816695b.rmeta: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/config.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/connector.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/connector/builder.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/stream.rs
-
-/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/hyper_rustls-5c55841c8816695b.d: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/config.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/connector.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/connector/builder.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/stream.rs
-
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/lib.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/config.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/connector.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/connector/builder.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hyper-rustls-0.23.2/src/stream.rs:

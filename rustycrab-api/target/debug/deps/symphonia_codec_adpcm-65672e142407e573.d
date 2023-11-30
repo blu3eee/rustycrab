@@ -1,8 +1,0 @@
-/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/libsymphonia_codec_adpcm-65672e142407e573.rmeta: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/codec_ima.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/codec_ms.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/common.rs
-
-/Users/phuockhainguyen/Desktop/github/rust-project-basement-3/target/debug/deps/symphonia_codec_adpcm-65672e142407e573.d: /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/lib.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/codec_ima.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/codec_ms.rs /Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/common.rs
-
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/lib.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/codec_ima.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/codec_ms.rs:
-/Users/phuockhainguyen/.cargo/registry/src/index.crates.io-6f17d22bba15001f/symphonia-codec-adpcm-0.5.3/src/common.rs:
