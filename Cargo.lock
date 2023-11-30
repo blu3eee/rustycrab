@@ -133,6 +133,7 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
+ "rustycrab-model",
  "sea-orm",
  "serde",
  "serde_json",
@@ -2703,6 +2704,11 @@ dependencies = [
  "futures-executor",
  "num_cpus",
 ]
+
+[[package]]
+name = "rustycrab-model"
+version = "0.1.0"
+source = "git+https://github.com/bluesimp1102/rustycrab-model.git?tag=v0.1.0#96a4651a012e5f35f04fab827efa2f92077d15a5"
 
 [[package]]
 name = "ryu"
