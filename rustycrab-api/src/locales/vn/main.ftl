@@ -122,10 +122,10 @@ music-cannot-connect = Tớ không thể kết nối với kênh của bạn
 music-error-track = Lỗi khi tìm kiếm thông tin bài hát
 music-duration = Thời lượng
 music-position-inqueue = Vị trí trong hàng đợi
-music-content-credits = Tín dụng
+music-content-credits = Credits
 music-content-credits-soundcloud = Nghe trên Soundcloud
 music-content-credits-youtube = Nghe trên Youtube
-music-content-creator = Người sáng tạo nội dung
+music-content-creator = Content creator
 music-playlist-fetch-error = Lỗi khi lấy bài hát từ danh sách phát, vui lòng kiểm tra lại link hoặc chế độ riêng tư của video/danh sách phát.
 music-loading-url = Đang tải bài hát từ url
 

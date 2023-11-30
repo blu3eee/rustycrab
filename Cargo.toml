@@ -1,5 +1,5 @@
 [workspace]
-members = ["rustycrab-api", "rustycrab-model"]
+members = ["rustycrab-api", "rustycrab-model", "rustycrab-webapp"]
 
 resolver = "2"
 
