@@ -1,9 +1,9 @@
 use async_trait::async_trait;
+use rustycrab_model::response::discord_message::RequestCreateUpdateEmbed;
 use sea_orm::{ DatabaseConnection, Set, EntityTrait };
 
 use crate::{
     database::embed_info::{ Entity as Embeds, ActiveModel as EmbedActiveModel },
-    router::routes::RequestCreateUpdateEmbed,
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
 };

@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use rustycrab_model::response::bot_guild_welcome::{ RequestCreateWelcome, RequestUpdateWelcome };
 use sea_orm::{
     DatabaseConnection,
     EntityTrait,
@@ -14,7 +15,6 @@ use crate::{
         Entity as GuildWelcomes,
         ActiveModel as GuildWelcomeActiveModel,
     },
-    router::routes::bot_guild_welcomes::{ RequestCreateWelcome, RequestUpdateWelcome },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,

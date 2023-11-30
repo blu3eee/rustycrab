@@ -1,39 +1,19 @@
 use async_trait::async_trait;
 use axum::{ Extension, extract::Path, Router, Json, routing::{ get, patch } };
+use rustycrab_model::response::{
+    ticket::support_team::ResponseTicketSupportTeam,
+    ResponseDataList,
+    ResponseDataJson,
+};
 use sea_orm::{ EntityTrait, PrimaryKeyTrait, IntoActiveModel };
-use serde::{ Serialize, Deserialize };
 use crate::{
     database::ticket_support_teams::Model as TicketSupportTeamModel,
-    default_router::{ DefaultRoutes, ResponseDataList, ResponseDataJson },
     queries::tickets_system::ticket_support_team_queries::TicketSupportTeamQueries,
     app_state::AppState,
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
+    default_router::DefaultRoutes,
 };
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateTicketSupportTeam {
-    pub bot_discord_id: String,
-    pub guild_discord_id: String,
-    pub name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateTicketSupportTeam {
-    pub name: Option<String>,
-    pub roles: Option<Vec<String>>,
-    pub users: Option<Vec<String>>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseTicketSupportTeam {
-    pub id: i32,
-    pub name: String,
-    pub roles: Vec<String>,
-    pub users: Vec<String>,
-    pub bot_id: i32,
-    pub guild_id: i32,
-}
 
 impl From<TicketSupportTeamModel> for ResponseTicketSupportTeam {
     fn from(model: TicketSupportTeamModel) -> Self {

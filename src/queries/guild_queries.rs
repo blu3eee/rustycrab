@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use rustycrab_model::response::guilds::{ RequestCreateGuild, RequestUpdateGuild };
 use sea_orm::{ DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, Set };
 use crate::database::guild_info::{
     Entity as Guild,
@@ -7,7 +8,6 @@ use crate::database::guild_info::{
     self,
 };
 use crate::default_queries::DefaultSeaQueries;
-use crate::router::routes::guilds::{ RequestCreateGuild, RequestUpdateGuild };
 use crate::utilities::app_error::AppError;
 
 pub struct GuildQueries {}

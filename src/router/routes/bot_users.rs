@@ -1,11 +1,11 @@
 use async_trait::async_trait;
 use axum::{ Router, Extension, extract::Path, Json, routing::{ get, patch } };
+use rustycrab_model::response::{ ResponseDataJson, bot_users::ResponseBotUser };
 use sea_orm::{ EntityTrait, PrimaryKeyTrait, IntoActiveModel };
-use serde::{ Deserialize, Serialize };
 
 use crate::{
     database::bot_users::Model as BotUserModel,
-    default_router::{ DefaultRoutes, ResponseDataJson },
+    default_router::DefaultRoutes,
     queries::bot_user_queries::BotUserQueries,
     app_state::AppState,
     utilities::app_error::AppError,
@@ -83,29 +83,6 @@ impl DefaultRoutes for BotUsersRoutes {
                 patch(Self::update_by_discord_ids)
             )
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateBotUser {
-    pub bot_id: String,
-    pub user_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateBotUser {
-    pub balance: Option<i32>,
-    pub pray_points: Option<i32>,
-    pub inventory: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseBotUser {
-    pub id: i32,
-    pub balance: i32,
-    pub pray_points: i32,
-    pub inventory: String,
-    pub bot_id: Option<i32>,
-    pub user_id: Option<i32>,
 }
 
 impl From<BotUserModel> for ResponseBotUser {

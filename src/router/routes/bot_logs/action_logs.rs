@@ -1,15 +1,19 @@
 use crate::{
     database::guild_action_logs::Model as ActionLogModel,
-    default_router::{ DefaultRoutes, ResponseDataJson, ResponseDataList },
     queries::guild_logs::action_log_queries::ActionLogsQueries,
     app_state::AppState,
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
+    default_router::DefaultRoutes,
 };
 use async_trait::async_trait;
 use axum::{ Extension, extract::Path, Json, Router, routing::get };
+use rustycrab_model::response::{
+    logs::action_log::ResponseActionLog,
+    ResponseDataList,
+    ResponseDataJson,
+};
 use sea_orm::{ PrimaryKeyTrait, EntityTrait, IntoActiveModel };
-use serde::{ Deserialize, Serialize };
 
 pub struct ActionLogsRoutes {}
 
@@ -83,29 +87,6 @@ impl DefaultRoutes for ActionLogsRoutes {
                 get(Self::get_guild_actions_logs)
             )
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateLogAction {
-    pub bot_discord_id: String,
-    pub guild_discord_id: String,
-    pub channel_id: String,
-    pub events: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateActionLog {
-    pub channel_id: Option<String>,
-    pub events: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseActionLog {
-    pub id: i32,
-    pub channel_id: String,
-    pub bot_id: Option<i32>,
-    pub guild_id: Option<i32>,
-    pub events: String,
 }
 
 impl From<ActionLogModel> for ResponseActionLog {

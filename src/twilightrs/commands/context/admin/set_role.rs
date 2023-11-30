@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use twilight_http::Client;
 use twilight_model::{
     gateway::payload::incoming::MessageCreate,
@@ -7,20 +8,17 @@ use twilight_model::{
     id::{ marker::{ GuildMarker, UserMarker, RoleMarker }, Id },
 };
 use std::error::Error;
-use crate::{
-    twilightrs::{
-        commands::context::{
-            ContextCommand,
-            ParsedArg,
-            ArgSpec,
-            ArgType,
-            context_command::GuildConfigModel,
-        },
-        discord_client::DiscordClient,
-        messages::DiscordEmbed,
-        utils::send_command_response,
+use crate::twilightrs::{
+    commands::context::{
+        ContextCommand,
+        ParsedArg,
+        ArgSpec,
+        ArgType,
+        context_command::GuildConfigModel,
     },
-    utilities::utils::ColorResolvables,
+    discord_client::DiscordClient,
+    messages::DiscordEmbed,
+    utils::send_command_response,
 };
 
 pub struct RoleCommand;

@@ -6,9 +6,9 @@ use crate::{
         messages::DiscordEmbed,
     },
     locales::{ load_localization, get_localized_string },
-    utilities::utils::ColorResolvables,
 };
 
+use rustycrab_model::color::ColorResolvables;
 use twilight_http::Client as HttpClient;
 use twilight_model::{
     gateway::payload::incoming::MessageCreate,

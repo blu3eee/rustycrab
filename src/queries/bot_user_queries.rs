@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use rustycrab_model::response::bot_users::{ RequestCreateBotUser, RequestUpdateBotUser };
 use sea_orm::{
     ColumnTrait,
     DatabaseConnection,
@@ -12,7 +13,6 @@ use sea_orm::{
 use crate::{
     utilities::app_error::AppError,
     database::{ bots, bot_users::{ Entity as BotUser, Model as BotUserModel, self }, users },
-    router::routes::bot_users::{ RequestUpdateBotUser, RequestCreateBotUser },
     default_queries::DefaultSeaQueries,
 };
 

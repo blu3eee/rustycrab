@@ -1,9 +1,9 @@
 use async_trait::async_trait;
+use rustycrab_model::response::discord_message::{ RequestCreateButton, RequestUpdateButton };
 use sea_orm::{ DatabaseConnection, EntityTrait, Set };
 
 use crate::{
     database::buttons::{ Entity as Buttons, ActiveModel as ButtonActiveModel },
-    router::routes::{ RequestCreateButton, RequestUpdateButton },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
 };

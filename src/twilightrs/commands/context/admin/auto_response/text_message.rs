@@ -1,5 +1,12 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::{
+    color::ColorResolvables,
+    response::{
+        auto_response::RequestUpdateAutoResponse,
+        discord_message::RequestCreateUpdateMessage,
+    },
+};
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
@@ -16,9 +23,7 @@ use crate::{
         messages::DiscordEmbed,
     },
     queries::auto_responses_queries::AutoResponsesQueries,
-    utilities::utils::ColorResolvables,
     default_queries::DefaultSeaQueries,
-    router::routes::{ auto_responses::RequestUpdateAutoResponse, RequestCreateUpdateMessage },
 };
 
 use super::{ AutoResCommand, utils::split_trigger_and_value };

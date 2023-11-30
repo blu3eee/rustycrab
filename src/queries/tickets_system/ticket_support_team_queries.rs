@@ -10,6 +10,10 @@ use sea_orm::{
     ColumnTrait,
 };
 use async_trait::async_trait;
+use rustycrab_model::response::ticket::support_team::{
+    RequestCreateTicketSupportTeam,
+    RequestUpdateTicketSupportTeam,
+};
 
 use crate::{
     default_queries::DefaultSeaQueries,
@@ -24,10 +28,6 @@ use crate::{
     },
     utilities::app_error::AppError,
     queries::{ bot_queries::BotQueries, guild_queries::GuildQueries },
-    router::routes::tickets::ticket_support_teams::{
-        RequestCreateTicketSupportTeam,
-        RequestUpdateTicketSupportTeam,
-    },
 };
 
 pub struct TicketSupportTeamQueries {}

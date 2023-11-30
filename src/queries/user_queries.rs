@@ -1,8 +1,8 @@
 use async_trait::async_trait;
+use rustycrab_model::response::user::{ RequestCreateUser, RequestUpdateUser };
 use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 
 use crate::default_queries::DefaultSeaQueries;
-use crate::router::routes::users_routes::{ RequestCreateUser, RequestUpdateUser };
 use crate::utilities::app_error::AppError;
 use crate::database::users::{
     self,

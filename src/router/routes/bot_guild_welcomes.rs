@@ -6,11 +6,7 @@ use crate::queries::guild_welcome_queries::GuildWelcomeQueries;
 
 use async_trait::async_trait;
 use axum::Router;
-use serde::{ Deserialize, Serialize };
-use super::bots::ResponseBot;
-
-use super::guilds::ResponseGuild;
-use super::{ RequestCreateUpdateMessage, ResponseMessageDetails };
+use rustycrab_model::response::bot_guild_welcome::ResponseGuildWelcome;
 
 pub struct BotGuildWelcomesRoutes {}
 
@@ -32,40 +28,6 @@ impl DefaultRoutes for BotGuildWelcomesRoutes {
 }
 
 impl UniqueBotGuildEntityRoutes for BotGuildWelcomesRoutes {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateWelcome {
-    pub bot_discord_id: String,
-    pub guild_discord_id: String,
-    pub message_data: Option<RequestCreateUpdateMessage>,
-    pub channel_id: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateWelcome {
-    pub channel_id: Option<String>,
-    pub message_data: Option<RequestCreateUpdateMessage>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseGuildWelcome {
-    pub id: i32,
-    pub enabled: i8,
-    pub channel_id: Option<String>,
-    pub bot_id: Option<i32>,
-    pub guild_id: Option<i32>,
-    pub message_id: Option<i32>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseGuildWelcomeDetails {
-    pub id: i32,
-    pub enabled: i8,
-    pub channel_id: Option<String>,
-    pub bot: Option<ResponseBot>,
-    pub guild: Option<ResponseGuild>,
-    pub message: Option<ResponseMessageDetails>,
-}
 
 impl From<WelcomeModel> for ResponseGuildWelcome {
     fn from(model: WelcomeModel) -> Self {

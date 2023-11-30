@@ -2,6 +2,7 @@ use std::{ error::Error, sync::Arc };
 
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use songbird::input::{ YoutubeDl, Compose };
 
 use twilight_model::gateway::payload::incoming::MessageCreate;
@@ -23,7 +24,6 @@ use crate::{
         messages::DiscordEmbed,
         bot::voice_music::voice_manager::{ add_track_to_queue, track_info_fields },
     },
-    utilities::utils::ColorResolvables,
     cdn_avatar,
 };
 

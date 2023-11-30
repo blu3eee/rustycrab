@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::{ color::ColorResolvables, response::bot_guild_config::RequestUpdateConfig };
 use twilight_model::{ gateway::payload::incoming::MessageCreate, guild::Permissions };
 use std::error::Error;
 
@@ -17,8 +18,6 @@ use crate::{
     },
     queries::guild_config_queries::GuildConfigQueries,
     default_queries::DefaultSeaQueries,
-    router::routes::bot_guild_configs::RequestUpdateConfig,
-    utilities::utils::ColorResolvables,
 };
 
 pub struct ChangePrefixCommand;

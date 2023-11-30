@@ -1,62 +1,30 @@
 use async_trait::async_trait;
 use axum::{ Extension, extract::Path, Json, Router, routing::get };
-use sea_orm::{
-    DatabaseConnection,
-    EntityTrait,
-    QueryFilter,
-    JoinType::LeftJoin,
-    RelationTrait,
-    QuerySelect,
-    ColumnTrait,
-    PrimaryKeyTrait,
-    IntoActiveModel,
+use rustycrab_model::response::{
+    ticket::multipanel::ResponseTicketMultiPanel,
+    ResponseDataList,
+    ResponseDataMessage,
 };
-use serde::{ Serialize, Deserialize };
+use sea_orm::{ EntityTrait, PrimaryKeyTrait, IntoActiveModel };
 use twilight_model::{ channel::message::{ Embed, component::ActionRow, Component }, id::Id };
 
 use crate::{
-    database::{
-        ticket_multi_panels::Model as TicketMultiPanelModel,
-        ticket_multi_panels_panels_ticket_panels::{
-            self as PanelLink,
-            Entity as PanelLinks,
-            Relation as PanelLinksRelations,
-        },
-    },
-    router::routes::{
-        ResponseMessageDetails,
-        bots::ResponseBot,
-        guilds::ResponseGuild,
-        RequestCreateUpdateMessage,
-    },
+    database::ticket_multi_panels::Model as TicketMultiPanelModel,
     utilities::app_error::AppError,
     queries::{
         bot_queries::BotQueries,
-        guild_queries::GuildQueries,
         message_queries::MessageQueries,
-        tickets_system::{
-            ticket_panels_queries::TicketPanelsQueries,
-            ticket_multipanels_queries::{ TicketMultiPanelQueries, create_button_components },
+        tickets_system::ticket_multipanels_queries::{
+            TicketMultiPanelQueries,
+            create_button_components,
         },
         message_embed_queries::MessageEmbedQueries,
     },
     default_queries::DefaultSeaQueries,
-    default_router::{ DefaultRoutes, ResponseDataList, ResponseDataMessage },
     app_state::AppState,
     twilightrs::messages::DiscordEmbed,
+    default_router::DefaultRoutes,
 };
-
-use super::ticket_panels::ResponseTicketPanel;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseTicketMultiPanel {
-    pub id: i32,
-    pub channel_id: String,
-    pub sent_message_id: String,
-    pub bot_id: i32,
-    pub guild_id: i32,
-    pub message_id: Option<i32>,
-}
 
 impl From<TicketMultiPanelModel> for ResponseTicketMultiPanel {
     fn from(model: TicketMultiPanelModel) -> Self {
@@ -69,74 +37,6 @@ impl From<TicketMultiPanelModel> for ResponseTicketMultiPanel {
             message_id: model.message_id,
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseTicketMultiPanelDetails {
-    pub id: i32,
-    pub channel_id: String,
-    pub sent_message_id: String,
-    pub bot: ResponseBot,
-    pub guild: ResponseGuild,
-    pub message: Option<ResponseMessageDetails>,
-    pub panels: Vec<ResponseTicketPanel>,
-}
-
-impl ResponseTicketMultiPanel {
-    pub async fn to_details(
-        &self,
-        db: &DatabaseConnection
-    ) -> Result<ResponseTicketMultiPanelDetails, AppError> {
-        let bot: ResponseBot = BotQueries::find_by_id(db, self.bot_id).await?.into();
-        let guild: ResponseGuild = GuildQueries::find_by_id(db, self.guild_id).await?.into();
-        let message: Option<ResponseMessageDetails> = if let Some(id) = self.message_id {
-            Some(MessageQueries::fetch_message_response(db, id).await?)
-        } else {
-            None
-        };
-
-        let panel_links = PanelLinks::find()
-            .join(LeftJoin, PanelLinksRelations::TicketMultiPanels.def())
-            .join(LeftJoin, PanelLinksRelations::TicketPanels.def())
-            .filter(PanelLink::Column::TicketMultiPanelsId.eq(self.id))
-            .all(db).await
-            .map_err(AppError::from)?;
-
-        let mut panels: Vec<ResponseTicketPanel> = Vec::new();
-        for link in panel_links {
-            let panel: ResponseTicketPanel = TicketPanelsQueries::find_by_id(
-                db,
-                link.ticket_panels_id
-            ).await?.into();
-            panels.push(panel.into());
-        }
-
-        Ok(ResponseTicketMultiPanelDetails {
-            id: self.id,
-            channel_id: self.channel_id.clone(),
-            sent_message_id: self.sent_message_id.clone(),
-            bot,
-            guild,
-            message,
-            panels,
-        })
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateTicketMultiPanel {
-    pub bot_discord_id: String,
-    pub guild_discord_id: String,
-    pub channel_discord_id: String,
-    pub message_data: RequestCreateUpdateMessage,
-    pub panel_ids: Vec<i32>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateTicketMultiPanel {
-    pub channel_discord_id: Option<String>,
-    pub message_data: Option<RequestCreateUpdateMessage>,
-    pub panel_ids: Option<Vec<i32>>,
 }
 
 pub struct TicketMultiPanelsRoutes {}

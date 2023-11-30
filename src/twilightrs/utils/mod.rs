@@ -1,12 +1,13 @@
 use std::error::Error;
 
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::{
     gateway::payload::incoming::MessageCreate,
     channel::message::{ component::Button, Component },
 };
 
-use crate::{ utilities::utils::ColorResolvables, cdn_avatar };
+use crate::cdn_avatar;
 
 use super::{
     discord_client::{ DiscordClient, MessageContent },

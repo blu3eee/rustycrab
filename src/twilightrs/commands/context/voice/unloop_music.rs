@@ -1,12 +1,12 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use rustycrab_model::music::PlayerLoopState;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::twilightrs::{
     commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
     discord_client::{ DiscordClient, MessageContent },
-    bot::voice_music::voice_manager::PlayerLoopState,
 };
 pub struct UnloopMusicCommand {}
 

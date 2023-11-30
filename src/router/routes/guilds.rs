@@ -1,11 +1,5 @@
-use serde::{ Deserialize, Serialize };
+use rustycrab_model::response::guilds::ResponseGuild;
 use crate::database::guild_info::Model as GuildModel;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseGuild {
-    pub id: i32,
-    pub guild_id: String,
-}
 
 impl From<GuildModel> for ResponseGuild {
     fn from(model: GuildModel) -> Self {
@@ -15,11 +9,3 @@ impl From<GuildModel> for ResponseGuild {
         }
     }
 }
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateGuild {
-    pub guild_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateGuild {}

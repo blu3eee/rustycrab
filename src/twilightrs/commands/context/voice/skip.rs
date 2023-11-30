@@ -2,6 +2,7 @@ use std::error::Error;
 
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
@@ -10,7 +11,6 @@ use crate::{
         discord_client::{ DiscordClient, MessageContent },
         messages::{ DiscordEmbed, DiscordEmbedField },
     },
-    utilities::utils::ColorResolvables,
     cdn_avatar,
 };
 pub struct SkipCurrentTrackCommand {}

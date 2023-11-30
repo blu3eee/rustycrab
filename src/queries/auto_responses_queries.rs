@@ -1,4 +1,8 @@
 use async_trait::async_trait;
+use rustycrab_model::response::auto_response::{
+    RequestCreateAutoResponse,
+    RequestUpdateAutoResponse,
+};
 use sea_orm::{
     DatabaseConnection,
     Set,
@@ -21,7 +25,6 @@ use crate::{
         bots,
         guild_info,
     },
-    router::routes::auto_responses::{ RequestCreateAutoResponse, RequestUpdateAutoResponse },
     utilities::app_error::AppError,
     multi_bot_guild_entities_queries::MultipleBotGuildEntityQueries,
 };

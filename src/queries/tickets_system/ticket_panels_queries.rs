@@ -1,3 +1,17 @@
+use rustycrab_model::response::{
+    ticket::{
+        panel::{
+            RequestCreateTicketPanel,
+            RequestUpdateTicketPanel,
+            ResponseTicketPanelDetails,
+            ResponseTicketPanel,
+        },
+        support_team::ResponseTicketSupportTeam,
+    },
+    bots::ResponseBot,
+    guilds::ResponseGuild,
+    discord_message::{ ResponseMessageDetails, ResponseButton },
+};
 use sea_orm::{
     DatabaseConnection,
     Set,
@@ -21,7 +35,6 @@ use crate::{
         bots,
         guild_info,
     },
-    router::routes::tickets::ticket_panels::{ RequestCreateTicketPanel, RequestUpdateTicketPanel },
     queries::{
         bot_queries::BotQueries,
         guild_queries::GuildQueries,
@@ -31,7 +44,10 @@ use crate::{
     utilities::app_error::AppError,
 };
 
-use super::ticket_panels_links_queries::TicketPanelLinksQueries;
+use super::{
+    ticket_panels_links_queries::TicketPanelLinksQueries,
+    ticket_support_team_queries::TicketSupportTeamQueries,
+};
 
 pub struct TicketPanelsQueries {}
 
@@ -52,6 +68,60 @@ impl TicketPanelsQueries {
             )
             .all(db).await
             .map_err(AppError::from)
+    }
+
+    pub async fn fetch_panel_details(
+        db: &DatabaseConnection,
+        id: i32
+    ) -> Result<ResponseTicketPanelDetails, AppError> {
+        let panel = ResponseTicketPanel::from(Self::find_by_id(db, id).await?);
+
+        let bot: ResponseBot = BotQueries::find_by_id(db, panel.bot_id).await?.into();
+
+        let guild: ResponseGuild = GuildQueries::find_by_id(db, panel.guild_id).await?.into();
+
+        let message: Option<ResponseMessageDetails> = if let Some(id) = panel.message_id {
+            Some(MessageQueries::fetch_message_response(db, id).await?)
+        } else {
+            None
+        };
+
+        let button: Option<ResponseButton> = if let Some(id) = panel.button_id {
+            Some(MessageButtonQueries::find_by_id(db, id).await?.into())
+        } else {
+            None
+        };
+
+        let welcome_message: Option<ResponseMessageDetails> = if
+            let Some(id) = panel.welcome_message_id
+        {
+            Some(MessageQueries::fetch_message_response(db, id).await?)
+        } else {
+            None
+        };
+
+        let support_team: Option<ResponseTicketSupportTeam> = if
+            let Some(id) = panel.support_team_id
+        {
+            Some(TicketSupportTeamQueries::find_by_id(db, id).await?.into())
+        } else {
+            None
+        };
+
+        Ok(ResponseTicketPanelDetails {
+            id: panel.id,
+            bot,
+            guild,
+            message,
+            button,
+            welcome_message,
+            mention_on_open: panel.mention_on_open.clone(),
+            naming_scheme: panel.naming_scheme.clone(),
+            channel_id: panel.channel_id.clone(),
+            sent_message_id: panel.sent_message_id.clone(),
+            support_team,
+            ticket_category: panel.ticket_category.clone(),
+        })
     }
 }
 

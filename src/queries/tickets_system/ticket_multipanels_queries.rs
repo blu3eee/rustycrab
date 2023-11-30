@@ -1,6 +1,19 @@
 use std::collections::HashSet;
 
 use async_trait::async_trait;
+use rustycrab_model::response::{
+    ticket::{
+        multipanel::{
+            RequestCreateTicketMultiPanel,
+            RequestUpdateTicketMultiPanel,
+            ResponseTicketMultiPanelDetails,
+        },
+        panel::ResponseTicketPanel,
+    },
+    bots::ResponseBot,
+    guilds::ResponseGuild,
+    discord_message::ResponseMessageDetails,
+};
 use sea_orm::{
     Set,
     DatabaseConnection,
@@ -25,12 +38,13 @@ use crate::{
             ActiveModel as TicketMultiPanelActiveModel,
             Entity as TicketMultiPanels,
         },
+        ticket_multi_panels_panels_ticket_panels::{
+            self as PanelLink,
+            Entity as PanelLinks,
+            Relation as PanelLinksRelations,
+        },
         bots,
         guild_info,
-    },
-    router::routes::tickets::ticket_multipanels::{
-        RequestCreateTicketMultiPanel,
-        RequestUpdateTicketMultiPanel,
     },
     utilities::{ app_error::AppError, utils::color_to_button_style },
     queries::{
@@ -41,7 +55,10 @@ use crate::{
     },
 };
 
-use super::ticket_panels_links_queries::TicketPanelLinksQueries;
+use super::{
+    ticket_panels_links_queries::TicketPanelLinksQueries,
+    ticket_panels_queries::TicketPanelsQueries,
+};
 
 pub struct TicketMultiPanelQueries {}
 
@@ -62,6 +79,46 @@ impl TicketMultiPanelQueries {
             )
             .all(db).await
             .map_err(AppError::from)
+    }
+
+    pub async fn fetch_multipanel_details(
+        db: &DatabaseConnection,
+        id: i32
+    ) -> Result<ResponseTicketMultiPanelDetails, AppError> {
+        let multipanel = Self::find_by_id(db, id).await?;
+        let bot: ResponseBot = BotQueries::find_by_id(db, multipanel.bot_id).await?.into();
+        let guild: ResponseGuild = GuildQueries::find_by_id(db, multipanel.guild_id).await?.into();
+        let message: Option<ResponseMessageDetails> = if let Some(id) = multipanel.message_id {
+            Some(MessageQueries::fetch_message_response(db, id).await?)
+        } else {
+            None
+        };
+
+        let panel_links = PanelLinks::find()
+            .join(LeftJoin, PanelLinksRelations::TicketMultiPanels.def())
+            .join(LeftJoin, PanelLinksRelations::TicketPanels.def())
+            .filter(PanelLink::Column::TicketMultiPanelsId.eq(multipanel.id))
+            .all(db).await
+            .map_err(AppError::from)?;
+
+        let mut panels: Vec<ResponseTicketPanel> = Vec::new();
+        for link in panel_links {
+            let panel: ResponseTicketPanel = TicketPanelsQueries::find_by_id(
+                db,
+                link.ticket_panels_id
+            ).await?.into();
+            panels.push(panel.into());
+        }
+
+        Ok(ResponseTicketMultiPanelDetails {
+            id: multipanel.id,
+            channel_id: multipanel.channel_id.clone(),
+            sent_message_id: multipanel.sent_message_id.clone(),
+            bot,
+            guild,
+            message,
+            panels,
+        })
     }
 }
 

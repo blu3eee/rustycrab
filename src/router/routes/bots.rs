@@ -1,12 +1,11 @@
 use axum::{ Extension, Json, routing::{ get, patch }, Router };
 use axum::extract::Path;
+use rustycrab_model::response::{ ResponseDataJson, bots::ResponseBot };
 use sea_orm::{ EntityTrait, PrimaryKeyTrait, IntoActiveModel };
-use serde::{ Serialize, Deserialize };
 use async_trait::async_trait;
 
 use crate::app_state::AppState;
 use crate::default_queries::DefaultSeaQueries;
-use crate::default_router::ResponseDataJson;
 use crate::utilities::app_error::AppError;
 use crate::{ default_router::DefaultRoutes, queries::bot_queries::BotQueries };
 use crate::database::bots::Model as BotModel;
@@ -74,36 +73,6 @@ impl DefaultRoutes for BotsRouter {
             )
             .layer(Extension(state))
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateBot {
-    pub bot_id: String,
-    pub token: String,
-    pub theme_hex_color: Option<String>,
-    pub discord_secret: Option<String>,
-    pub discord_callback_url: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateBot {
-    pub bot_id: Option<String>,
-    pub token: Option<String>,
-    pub theme_hex_color: Option<String>,
-    pub discord_secret: Option<String>,
-    pub discord_callback_url: Option<String>,
-    pub premium_flags: Option<i32>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseBot {
-    pub id: i32,
-    pub bot_id: String,
-    pub token: String,
-    pub theme_hex_color: String,
-    pub discord_secret: String,
-    pub discord_callback_url: String,
-    pub premium_flags: i32,
 }
 
 impl From<BotModel> for ResponseBot {

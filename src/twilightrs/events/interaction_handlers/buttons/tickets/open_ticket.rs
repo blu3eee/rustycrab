@@ -1,5 +1,10 @@
 use std::{ error::Error, sync::Arc, time::{ SystemTime, UNIX_EPOCH } };
 
+use rustycrab_model::response::ticket::{
+    panel::ResponseTicketPanelDetails,
+    setting::ResponseTicketSetting,
+    ticket::{ RequestCreateTicket, RequestUpdateTicket },
+};
 use twilight_model::{
     gateway::payload::incoming::InteractionCreate,
     http::permission_overwrite::{ PermissionOverwrite, PermissionOverwriteType },
@@ -24,11 +29,6 @@ use crate::{
     },
     default_queries::DefaultSeaQueries,
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
-    router::routes::tickets::{
-        ticket_settings::ResponseTicketSetting,
-        tickets::{ RequestCreateTicket, RequestUpdateTicket },
-        ticket_panels::{ ResponseTicketPanelDetails, ResponseTicketPanel },
-    },
     database::tickets::Model as TicketModel,
     utilities::utils::color_to_button_style,
 };
@@ -41,12 +41,11 @@ pub async fn open_ticket_handler(
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     if let Some(user) = interaction.author() {
         let panel_id = i32::from_str_radix(&panel_id, 10)?;
-        let panel: ResponseTicketPanel = TicketPanelsQueries::find_by_id(
+
+        let panel_details: ResponseTicketPanelDetails = TicketPanelsQueries::fetch_panel_details(
             &client.db,
             panel_id
-        ).await?.into();
-
-        let panel_details: ResponseTicketPanelDetails = panel.to_details(&client.db).await?;
+        ).await?;
 
         let setting: ResponseTicketSetting = TicketSettingQueries::find_by_discord_ids(
             &client.db,

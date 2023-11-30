@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::afk::UserAfkStatus;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
@@ -13,7 +14,6 @@ use crate::{
             context_command::GuildConfigModel,
         },
         discord_client::DiscordClient,
-        bot::afk::UserAfkStatus,
     },
     utilities::utils::current_unix_timestamp,
 };

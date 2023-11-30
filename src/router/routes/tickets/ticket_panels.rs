@@ -1,30 +1,20 @@
 use async_trait::async_trait;
 use axum::{ Extension, Json, extract::Path, Router, routing::get };
-use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait, DatabaseConnection };
-use serde::{ Serialize, Deserialize };
+use rustycrab_model::response::{
+    ticket::panel::ResponseTicketPanel,
+    ResponseDataList,
+    ResponseDataMessage,
+};
+use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait };
 use twilight_model::{
     id::Id,
     channel::message::{ Embed, Component, component::{ ActionRow, Button }, ReactionType },
 };
 use crate::{
     database::ticket_panels::Model as TicketPanelModel,
-    router::routes::{
-        RequestCreateUpdateMessage,
-        RequestCreateButton,
-        RequestUpdateButton,
-        bots::ResponseBot,
-        guilds::ResponseGuild,
-        ResponseMessageDetails,
-        ResponseButton,
-    },
-    default_router::{ DefaultRoutes, ResponseDataList, ResponseDataMessage },
     queries::{
-        tickets_system::{
-            ticket_panels_queries::TicketPanelsQueries,
-            ticket_support_team_queries::TicketSupportTeamQueries,
-        },
+        tickets_system::ticket_panels_queries::TicketPanelsQueries,
         message_queries::MessageQueries,
-        guild_queries::GuildQueries,
         bot_queries::BotQueries,
         message_button_queries::MessageButtonQueries,
         message_embed_queries::MessageEmbedQueries,
@@ -33,52 +23,8 @@ use crate::{
     default_queries::DefaultSeaQueries,
     app_state::AppState,
     twilightrs::messages::DiscordEmbed,
+    default_router::DefaultRoutes,
 };
-
-use super::ticket_support_teams::ResponseTicketSupportTeam;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateTicketPanel {
-    pub bot_discord_id: String,
-    pub guild_discord_id: String,
-    pub mention_on_open: Vec<String>,
-    pub naming_scheme: String,
-    pub channel_id: String,
-    pub message_data: RequestCreateUpdateMessage,
-    pub button_data: RequestCreateButton,
-    pub welcome_message_data: RequestCreateUpdateMessage,
-    pub support_team_id: i32,
-    pub ticket_category: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateTicketPanel {
-    pub mention_on_open: Option<Vec<String>>,
-    pub naming_scheme: Option<String>,
-    pub channel_id: Option<String>,
-    pub sent_message_id: Option<String>,
-    pub message_data: Option<RequestCreateUpdateMessage>,
-    pub button_data: Option<RequestUpdateButton>,
-    pub welcome_message_data: Option<RequestCreateUpdateMessage>,
-    pub support_team_id: Option<i32>,
-    pub ticket_category: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseTicketPanel {
-    pub id: i32,
-    pub mention_on_open: Vec<String>,
-    pub naming_scheme: String,
-    pub channel_id: String,
-    pub sent_message_id: String,
-    pub bot_id: i32,
-    pub guild_id: i32,
-    pub message_id: Option<i32>,
-    pub button_id: Option<i32>,
-    pub welcome_message_id: Option<i32>,
-    pub support_team_id: Option<i32>,
-    pub ticket_category: String,
-}
 
 impl From<TicketPanelModel> for ResponseTicketPanel {
     fn from(model: TicketPanelModel) -> Self {
@@ -99,75 +45,59 @@ impl From<TicketPanelModel> for ResponseTicketPanel {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseTicketPanelDetails {
-    pub id: i32,
-    pub mention_on_open: Vec<String>,
-    pub naming_scheme: String,
-    pub channel_id: String,
-    pub sent_message_id: String,
-    pub bot: ResponseBot,
-    pub guild: ResponseGuild,
-    pub message: Option<ResponseMessageDetails>,
-    pub button: Option<ResponseButton>,
-    pub welcome_message: Option<ResponseMessageDetails>,
-    pub support_team: Option<ResponseTicketSupportTeam>,
-    pub ticket_category: String,
-}
+// impl ResponseTicketPanel {
+//     pub async fn to_details(
+//         &self,
+//         db: &DatabaseConnection
+//     ) -> Result<ResponseTicketPanelDetails, AppError> {
+//         let bot: ResponseBot = BotQueries::find_by_id(db, self.bot_id).await?.into();
 
-impl ResponseTicketPanel {
-    pub async fn to_details(
-        &self,
-        db: &DatabaseConnection
-    ) -> Result<ResponseTicketPanelDetails, AppError> {
-        let bot: ResponseBot = BotQueries::find_by_id(db, self.bot_id).await?.into();
+//         let guild: ResponseGuild = GuildQueries::find_by_id(db, self.guild_id).await?.into();
 
-        let guild: ResponseGuild = GuildQueries::find_by_id(db, self.guild_id).await?.into();
+//         let message: Option<ResponseMessageDetails> = if let Some(id) = self.message_id {
+//             Some(MessageQueries::fetch_message_response(db, id).await?)
+//         } else {
+//             None
+//         };
 
-        let message: Option<ResponseMessageDetails> = if let Some(id) = self.message_id {
-            Some(MessageQueries::fetch_message_response(db, id).await?)
-        } else {
-            None
-        };
+//         let button: Option<ResponseButton> = if let Some(id) = self.button_id {
+//             Some(MessageButtonQueries::find_by_id(db, id).await?.into())
+//         } else {
+//             None
+//         };
 
-        let button: Option<ResponseButton> = if let Some(id) = self.button_id {
-            Some(MessageButtonQueries::find_by_id(db, id).await?.into())
-        } else {
-            None
-        };
+//         let welcome_message: Option<ResponseMessageDetails> = if
+//             let Some(id) = self.welcome_message_id
+//         {
+//             Some(MessageQueries::fetch_message_response(db, id).await?)
+//         } else {
+//             None
+//         };
 
-        let welcome_message: Option<ResponseMessageDetails> = if
-            let Some(id) = self.welcome_message_id
-        {
-            Some(MessageQueries::fetch_message_response(db, id).await?)
-        } else {
-            None
-        };
+//         let support_team: Option<ResponseTicketSupportTeam> = if
+//             let Some(id) = self.support_team_id
+//         {
+//             Some(TicketSupportTeamQueries::find_by_id(db, id).await?.into())
+//         } else {
+//             None
+//         };
 
-        let support_team: Option<ResponseTicketSupportTeam> = if
-            let Some(id) = self.support_team_id
-        {
-            Some(TicketSupportTeamQueries::find_by_id(db, id).await?.into())
-        } else {
-            None
-        };
-
-        Ok(ResponseTicketPanelDetails {
-            id: self.id,
-            bot,
-            guild,
-            message,
-            button,
-            welcome_message,
-            mention_on_open: self.mention_on_open.clone(),
-            naming_scheme: self.naming_scheme.clone(),
-            channel_id: self.channel_id.clone(),
-            sent_message_id: self.sent_message_id.clone(),
-            support_team,
-            ticket_category: self.ticket_category.clone(),
-        })
-    }
-}
+//         Ok(ResponseTicketPanelDetails {
+//             id: self.id,
+//             bot,
+//             guild,
+//             message,
+//             button,
+//             welcome_message,
+//             mention_on_open: self.mention_on_open.clone(),
+//             naming_scheme: self.naming_scheme.clone(),
+//             channel_id: self.channel_id.clone(),
+//             sent_message_id: self.sent_message_id.clone(),
+//             support_team,
+//             ticket_category: self.ticket_category.clone(),
+//         })
+//     }
+// }
 
 pub struct TicketPanelsRoutes {}
 

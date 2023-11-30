@@ -1,5 +1,12 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::{
+    color::ColorResolvables,
+    response::{
+        auto_response::RequestCreateAutoResponse,
+        discord_message::RequestCreateUpdateMessage,
+    },
+};
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
@@ -16,9 +23,7 @@ use crate::{
         utils::reply_command,
     },
     queries::auto_responses_queries::AutoResponsesQueries,
-    utilities::utils::ColorResolvables,
     default_queries::DefaultSeaQueries,
-    router::routes::auto_responses::RequestCreateAutoResponse,
 };
 
 use super::{ AutoResCommand, utils::split_trigger_and_value };
@@ -76,7 +81,7 @@ impl ContextCommand for AddAutoResponseCommand {
                         response_data: if response.is_empty() {
                             None
                         } else {
-                            Some(crate::router::routes::RequestCreateUpdateMessage {
+                            Some(RequestCreateUpdateMessage {
                                 r#type: Some("Embed and Text".to_string()),
                                 content: Some(response.to_string()),
                                 embed: None,

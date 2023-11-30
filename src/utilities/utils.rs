@@ -1,36 +1,3 @@
-pub enum ColorResolvables {
-    ColorInt(u32),
-    HexString(String),
-    Red,
-    Green,
-    Blue,
-    Yellow,
-}
-
-impl ColorResolvables {
-    pub fn as_str(&self) -> &str {
-        match self {
-            ColorResolvables::HexString(hex) => hex,
-            ColorResolvables::Red => "ef476f",
-            ColorResolvables::Green => "06d6a0",
-            ColorResolvables::Blue => "118ab2",
-            ColorResolvables::Yellow => "ffd166",
-            ColorResolvables::ColorInt(_) => "2B2D31",
-        }
-    }
-
-    pub fn as_u32(&self) -> u32 {
-        match self {
-            ColorResolvables::ColorInt(number) => *number,
-            _ => {
-                u32::from_str_radix(self.as_str().trim_start_matches("#"), 16).unwrap_or_else(|_|
-                    u32::from_str_radix("2B2D31", 16).unwrap()
-                )
-            }
-        }
-    }
-}
-
 use std::{ time::SystemTime, error::Error };
 
 use regex::Regex;

@@ -1,16 +1,14 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use rustycrab_model::color::ColorResolvables;
 use songbird::tracks::PlayMode;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
-use crate::{
-    twilightrs::{
-        commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
-        discord_client::DiscordClient,
-        utils::reply_command,
-    },
-    utilities::utils::ColorResolvables,
+use crate::twilightrs::{
+    commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
+    discord_client::DiscordClient,
+    utils::reply_command,
 };
 pub struct PauseMusicCommand {}
 

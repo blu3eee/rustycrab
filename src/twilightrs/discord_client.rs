@@ -1,5 +1,6 @@
 use fluent::FluentArgs;
 
+use rustycrab_model::afk::UserAfkStatus;
 use sea_orm::DatabaseConnection;
 use songbird::{ Songbird, Call, tracks::TrackHandle };
 use tokio::sync::Mutex;
@@ -27,7 +28,7 @@ use crate::{
 use super::{
     messages::DiscordEmbed,
     commands::context::context_command::GuildConfigModel,
-    bot::{ voice_music::voice_manager::VoiceManager, afk::UserAfkStatus },
+    bot::voice_music::voice_manager::VoiceManager,
 };
 
 use fluent::FluentResource;

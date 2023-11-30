@@ -1,11 +1,11 @@
 use async_trait::async_trait;
 use axum::{ Extension, extract::Path, Json, Router, routing::{ get, patch } };
+use rustycrab_model::response::{ ResponseDataJson, user::ResponseUser };
 use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait };
-use serde::{ Deserialize, Serialize };
 
 use crate::{
     database::users::Model as UserModel,
-    default_router::{ DefaultRoutes, ResponseDataJson },
+    default_router::DefaultRoutes,
     queries::user_queries::UserQueries,
     app_state::AppState,
     utilities::app_error::AppError,
@@ -78,24 +78,6 @@ impl DefaultRoutes for UsersRoutes {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateUser {
-    pub discord_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateUser {
-    pub access_token: Option<String>,
-    pub refresh_token: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseUser {
-    pub id: i32,
-    pub discord_id: String,
-    pub access_token: Option<String>,
-    pub refresh_token: Option<String>,
-}
 impl From<UserModel> for ResponseUser {
     fn from(model: UserModel) -> Self {
         Self {

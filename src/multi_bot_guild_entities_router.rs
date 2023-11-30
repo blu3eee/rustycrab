@@ -1,9 +1,10 @@
 use async_trait::async_trait;
 use axum::{ Router, Extension, extract::Path, Json, routing::get };
+use rustycrab_model::response::ResponseDataList;
 use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait };
 
 use crate::{
-    default_router::{ DefaultRoutes, ResponseDataList },
+    default_router::DefaultRoutes,
     app_state::AppState,
     default_queries::DefaultSeaQueries,
     utilities::app_error::AppError,

@@ -1,3 +1,7 @@
+use rustycrab_model::response::ticket::setting::{
+    RequestCreateTicketSetting,
+    RequestUpdateTicketSetting,
+};
 use sea_orm::{ DatabaseConnection, Set, RelationTrait, EntityTrait };
 use async_trait::async_trait;
 
@@ -7,10 +11,6 @@ use crate::{
         Entity as TicketSettings,
         ActiveModel as TicketSettingActiveModel,
         Relation as TicketSettingRelations,
-    },
-    router::routes::tickets::ticket_settings::{
-        RequestCreateTicketSetting,
-        RequestUpdateTicketSetting,
     },
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
     utilities::app_error::AppError,

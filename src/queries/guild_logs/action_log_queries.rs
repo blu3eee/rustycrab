@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use rustycrab_model::response::logs::action_log::{ RequestCreateLogAction, RequestUpdateActionLog };
 use sea_orm::{
     EntityTrait,
     DatabaseConnection,
@@ -18,7 +19,6 @@ use crate::{
         ActiveModel as ActionLogActiveModel,
         Relation as ActionLogsRelations,
     },
-    router::routes::bot_logs::action_logs::{ RequestCreateLogAction, RequestUpdateActionLog },
     utilities::app_error::AppError,
     queries::{ bot_queries::BotQueries, guild_queries::GuildQueries },
 };

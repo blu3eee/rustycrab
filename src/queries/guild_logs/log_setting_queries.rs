@@ -1,3 +1,4 @@
+use rustycrab_model::response::logs::setting::{ RequestCreateLogSetting, RequestUpdateLogSetting };
 use sea_orm::{ DatabaseConnection, Set, RelationTrait };
 use async_trait::async_trait;
 
@@ -12,7 +13,6 @@ use crate::{
         Entity as LogSettings,
         ActiveModel as LogSettingActiveModel,
     },
-    router::routes::bot_logs::log_settings::{ RequestCreateLogSetting, RequestUpdateLogSetting },
     utilities::app_error::AppError,
 };
 

@@ -1,4 +1,9 @@
 use async_trait::async_trait;
+use rustycrab_model::response::discord_message::{
+    RequestCreateUpdateMessage,
+    ResponseMessageDetails,
+    ResponseEmbed,
+};
 use sea_orm::{ DatabaseConnection, Set, EntityTrait, ActiveValue, PrimaryKeyTrait, DeleteResult };
 
 use crate::{
@@ -6,7 +11,6 @@ use crate::{
         messages::{ Entity as Messages, ActiveModel as MessageActiveModel },
         embed_info::Model as EmbedModel,
     },
-    router::routes::{ RequestCreateUpdateMessage, ResponseMessageDetails, ResponseMessage },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
     twilightrs::messages::DiscordEmbed,
@@ -20,7 +24,20 @@ impl MessageQueries {
         db: &DatabaseConnection,
         id: i32
     ) -> Result<ResponseMessageDetails, AppError> {
-        Ok(ResponseMessage::from(MessageQueries::find_by_id(db, id).await?).to_details(db).await?)
+        let message = Self::find_by_id(db, id).await?;
+        let embed = if let Some(e_id) = message.embed_id {
+            let embed_model = MessageEmbedQueries::find_by_id(db, e_id).await?;
+            Some(ResponseEmbed::from(embed_model)) // Assuming `From` trait is implemented for `ResponseEmbed`
+        } else {
+            None
+        };
+
+        Ok(ResponseMessageDetails {
+            id: message.id,
+            r#type: message.r#type.clone(),
+            content: message.content.clone(),
+            embed,
+        })
     }
 }
 

@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use rustycrab_model::response::bot_guild_config::RequestUpdateConfig;
 use twilight_model::{ gateway::payload::incoming::MessageCreate, guild::Permissions };
 use std::error::Error;
 
@@ -15,7 +16,6 @@ use crate::{
     },
     queries::guild_config_queries::GuildConfigQueries,
     default_queries::DefaultSeaQueries,
-    router::routes::bot_guild_configs::RequestUpdateConfig,
 };
 pub struct ChangeLanguageCommand;
 

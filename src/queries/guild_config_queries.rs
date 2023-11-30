@@ -1,5 +1,7 @@
-use async_trait::async_trait;
 // queries/guild_config_queries.rs
+use async_trait::async_trait;
+
+use rustycrab_model::response::bot_guild_config::{ RequestCreateConfig, RequestUpdateConfig };
 use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set, RelationTrait };
 
 use crate::{
@@ -15,7 +17,6 @@ use crate::{
     },
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
     default_queries::DefaultSeaQueries,
-    router::routes::bot_guild_configs::{ RequestCreateConfig, RequestUpdateConfig },
 };
 
 use super::{ bot_queries::BotQueries, guild_queries::GuildQueries };

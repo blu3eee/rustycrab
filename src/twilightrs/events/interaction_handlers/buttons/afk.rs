@@ -1,4 +1,5 @@
 use std::error::Error;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::{
     gateway::payload::incoming::InteractionCreate,
     application::interaction::message_component::MessageComponentInteractionData,
@@ -6,10 +7,7 @@ use twilight_model::{
     id::Id,
 };
 
-use crate::{
-    twilightrs::{ discord_client::DiscordClient, messages::DiscordEmbed },
-    utilities::utils::ColorResolvables,
-};
+use crate::twilightrs::{ discord_client::DiscordClient, messages::DiscordEmbed };
 
 pub async fn add_afk_notification(
     client: DiscordClient,

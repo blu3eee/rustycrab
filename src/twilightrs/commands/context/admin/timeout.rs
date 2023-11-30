@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::{
     gateway::payload::incoming::MessageCreate,
     guild::Permissions,
@@ -7,19 +8,16 @@ use twilight_model::{
 };
 use std::{ error::Error, time::SystemTime };
 
-use crate::{
-    twilightrs::{
-        commands::context::{
-            ContextCommand,
-            ParsedArg,
-            ArgSpec,
-            ArgType,
-            context_command::GuildConfigModel,
-        },
-        discord_client::DiscordClient,
-        utils::send_command_response,
+use crate::twilightrs::{
+    commands::context::{
+        ContextCommand,
+        ParsedArg,
+        ArgSpec,
+        ArgType,
+        context_command::GuildConfigModel,
     },
-    utilities::utils::ColorResolvables,
+    discord_client::DiscordClient,
+    utils::send_command_response,
 };
 
 use std::time::Duration;

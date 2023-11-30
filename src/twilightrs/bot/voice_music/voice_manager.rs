@@ -1,7 +1,8 @@
-use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap, str::FromStr };
+use std::{ sync::{ Arc, RwLock }, error::Error, collections::HashMap };
 
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::{ color::ColorResolvables, music::PlayerLoopState };
 use songbird::{
     Songbird,
     tracks::TrackQueue,
@@ -20,45 +21,9 @@ use twilight_model::{
 
 use crate::{
     twilightrs::{ messages::{ DiscordEmbed, DiscordEmbedField }, discord_client::DiscordClient },
-    utilities::{ format_duration, utils::ColorResolvables },
+    utilities::format_duration,
     cdn_avatar,
 };
-
-use enum_primitive_derive::Primitive;
-use num_traits::{ FromPrimitive, ToPrimitive };
-
-#[derive(Clone, Debug)]
-pub enum PlayerLoopState {
-    NoLoop,
-    LoopCurrentTrack,
-    LoopQueue,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Primitive)]
-pub enum MusicPlayerActions {
-    Pause = 0,
-    Clear = 1,
-    Next = 2,
-    LoopQueue = 3,
-    LoopTrack = 4,
-}
-
-impl FromStr for MusicPlayerActions {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.parse::<i32>() {
-            Ok(num) => MusicPlayerActions::from_i32(num).ok_or(()),
-            Err(_) => Err(()),
-        }
-    }
-}
-
-impl MusicPlayerActions {
-    pub fn to_i32_string(&self) -> String {
-        self.to_i32().unwrap().to_string()
-    }
-}
 
 /// VoiceManager is a central manager for all voice-related functionalities in a Discord bot.
 /// It encapsulates various aspects of voice interaction, such as song queue management,

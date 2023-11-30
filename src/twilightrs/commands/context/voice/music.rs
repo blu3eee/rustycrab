@@ -2,6 +2,7 @@ use std::error::Error;
 
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::{
@@ -11,7 +12,6 @@ use crate::{
         messages::DiscordEmbed,
     },
     cdn_avatar,
-    utilities::utils::ColorResolvables,
 };
 
 use super::{

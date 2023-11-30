@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
@@ -16,7 +17,6 @@ use crate::{
         utils::reply_command,
     },
     queries::auto_responses_queries::AutoResponsesQueries,
-    utilities::utils::ColorResolvables,
     default_queries::DefaultSeaQueries,
 };
 

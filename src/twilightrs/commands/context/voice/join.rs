@@ -2,20 +2,18 @@ use std::error::Error;
 
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
-use crate::{
-    twilightrs::{
-        commands::context::{
-            context_command::{ ContextCommand, GuildConfigModel },
-            ParsedArg,
-            ArgSpec,
-            ArgType,
-        },
-        discord_client::DiscordClient,
-        utils::reply_command,
+use crate::twilightrs::{
+    commands::context::{
+        context_command::{ ContextCommand, GuildConfigModel },
+        ParsedArg,
+        ArgSpec,
+        ArgType,
     },
-    utilities::utils::ColorResolvables,
+    discord_client::DiscordClient,
+    utils::reply_command,
 };
 
 pub struct JoinCommand {}

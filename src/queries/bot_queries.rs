@@ -1,12 +1,12 @@
 // queries/bot_queries.rs
 use async_trait::async_trait;
+use rustycrab_model::response::bots::{ RequestCreateBot, RequestUpdateBot };
 use sea_orm::{ ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set };
 
 use crate::{
     database::bots::{ self, Model as BotModel },
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
-    router::routes::bots::{ RequestCreateBot, RequestUpdateBot },
 };
 
 pub struct BotQueries {}

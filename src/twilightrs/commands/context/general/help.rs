@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use rustycrab_model::color::ColorResolvables;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::{ error::Error, collections::HashMap };
 
@@ -19,7 +20,6 @@ use crate::{
     cdn_guild_icon,
     cdn_avatar,
     queries::bot_queries::BotQueries,
-    utilities::utils::ColorResolvables,
 };
 
 pub struct HelpCommand;

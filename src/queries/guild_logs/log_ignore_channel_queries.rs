@@ -1,3 +1,7 @@
+use rustycrab_model::response::logs::ignore::{
+    RequestCreateLogIgnoreChannel,
+    RequestUpdateLogIgnoreChannel,
+};
 use sea_orm::{
     DatabaseConnection,
     Set,
@@ -21,10 +25,6 @@ use crate::{
         log_settings,
     },
     default_queries::DefaultSeaQueries,
-    router::routes::bot_logs::log_ignores::{
-        RequestCreateLogIgnoreChannel,
-        RequestUpdateLogIgnoreChannel,
-    },
     utilities::app_error::AppError,
 };
 use super::log_setting_queries::LogSettingQueries;

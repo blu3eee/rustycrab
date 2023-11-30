@@ -2,6 +2,7 @@ use std::error::Error;
 use fluent_bundle::FluentArgs;
 use futures_util::{ stream::StreamExt, future::join_all };
 use async_trait::async_trait;
+use rustycrab_model::color::ColorResolvables;
 use songbird::input::{ YoutubeDl, Compose };
 use twilight_model::{
     gateway::payload::incoming::MessageCreate,
@@ -18,7 +19,7 @@ use crate::{
         messages::DiscordEmbed,
         utils::make_components,
     },
-    utilities::{ utils::{ ColorResolvables, color_to_button_style }, generate_random_string },
+    utilities::{ utils::color_to_button_style, generate_random_string },
 };
 pub struct QueueCommand {}
 

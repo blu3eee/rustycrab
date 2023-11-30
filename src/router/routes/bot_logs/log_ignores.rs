@@ -3,7 +3,6 @@ use crate::{
         log_ignore_channels::Model as LogIgnoreChannelModel,
         log_ignore_roles::Model as LogIgnoreRoleModel,
     },
-    default_router::{ DefaultRoutes, ResponseDataList, ResponseDataJson },
     queries::guild_logs::{
         log_ignore_channel_queries::LogIgnoreChannelQueries,
         log_ignore_role_queries::LogIgnoreRoleQueries,
@@ -11,10 +10,16 @@ use crate::{
     app_state::AppState,
     utilities::app_error::AppError,
     default_queries::DefaultSeaQueries,
+    default_router::DefaultRoutes,
 };
 
 use async_trait::async_trait;
 use axum::{ Extension, extract::Path, Json, Router, routing::get };
+use rustycrab_model::response::{
+    logs::ignore::{ ResponseLogIgnoreChannel, ResponseLogIgnoreRole },
+    ResponseDataJson,
+    ResponseDataList,
+};
 use sea_orm::{ EntityTrait, IntoActiveModel, PrimaryKeyTrait };
 use serde::{ Deserialize, Serialize };
 
@@ -198,22 +203,6 @@ impl DefaultRoutes for BotGuildLogIgnoresRoleRoutes {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateLogIgnoreChannel {
-    pub log_setting_id: i32,
-    pub channel_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateLogIgnoreChannel {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseLogIgnoreChannel {
-    pub id: i32,
-    pub log_setting_id: Option<i32>,
-    pub channel_id: String,
-}
-
 impl From<LogIgnoreChannelModel> for ResponseLogIgnoreChannel {
     fn from(model: LogIgnoreChannelModel) -> Self {
         Self {
@@ -222,22 +211,6 @@ impl From<LogIgnoreChannelModel> for ResponseLogIgnoreChannel {
             channel_id: model.channel_id,
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateLogIgnoreRole {
-    pub log_setting_id: i32,
-    pub role_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestUpdateLogIgnoreRole {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseLogIgnoreRole {
-    pub id: i32,
-    pub log_setting_id: Option<i32>,
-    pub role_id: String,
 }
 
 impl From<LogIgnoreRoleModel> for ResponseLogIgnoreRole {

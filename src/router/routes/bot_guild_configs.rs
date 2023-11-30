@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use axum::Router;
-use serde::{ Deserialize, Serialize };
+use rustycrab_model::response::bot_guild_config::ResponseGuildConfig;
 
 use crate::{
     database::bot_guild_configurations::Model as GuildConfig,
@@ -9,8 +9,6 @@ use crate::{
     unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
     app_state::AppState,
 };
-
-use super::{ bots::ResponseBot, guilds::ResponseGuild };
 
 pub struct BotGuildConfigsRoutes {}
 
@@ -32,44 +30,6 @@ impl DefaultRoutes for BotGuildConfigsRoutes {
 }
 
 impl UniqueBotGuildEntityRoutes for BotGuildConfigsRoutes {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RequestCreateConfig {
-    pub bot_discord_id: String,
-    pub guild_discord_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct RequestUpdateConfig {
-    pub prefix: Option<String>,
-    pub locale: Option<String>,
-    pub bot_id: Option<i32>,
-    pub guild_id: Option<i32>,
-    pub module_flags: Option<i32>,
-    pub premium_flags: Option<i32>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseGuildConfig {
-    pub id: i32,
-    pub prefix: String,
-    pub locale: String,
-    pub bot_id: Option<i32>,
-    pub guild_id: Option<i32>,
-    pub module_flags: i32,
-    pub premium_flags: i32,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseGuildConfigDetails {
-    pub id: i32,
-    pub prefix: String,
-    pub locale: String,
-    pub bot: Option<ResponseBot>,
-    pub guild_id: Option<ResponseGuild>,
-    pub module_flags: i32,
-    pub premium_flags: i32,
-}
 
 impl From<GuildConfig> for ResponseGuildConfig {
     fn from(model: GuildConfig) -> Self {

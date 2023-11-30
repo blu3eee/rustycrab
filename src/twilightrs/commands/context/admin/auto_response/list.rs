@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use fluent_bundle::FluentArgs;
 use futures_util::StreamExt;
+use rustycrab_model::color::ColorResolvables;
 use tokio::time::timeout;
 use twilight_model::{
     gateway::payload::incoming::MessageCreate,
@@ -18,7 +19,7 @@ use crate::{
         messages::DiscordEmbed,
     },
     queries::auto_responses_queries::AutoResponsesQueries,
-    utilities::{ utils::{ ColorResolvables, color_to_button_style }, generate_random_string },
+    utilities::{ utils::color_to_button_style, generate_random_string },
     multi_bot_guild_entities_queries::MultipleBotGuildEntityQueries,
 };
 

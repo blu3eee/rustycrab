@@ -1,5 +1,17 @@
 use std::{ error::Error, sync::Arc, time::{ SystemTime, UNIX_EPOCH }, collections::HashMap };
 
+use rustycrab_model::response::ticket::{
+    setting::ResponseTicketSetting,
+    ticket::{
+        ResponseTicketTranscript,
+        TranscriptMessage,
+        TranscriptUser,
+        TranscriptGuild,
+        TranscriptChannel,
+        RequestUpdateTicket,
+    },
+    panel::ResponseTicketPanelDetails,
+};
 use twilight_model::{
     gateway::payload::incoming::InteractionCreate,
     http::{
@@ -27,18 +39,6 @@ use crate::{
     },
     default_queries::DefaultSeaQueries,
     unique_bot_guild_entity_queries::UniqueBotGuildEntityQueries,
-    router::routes::tickets::{
-        ticket_settings::ResponseTicketSetting,
-        tickets::{
-            RequestUpdateTicket,
-            ResponseTicketTranscript,
-            TranscriptGuild,
-            TranscriptChannel,
-            TranscriptMessage,
-            TranscriptUser,
-        },
-        ticket_panels::{ ResponseTicketPanelDetails, ResponseTicketPanel },
-    },
     database::tickets::Model as TicketModel,
     utilities::utils::color_to_button_style,
     cdn_avatar,
@@ -69,9 +69,10 @@ pub async fn close_ticket_handler(
         }
     }
 
-    let panel_details = ResponseTicketPanel::from(
-        TicketPanelsQueries::find_by_id(&client.db, ticket.panel_id).await?
-    ).to_details(&client.db).await?;
+    let panel_details = TicketPanelsQueries::fetch_panel_details(
+        &client.db,
+        ticket.panel_id
+    ).await?;
 
     // let bot = client.get_bot().await?;
     let setting: ResponseTicketSetting = TicketSettingQueries::find_by_discord_ids(

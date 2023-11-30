@@ -1,28 +1,14 @@
 use async_trait::async_trait;
 use axum::{ Extension, Json, extract::Path, Router, routing::{ get, delete, post, patch } };
+use rustycrab_model::response::{ ResponseDataList, ResponseDataJson, ResponseDataMessage };
 use sea_orm::{ EntityTrait, PrimaryKeyTrait, IntoActiveModel, DeleteResult };
-use serde::{ Serialize, de::DeserializeOwned, Deserialize };
+use serde::{ Serialize, de::DeserializeOwned };
 
 use crate::{
     default_queries::DefaultSeaQueries,
     app_state::AppState,
     utilities::app_error::AppError,
 };
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseDataJson<T> where T: Serialize {
-    pub data: T,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseDataList<T> where T: Serialize {
-    pub data: Vec<T>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ResponseDataMessage {
-    pub message: String,
-}
 
 type PrimaryKey = i32;
 

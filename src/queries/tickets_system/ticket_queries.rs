@@ -1,3 +1,4 @@
+use rustycrab_model::response::ticket::ticket::{ RequestCreateTicket, RequestUpdateTicket };
 use sea_orm::{
     DatabaseConnection,
     Set,
@@ -12,7 +13,6 @@ use async_trait::async_trait;
 use crate::{
     default_queries::DefaultSeaQueries,
     database::tickets::{ self, Entity as Tickets, ActiveModel as TicketActiveModel },
-    router::routes::tickets::tickets::{ RequestCreateTicket, RequestUpdateTicket },
     utilities::app_error::AppError,
     queries::{
         tickets_system::ticket_panels_queries::TicketPanelsQueries,
