@@ -25,6 +25,7 @@ use super::{
     skip_to::SkipToTrackCommand,
     loop_music::LoopMusicCommand,
     unloop_music::UnloopMusicCommand,
+    loopq_music::LoopQueueMusicCommand,
 };
 
 pub struct MusicHelpCommand {}
@@ -55,11 +56,12 @@ impl ContextCommand for MusicHelpCommand {
             Box::new(PauseMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(ResumeMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(StopMusicCommand {}) as Box<dyn ContextCommand>,
-            Box::new(QueueCommand {}) as Box<dyn ContextCommand>,
             Box::new(SkipCurrentTrackCommand {}) as Box<dyn ContextCommand>,
-            Box::new(SkipToTrackCommand {}) as Box<dyn ContextCommand>,
+            Box::new(QueueCommand {}) as Box<dyn ContextCommand>,
             Box::new(CurrentSongCommand {}) as Box<dyn ContextCommand>,
+            Box::new(SkipToTrackCommand {}) as Box<dyn ContextCommand>,
             Box::new(LoopMusicCommand {}) as Box<dyn ContextCommand>,
+            Box::new(LoopQueueMusicCommand {}) as Box<dyn ContextCommand>,
             Box::new(UnloopMusicCommand {}) as Box<dyn ContextCommand>,
         ]);
 
