@@ -1,3 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+* {
+  /* font: inherit; */
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 24px;
+  align-items: center;
+  justify-content: center;
+}
+
 html,
 body {
   height: 100%;
@@ -5,12 +16,15 @@ body {
 }
 
 body {
-  align-items: center;
+  align-items: flex-start;
+  margin-top: 90px;
   display: flex;
   justify-content: center;
-
-  background: linear-gradient(to bottom right, #444444, #009a5b);
-  font-size: 1.5rem;
+  // linear-gradient(45deg, #0e1015 70%, #223845 80%)
+  background: linear-gradient(to bottom right, #0e1015, #223845);
+  font-size: 1rem;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 main {
@@ -32,4 +46,74 @@ main {
 h1 + .subtitle {
   display: block;
   margin-top: -1em;
+}
+
+/* header.css */
+
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #1a1a1a;
+  padding: 10px 0;
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: white;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  gap: 10px;
+  height: 40px;
+}
+
+header nav a {
+  margin-right: 20px;
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+header nav a:hover {
+  background: #323232;
+}
+
+.branding {
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+  margin: 0 20px;
+}
+
+.branding img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.branding p {
+  background: -webkit-linear-gradient(45deg, #2f80ed 40%, #b2ffda 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  font-weight: 700;
+  letter-spacing: 3px;
+  font-size: 23px;
+  text-transform: uppercase;
+}
+
+.main_container {
+  // margin: 0 40px;
+  max-width: 1024px;
+  width: 100%;
+  color: white;
+}
+
+@media screen and (max-width: 1024px) {
+  .main_container {
+    margin: 0 20px;
+  }
 }

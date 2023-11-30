@@ -1,20 +1,17 @@
-use yew::{ function_component, use_state, Html, html };
-
-#[function_component]
-pub fn App() -> Html {
-    let counter = use_state(|| 0);
-    let onclick = {
-        let counter = counter.clone();
-        move |_| {
-            let value = *counter + 1;
-            counter.set(value);
-        }
-    };
-
+use yew::prelude::*;
+use yew_router::prelude::*;
+use crate::router::{ switch_main, MainRoute };
+use crate::components::header::Header;
+#[function_component(App)]
+pub fn app() -> Html {
     html! {
-        <div>
-            <button {onclick}>{ "+1" }</button>
-            <p>{ *counter }</p>
-        </div>
+        <>
+            <Header/>
+            <div class="main_container">
+                <BrowserRouter>
+                    <Switch<MainRoute> render={switch_main} />
+                </BrowserRouter>
+            </div>
+        </>
     }
 }
