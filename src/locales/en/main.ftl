@@ -1,26 +1,28 @@
 permission-missing = Missing permission(s) to use the command
 
 # Common Errors
-commonError-noUserInfo = Can't find { $user } information.
-commonError-noBotGuildConfig = Not Guild Configuration found.
-commonError-noTag = Tag at least one person.
+commonError-noUserInfo = Can't find { $user } information
+commonError-noBotGuildConfig = Not Guild Configuration found
+commonError-noTag = Tag at least one person
 commonError-tag1 = Tag one permission
 
 # Utilities
 interaction-denied = You're not allowed to use this.
 requested-user = Requested by @{ $username }
+invalid-image-url = Invalid image url
 
-# Commands 
-command-error = An error happened when trying to process the command.
-command-guildonly = Command not used in a guild.
+# Command1s 
+command-error = An error happened when trying to process the command
+command-guildonly = Command not used in a guild
+command-invalid = Invalid command
 
 # Bot Owner Commands
 command-botowner = Manage BotOwner permission
 command-botowner-addSuccess = Added BotOwner permission for { $user }
 command-botowner-removeSuccess = Removed { $user } BotOwner permission
 command-botowner-alreadyOwner = { $user } already has BotOwner permission
-command-botowner-notOwner = { $user } doesn't have BotOwner permission.
-command-botowner-listEmpty = empty...
+command-botowner-notOwner = { $user } doesn't have BotOwner permission
+command-botowner-listEmpty = Empty...
 command-botowner-listTitle = Users with BotOwner permission
 
 # Bot Admin Commands
@@ -28,8 +30,8 @@ command-botadmin = Manage BotAdmin permission
 command-botadmin-addSuccess = Added BotAdmin permission for { $user }
 command-botadmin-removeSuccess = Removed { $user } BotAdmin permission
 command-botadmin-alreadyAdmin = { $user } already has BotAdmin permission
-command-botadmin-notAdmin = { $user } doesn't have BotAdmin permission.
-command-botadmin-listEmpty = empty...
+command-botadmin-notAdmin = { $user } doesn't have BotAdmin permission
+command-botadmin-listEmpty = Empty...
 command-botadmin-listTitle = Users with BotAdmin permission
 
 # Language Command
@@ -64,9 +66,9 @@ command-snipe-invalid-position = No deleted message found at the specified posit
 
 # Ban Command
 command-ban = Ban one or more members
-command-ban-success = Banned { $user } from the server.
+command-ban-success = Banned { $user } from the server
 command-ban-fail = An error happened when trying to ban { $user } from the server.
-command-ban-admin = Cannot ban { $user } with Admin permission.
+command-ban-admin = Cannot ban { $user } with Admin permission
 
 # Unban Command
 command-unban = unban a user
@@ -76,15 +78,15 @@ command-unban-notfound = User { $user } is not banned
 
 # Kick Command
 command-kick = Kick one or more members
-command-kick-success = Kicked { $user } out of the server.
-command-kick-fail = An error occurred when trying to kick { $user } from the server.
-command-kick-admin = Cannot kick { $user } with Admin permission.
+command-kick-success = Kicked { $user } out of the server
+command-kick-fail = An error occurred when trying to kick { $user } from the server
+command-kick-admin = Cannot kick { $user } with Admin permission
 
 # Timeout Command
 command-timeout = Timeout one or more members
-command-timeout-success = Timed out { $user } for { $duration } minutes.
-command-timeout-fail = An error happened when trying to timeout { $user } for { $duration } minutes.
-command-timeout-admin = Cannot timeout { $user } with Admin permission.
+command-timeout-success = Timed out { $user } for { $duration } minutes
+command-timeout-fail = An error happened when trying to timeout { $user } for { $duration } minutes
+command-timeout-admin = Cannot timeout { $user } with Admin permission
 
 # Untimeout Command
 command-untimeout = Remove timeout from one or more members
@@ -94,11 +96,11 @@ command-untimeout-notfound = { $user } is not currently timed out.
 
 # Role Command
 command-role = Add or remove a specified role from one or more members
-command-role-add-success = Added role { $role } to { $user } successfully.
+command-role-add-success = Added role { $role } to { $user } successfully
 command-role-add-failed = Failed to add role { $role } to { $user }. Error: { $err }
-command-role-remove-success = Removed role { $role } from { $user } successfully.
+command-role-remove-success = Removed role { $role } from { $user } successfully
 command-role-remove-failed = Failed to remove role { $role } from { $user }. Error: { $err }
-command-role-no-perm = Bot does not have permission to manage role { $role }.
+command-role-no-perm = Bot does not have permission to manage role { $role }
 
 # AFK
 command-afk = set AFK status
@@ -111,14 +113,14 @@ afk-notify-added = You will be notified when this user is back
 afk-notfound = This user is no longer AFK
 
 # VOICE & MUSIC
-music-note = This feature only accepts Youtube and Soundcloud. Search results will get the first video from youtube search and add it to the queue.
-music-not-same-channel = You need to be in the same voice channel as the bot to use this command.
+music-note = This feature only accepts Youtube and Soundcloud. Search results will get the first video from youtube search and add it to the queue
+music-not-same-channel = You need to be in the same voice channel as the bot to use this command
 music-nowplaying = Now playing
-music-not-playing = I'm not playing any music.
-music-no-voice = I'm not in any voice channel.
+music-not-playing = I'm not playing any music
+music-no-voice = I'm not in any voice channel
 music-user-novoice = You need to be in a voice channel to use the command
 music-cannot-connect = I can't connect to your channel
-music-error-track = Error retrieving track information.
+music-error-track = Error retrieving track information
 music-duration = Duration
 music-position-inqueue = Position in queue
 music-content-credits = Credits
@@ -126,6 +128,7 @@ music-content-credits-soundcloud = Listen on Soundcloud
 music-content-credits-youtube = Listen on Youtube
 music-content-creator = Content creator
 music-playlist-fetch-error = Error getting tracks from playlist, please check the link or the video/playlist availablity.
+music-loading-url = Loading track(s) from url
 
 # Join Command
 command-join = Ask the bot to join a voice channel
@@ -181,3 +184,14 @@ command-skipto = Skip to the track at a position
 command-skipto-nopos = Please provide a valid position to skip to
 command-skipto-invalid = Invalid position: only { $count } tracks in queue
 command-skipto-success = Skipped to track at position { $position }
+
+# Auto response
+command-autores = Manage bot's auto-responses
+autores-existed = Auto-response with trigger `{ $trigger } already existed.
+autores-created = Auto-response created. Trigger: `{ $trigger }`
+autores-create-failed = Failed to create auto-response with trigger `{ $trigger }`
+autores-deleted = Auto-response deleted. Trigger: `{ $trigger }`
+autores-delete-failed = Failed to delete auto-response with trigger `{ $trigger }`
+autores-notfound = I can't find auto-response with trigger `{ $trigger }`
+autores-updated = Updated auto-response with trigger `{ $trigger }`
+autores-update-failed = Failed to update auto-response with trigger `{ $trigger }`

@@ -242,57 +242,41 @@ impl SongbirdEventHandler for MusicEventHandler {
                             "en".to_string()
                         };
 
+                        let embed = DiscordEmbed {
+                            author_name: Some(
+                                self.client.get_locale_string(&locale, "music-nowplaying", None)
+                            ),
+                            author_icon_url: Some(self.music_manager.spinning_disk.clone()),
+                            thumbnail: if let Some(url) = &self.metadata.thumbnail {
+                                Some(url.to_string())
+                            } else {
+                                None
+                            },
+                            fields: Some(
+                                track_info_fields(&self.client, &locale, &self.metadata, None)
+                            ),
+                            footer_text: Some(
+                                self.client.get_locale_string(
+                                    &locale,
+                                    "requested-user",
+                                    Some(
+                                        &FluentArgs::from_iter(
+                                            vec![("username", self.requested_by.name.clone())]
+                                        )
+                                    )
+                                )
+                            ),
+                            footer_icon_url: self.requested_by.avatar.map(|hash|
+                                cdn_avatar!(self.requested_by.id, hash)
+                            ),
+                            color: Some(ColorResolvables::Green.as_u32()),
+                            ..Default::default()
+                        };
+
                         if
                             let Ok(message) = self.client.http
                                 .create_message(self.channel_id)
-                                .embeds(
-                                    &vec![
-                                        Embed::from(DiscordEmbed {
-                                            author_name: Some(
-                                                self.client.get_locale_string(
-                                                    &locale,
-                                                    "music-nowplaying",
-                                                    None
-                                                )
-                                            ),
-                                            author_icon_url: Some(
-                                                self.music_manager.spinning_disk.clone()
-                                            ),
-                                            thumbnail: if let Some(url) = &self.metadata.thumbnail {
-                                                Some(url.to_string())
-                                            } else {
-                                                None
-                                            },
-                                            fields: Some(
-                                                track_info_fields(
-                                                    &self.client,
-                                                    &locale,
-                                                    &self.metadata,
-                                                    None
-                                                )
-                                            ),
-                                            footer_text: Some(
-                                                self.client.get_locale_string(
-                                                    &locale,
-                                                    "requested-user",
-                                                    Some(
-                                                        &FluentArgs::from_iter(
-                                                            vec![(
-                                                                "username",
-                                                                self.requested_by.name.clone(),
-                                                            )]
-                                                        )
-                                                    )
-                                                )
-                                            ),
-                                            footer_icon_url: self.requested_by.avatar.map(|hash|
-                                                cdn_avatar!(self.requested_by.id, hash)
-                                            ),
-                                            color: Some(ColorResolvables::Green.as_u32()),
-                                            ..Default::default()
-                                        })
-                                    ]
-                                )
+                                .embeds(&vec![Embed::from(embed)])
                         {
                             if let Ok(message) = message.await {
                                 if let Ok(message) = message.model().await {
@@ -492,11 +476,7 @@ pub fn track_info_fields(
             } else {
                 format!(
                     "[{}]({})",
-                    format!(
-                        "[{}]({})",
-                        client.get_locale_string(&locale, "music-content-credits-youtube", None),
-                        url
-                    ),
+                    client.get_locale_string(&locale, "music-content-credits-youtube", None),
                     url
                 )
             },

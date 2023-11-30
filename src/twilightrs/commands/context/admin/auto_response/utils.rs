@@ -4,7 +4,7 @@ pub fn split_trigger_and_value(
     command_args: Vec<ParsedArg>
 ) -> Result<(String, String), BoxedError> {
     let args = (match command_args.first() {
-        Some(&ParsedArg::Arg(ref args)) => Ok(args),
+        Some(&ParsedArg::Text(ref args)) => Ok(args),
         _ => Err("invalid command"),
     })?;
 

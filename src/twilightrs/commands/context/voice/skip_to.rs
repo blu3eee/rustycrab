@@ -63,7 +63,7 @@ impl ContextCommand for SkipToTrackCommand {
             }
             _ => { ("command-skipto-nopos", ColorResolvables::Red) }
         };
-        reply_command(&client, config, msg, key, Some(&args), color).await?;
+        reply_command(&client, config, msg, key, Some(args), color).await?;
         Ok(())
     }
 }

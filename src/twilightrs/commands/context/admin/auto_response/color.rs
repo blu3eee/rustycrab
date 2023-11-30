@@ -16,7 +16,7 @@ use crate::{
         messages::DiscordEmbed,
     },
     queries::auto_responses_queries::AutoResponsesQueries,
-    utilities::utils::{ ColorResolvables, validate_image_url },
+    utilities::utils::{ ColorResolvables, parse_colorhex },
     default_queries::DefaultSeaQueries,
     router::routes::{
         auto_responses::RequestUpdateAutoResponse,
@@ -26,19 +26,16 @@ use crate::{
 };
 
 use super::{ AutoResCommand, utils::split_trigger_and_value };
-pub struct ImageUpdateAutoResCommand;
+pub struct ColorUpdateAutoResCommand;
 
 #[async_trait]
-impl ContextCommand for ImageUpdateAutoResCommand {
+impl ContextCommand for ColorUpdateAutoResCommand {
     fn name(&self) -> &'static str {
-        "image"
+        "color"
     }
 
-    fn aliases(&self) -> Vec<&'static str> {
-        vec!["i", "iurl"]
-    }
     fn args(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::new("trigger | image link or attach the image", ArgType::Text, true)]
+        vec![ArgSpec::new("trigger | color hex (#fafafa)", ArgType::Text, false)]
     }
 
     fn parent_command(&self) -> Option<Box<dyn ContextCommand>> {
@@ -58,17 +55,7 @@ impl ContextCommand for ImageUpdateAutoResCommand {
 
         let bot = client.get_bot().await?;
 
-        let (trigger, url) = if let Some(attachment) = msg.attachments.first() {
-            let trigger = match command_args.first().unwrap() {
-                ParsedArg::Text(trigger) => { trigger }
-                _ => {
-                    return Err("invalid-command".into());
-                }
-            };
-            (trigger.clone(), attachment.url.clone())
-        } else {
-            split_trigger_and_value(command_args)?
-        };
+        let (trigger, color) = split_trigger_and_value(command_args)?;
 
         let mut args: FluentArgs<'_> = FluentArgs::new();
         args.set("trigger", trigger.to_string());
@@ -80,14 +67,9 @@ impl ContextCommand for ImageUpdateAutoResCommand {
             trigger.as_str()
         ).await.map_err(|_| client.get_locale_string(&config.locale, "autores-notfound", None))?;
 
-        if
-            !validate_image_url(url.as_str()) &&
-            url != "{server-icon}" &&
-            url != "{user-avatar}" &&
-            url != ""
-        {
-            return Err(client.get_locale_string(&config.locale, "invalid-image-url", None).into());
-        }
+        let color = parse_colorhex(&color).ok_or(
+            client.get_locale_string(&config.locale, "invalid-color", None)
+        )?;
 
         let mut embed = DiscordEmbed {
             ..Default::default()
@@ -100,7 +82,7 @@ impl ContextCommand for ImageUpdateAutoResCommand {
                 RequestUpdateAutoResponse {
                     response_data: Some(RequestCreateUpdateMessage {
                         embed: Some(RequestCreateUpdateEmbed {
-                            image: Some(url.to_string()),
+                            color: Some(color.clone()),
                             ..Default::default()
                         }),
                         ..Default::default()
@@ -109,9 +91,7 @@ impl ContextCommand for ImageUpdateAutoResCommand {
                 }
             ).await
         {
-            if validate_image_url(url.as_str()) {
-                embed.image = Some(url);
-            }
+            embed.description = Some(format!("Color hex: {}", color));
             ("autores-updated", ColorResolvables::Green)
         } else {
             ("autores-update-failed", ColorResolvables::Red)

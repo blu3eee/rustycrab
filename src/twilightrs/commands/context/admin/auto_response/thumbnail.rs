@@ -26,16 +26,16 @@ use crate::{
 };
 
 use super::{ AutoResCommand, utils::split_trigger_and_value };
-pub struct ImageUpdateAutoResCommand;
+pub struct ThumbnailUpdateAutoResCommand;
 
 #[async_trait]
-impl ContextCommand for ImageUpdateAutoResCommand {
+impl ContextCommand for ThumbnailUpdateAutoResCommand {
     fn name(&self) -> &'static str {
-        "image"
+        "thumbnail"
     }
 
     fn aliases(&self) -> Vec<&'static str> {
-        vec!["i", "iurl"]
+        vec!["t", "turl"]
     }
     fn args(&self) -> Vec<ArgSpec> {
         vec![ArgSpec::new("trigger | image link or attach the image", ArgType::Text, true)]
@@ -65,6 +65,7 @@ impl ContextCommand for ImageUpdateAutoResCommand {
                     return Err("invalid-command".into());
                 }
             };
+
             (trigger.clone(), attachment.url.clone())
         } else {
             split_trigger_and_value(command_args)?
@@ -81,10 +82,9 @@ impl ContextCommand for ImageUpdateAutoResCommand {
         ).await.map_err(|_| client.get_locale_string(&config.locale, "autores-notfound", None))?;
 
         if
-            !validate_image_url(url.as_str()) &&
-            url != "{server-icon}" &&
-            url != "{user-avatar}" &&
-            url != ""
+            !validate_image_url(url.as_str()) ||
+            url != "{server-icon}" ||
+            (url != "{user-avatar}" && url != "")
         {
             return Err(client.get_locale_string(&config.locale, "invalid-image-url", None).into());
         }
@@ -100,7 +100,7 @@ impl ContextCommand for ImageUpdateAutoResCommand {
                 RequestUpdateAutoResponse {
                     response_data: Some(RequestCreateUpdateMessage {
                         embed: Some(RequestCreateUpdateEmbed {
-                            image: Some(url.to_string()),
+                            thumbnail: Some(url.to_string()),
                             ..Default::default()
                         }),
                         ..Default::default()

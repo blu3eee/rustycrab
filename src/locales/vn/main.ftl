@@ -1,35 +1,36 @@
 Permission-missing = Thiếu quyền sử dụng lệnh
 
 # Lỗi thông thường
-commonError-noUserInfo = Không thể tìm thấy thông tin { $user }.
-commonError-noBotGuildConfig = Không tìm thấy cấu hình bang hội.
-commonError-noTag = Gắn thẻ ít nhất một người.
-commonError-tag1 = Gắn thẻ một người
+commonError-noUserInfo = Không thể tìm thấy thông tin { $user }
+commonError-noBotGuildConfig = Không tìm thấy settings của server
+commonError-noTag = Tag ít nhất một người
+commonError-tag1 = Tag một người
 
 # Utilities
 interaction-denied = Bạn không đủ quyền.
 requested-user = Được yêu cầu bởi @{ $username }
+invalid-image-url = Link/ảnh không hợp lệ
 
 # Commands 
 command-error = Đã có lỗi xảy ra khi xử lí lệnh.
 command-guildonly = Lệnh chỉ được sử dụng ở server.
 
 # Lệnh của chủ sở hữu Bot
-command-botowner = Quản lý quyền của BotOwner
+command-botowner = Quản lý quyền BotOwner
 command-botowner-addSuccess = Đã thêm quyền BotOwner cho { $user }
-command-botowner-removeSuccess = Đã xóa quyền của BotOwner { $user }
+command-botowner-removeSuccess = Đã xóa quyền  BotOwner của { $user }
 command-botowner-alreadyOwner = { $user } đã có quyền BotOwner
 command-botowner-notOwner = { $user } không có quyền BotOwner.
-command-botowner-listEmpty = trống...
+command-botowner-listEmpty = Trống...
 command-botowner-listTitle = Người dùng có quyền BotOwner
 
 # Lệnh quản trị Bot
 command-botadmin = Quản lý quyền BotAdmin
 command-botadmin-addSuccess = Đã thêm quyền BotAdmin cho { $user }
-command-botadmin-removeSuccess = Đã xóa quyền của BotAdmin { $user }
+command-botadmin-removeSuccess = Đã xóa quyền BotAdmin của { $user }
 command-botadmin-alreadyAdmin = { $user } đã có quyền BotAdmin
 command-botadmin-notAdmin = { $user } không có quyền BotAdmin.
-command-botadmin-listEmpty = trống...
+command-botadmin-listEmpty = Trống...
 command-botadmin-listTitle = Người dùng có quyền BotAdmin
 
 # Lệnh ngôn ngữ
@@ -107,72 +108,78 @@ afk-notification = [Server { $server }] Thông báo AFK: { $user } đã quay l�
 afk-is-afk = { $user }, `@{ $afk_name }` đang ở trạng thái AFK { $since } { $message }
 afk-notifyme = Notify me
 afk-is-back = { $user } không còn ở trạng thái AFK nữa
-afk-notify-added = Bạn sẽ nhận được thông báo khi người dùng này trở lại.
+afk-notify-added = Bạn sẽ nhận được thông báo khi người dùng này trở lại
 afk-notfound = Người dùng này không còn ở trạng thái AFK nữa.
 
 # VOICE & MUSIC
-music-note = Tính năng này chỉ chấp nhận URL từ SoundCloud và Youtube hoặc tìm kiếm trên Youtube. Kết quả tìm kiếm sẽ lấy video đầu tiên từ tìm kiếm Youtube và thêm vào hàng đợi.
-music-not-same-channel = Bạn cần ở trong cùng kênh voice với bot để sử dụng lệnh này.
-music-not-playing = Tớ đang không phát nhạc ở kênh nào cả.
-music-no-voice = Tớ đang không ở trong kênh voice nào.
-music-user-novoice = Bạn cần ở trong kênh voice để sử dụng lệnh.
-music-cannot-connect = Tớ không thể kết nối với kênh của bạn.
-music-error-track = Lỗi khi truy xuất thông tin bài hát.
+music-note = Tính năng này chỉ chấp nhận URL từ SoundCloud và Youtube hoặc tìm kiếm trên Youtube. Kết quả tìm kiếm sẽ lấy video đầu tiên từ tìm kiếm Youtube và thêm vào hàng đợi
+music-not-same-channel = Bạn cần ở trong cùng kênh giọng nói với bot để sử dụng lệnh này
+music-nowplaying = Đang phát
+music-not-playing = Tớ không phát nhạc nào
+music-no-voice = Tớ không ở trong kênh giọng nói nào
+music-user-novoice = Bạn cần ở trong kênh giọng nói để sử dụng lệnh
+music-cannot-connect = Tớ không thể kết nối với kênh của bạn
+music-error-track = Lỗi khi tìm kiếm thông tin bài hát
 music-duration = Thời lượng
 music-position-inqueue = Vị trí trong hàng đợi
-music-playlist-fetch-error = Lỗi khi lấy bài hát từ danh sách phát, vui lòng kiểm tra lại link hoặc tính khả dụng của video/danh sách phát.
-music-nowplaying = Đang phát
+music-content-credits = Tín dụng
+music-content-credits-soundcloud = Nghe trên Soundcloud
+music-content-credits-youtube = Nghe trên Youtube
+music-content-creator = Người sáng tạo nội dung
+music-playlist-fetch-error = Lỗi khi lấy bài hát từ danh sách phát, vui lòng kiểm tra lại link hoặc chế độ riêng tư của video/danh sách phát.
+music-loading-url = Đang tải bài hát từ url
+
 # Join Command
-command-join = Yêu cầu bot tham gia kênh voice.
-command-join-nochannel = Bạn cần ở trong kênh voice để sử dụng lệnh.
+command-join = Yêu cầu bot tham gia kênh voice
+command-join-nochannel = Bạn cần ở trong kênh voice để sử dụng lệnh
 command-join-joined = Đã tham gia { $channel }
 command-join-failed = Không thể tham gia { $channel }! Lỗi: { $err }
 
 # Leave Command
-command-leave = Yêu cầu bot rời kênh voice.
-command-leave-left = Đã rời kênh voice.
+command-leave = Yêu cầu bot rời kênh voice
+command-leave-left = Đã rời kênh voice
 command-leave-failed = Không thể rời kênh voice.
 
 # Loop Command
 command-loop = Lặp lại bài nhạc hoặc danh sách nhạc
-command-loop-track = Đang lặp bài hát hiện tại.
-command-loop-track-failed = Không thể lặp bài hát hiện tại.
-command-loop-queue = Lặp toàn bộ hàng đợi.
+command-loop-track = Đang lặp bài hát hiện tại
+command-loop-track-failed = Không thể lặp bài hát hiện tại
+command-loop-queue = Lặp toàn bộ hàng đợi
 command-loop-invalid =  Invalid loop type. accepts: current/one/all/queue
 
 # Pause Command
-command-pause = Tạm dừng bài hát đang phát.
-command-pause-paused = Đã tạm dừng bài hát.
-command-pause-unpaused = Đã tiếp tục phát bài hát.
+command-pause = Tạm dừng bài hát đang phát
+command-pause-paused = Đã tạm dừng bài hát
+command-pause-unpaused = Đã tiếp tục phát bài hát
 
 # Play Command
-command-play = Phát nhạc.
-command-play-invalid-url = Vui lòng cung cấp URL hoặc truy vấn tìm kiếm hợp lệ để phát.
-command-play-added-tracks = Đã thêm { $count } bài hát vào hàng đợi.
-command-play-added-track = Đã thêm bài hát.
+command-play = Phát nhạc
+command-play-invalid-url = Vui lòng cung cấp URL hoặc truy vấn tìm kiếm hợp lệ để phát
+command-play-added-tracks = Đã thêm { $count } bài hát vào hàng đợi
+command-play-added-track = Đã thêm bài hát
 
 # Queue
-music-queue-empty = Hàng đợi trống.
-music-queue-title = Hàng đợi: { $count } bài hát.
+music-queue-empty = Hàng đợi trống
+music-queue-title = Hàng đợi: { $count } bài hát
 music-queue-prev = Trang Trước
 music-queue-next = Trang Sau
 
 # Resume 
-command-resume = Tiếp tục phát bài hát đã tạm dừng.
-command-resume-success = Đã tiếp tục phát bài hát.
-command-resume-failed = Không thể tiếp tục phát bài hát.
-command-resume-notpaused = Máy phát nhạc không bị tạm dừng.
+command-resume = Tiếp tục phát bài hát đã tạm dừng
+command-resume-success = Đã tiếp tục phát bài hát
+command-resume-failed = Không thể tiếp tục phát bài hát
+command-resume-notpaused = Máy phát nhạc không bị tạm dừng
 
 # Skip 
-command-skip = Bỏ qua bài hát hiện tại.
-command-skip-skipped = { $title } đã bị bỏ qua.
-command-skip-author = Được bỏ qua bởi @{ $username }.
-command-skip-requested-by = Bài hát được yêu cầu bởi.
-command-skip-no-metadata = Đã bỏ qua một bài hát, không tìm thấy thông tin bài hát bị bỏ qua.
-command-skip-failed = Không thể bỏ qua bài hát hiện tại.
+command-skip = Bỏ qua bài hát hiện tại
+command-skip-skipped = { $title } đã bị bỏ qua
+command-skip-author = Được bỏ qua bởi @{ $username }
+command-skip-requested-by = Bài hát được yêu cầu bởi
+command-skip-no-metadata = Đã bỏ qua một bài hát, không tìm thấy thông tin bài hát bị bỏ qua
+command-skip-failed = Không thể bỏ qua bài hát hiện tại
 
 # Skip to
-command-skipto = Bỏ qua đến bài hát ở một vị trí cụ thể.
-command-skipto-nopos = Vui lòng cung cấp một vị trí hợp lệ để bỏ qua đến.
-command-skipto-invalid = Vị trí không hợp lệ: chỉ có { $count } bài hát trong hàng đợi.
-command-skipto-success = Đã bỏ qua đến bài hát ở vị trí { $position }.
+command-skipto = Bỏ qua đến bài hát ở một vị trí cụ thể
+command-skipto-nopos = Vui lòng cung cấp một vị trí hợp lệ để bỏ qua đến
+command-skipto-invalid = Vị trí không hợp lệ: chỉ có { $count } bài hát trong hàng đợi
+command-skipto-success = Đã bỏ qua đến bài hát ở vị trí { $position }

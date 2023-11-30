@@ -55,11 +55,11 @@ impl AutoResponsesQueries {
                 Condition::all()
                     .add(bots::Column::BotId.eq(bot_discord_id))
                     .add(guild_info::Column::GuildId.eq(guild_discord_id))
-                    .add(auto_responses::Column::Trigger.eq(trigger))
+                    .add(auto_responses::Column::Trigger.eq(trigger.trim()))
             )
             .one(db).await
             .map_err(AppError::from)?
-            .ok_or_else(|| AppError::not_found("Record not found"))
+            .ok_or_else(|| AppError::not_found("Auto-response not found"))
     }
 
     pub async fn update_by_trigger(

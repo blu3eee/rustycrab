@@ -50,7 +50,7 @@ impl ContextCommand for SkipCurrentTrackCommand {
             .stop()
             .map_err(|_|
                 client.get_locale_string(&config.locale, "command-skip-failed", Some(&args))
-            );
+            )?;
         // let embed = if let Ok(_) = handle.stop() {
 
         // } else {

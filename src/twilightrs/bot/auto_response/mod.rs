@@ -66,9 +66,9 @@ pub async fn build_response(
 ) -> Result<Option<MessageContent>, BoxedError> {
     let message_type = message_details.r#type.to_lowercase();
 
-    let text_content = message_details.content.map(|content|
-        process_placeholders_sync(content, guild, user)
-    );
+    let text_content = message_details.content
+        .filter(|content| !content.trim().is_empty())
+        .map(|content| process_placeholders_sync(content, guild, user));
 
     let embed = (async {
         if let Some(embed_id) = message_details.embed_id {
@@ -88,13 +88,24 @@ pub async fn build_response(
         "message" | "text" | "1" => Ok(text_content.map(MessageContent::Text)),
         "embed" | "2" => Ok(embed.map(|embed| MessageContent::DiscordEmbeds(vec![embed]))),
         "embed and text" | "3" =>
-            match (text_content, embed) {
-                (Some(text), Some(embed)) =>
-                    Ok(Some(MessageContent::TextAndDiscordEmbeds(text, vec![embed]))),
-                (Some(text), None) => Ok(Some(MessageContent::Text(text))),
-                (None, Some(embed)) => Ok(Some(MessageContent::DiscordEmbeds(vec![embed]))),
-                (None, None) => Ok(None),
-            }
+            Ok(match (text_content, embed) {
+                (Some(text), Some(embed)) => {
+                    if embed.is_empty() {
+                        Some(MessageContent::Text(text))
+                    } else {
+                        Some(MessageContent::TextAndDiscordEmbeds(text, vec![embed]))
+                    }
+                }
+                (Some(text), None) => Some(MessageContent::Text(text)),
+                (None, Some(embed)) => {
+                    if embed.is_empty() {
+                        None
+                    } else {
+                        Some(MessageContent::DiscordEmbeds(vec![embed]))
+                    }
+                }
+                (None, None) => None,
+            }),
         _ => Ok(None),
     }
 }

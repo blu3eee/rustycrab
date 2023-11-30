@@ -174,9 +174,22 @@ pub fn current_unix_timestamp() -> Result<u32, Box<dyn Error + Send + Sync>> {
 }
 
 pub fn validate_image_url(url: &str) -> bool {
-    // Define a regular expression to match common image file extensions
-    let image_extension_pattern = Regex::new(r"\.(jpg|jpeg|png|gif|bmp|webp)$").unwrap();
+    // Updated regex pattern to allow for optional characters after the file extension
+    let image_extension_pattern = Regex::new(r"\.(jpg|jpeg|png|gif|bmp|webp)(\?.*)?$").unwrap();
 
-    // Check if the URL ends with a valid image file extension
+    // Check if the URL matches the pattern
     image_extension_pattern.is_match(url)
+}
+
+use csscolorparser::Color;
+
+pub fn parse_colorhex(input: &str) -> Option<String> {
+    // Try parsing the input directly
+    let color = input.parse::<Color>().or_else(|_| {
+        // If direct parsing fails, try with a "#" prefix
+        format!("#{}", input).parse::<Color>()
+    });
+
+    // Convert the parsed color to a hex string if successful
+    color.ok().map(|c| c.to_hex_string())
 }

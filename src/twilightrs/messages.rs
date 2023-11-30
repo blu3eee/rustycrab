@@ -40,6 +40,16 @@ impl DiscordEmbed {
         DiscordEmbed { ..Default::default() }
     }
 
+    pub fn is_empty(&self) -> bool {
+        (self.fields.is_none() || self.fields.as_ref().unwrap().len() == 0) &&
+            (self.title.is_none() || self.title.as_ref().unwrap().is_empty()) &&
+            (self.description.is_none() || self.description.as_ref().unwrap().is_empty()) &&
+            (self.footer_text.is_none() || self.footer_text.as_ref().unwrap().is_empty()) &&
+            (self.author_name.is_none() || self.author_name.as_ref().unwrap().is_empty()) &&
+            (self.thumbnail.is_none() || self.thumbnail.as_ref().unwrap().is_empty()) &&
+            (self.image.is_none() || self.image.as_ref().unwrap().is_empty())
+    }
+
     pub async fn to_embed(
         self,
         http: &Arc<Client>,

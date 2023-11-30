@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use fluent_bundle::FluentArgs;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
@@ -52,6 +53,9 @@ impl ContextCommand for AddAutoResponseCommand {
 
         let (trigger, response) = split_trigger_and_value(command_args)?;
 
+        let mut args: FluentArgs<'_> = FluentArgs::new();
+        args.set("trigger", trigger.to_string());
+
         let (key, color) = if
             let Ok(_) = AutoResponsesQueries::find_by_trigger(
                 &client.db,
@@ -73,7 +77,7 @@ impl ContextCommand for AddAutoResponseCommand {
                             None
                         } else {
                             Some(crate::router::routes::RequestCreateUpdateMessage {
-                                r#type: Some("Message".to_string()),
+                                r#type: Some("Embed and Text".to_string()),
                                 content: Some(response.to_string()),
                                 embed: None,
                             })
@@ -81,13 +85,13 @@ impl ContextCommand for AddAutoResponseCommand {
                     }
                 ).await
             {
-                ("autores-create-success", ColorResolvables::Green)
+                ("autores-created", ColorResolvables::Green)
             } else {
                 ("autores-create-failed", ColorResolvables::Red)
             }
         };
 
-        let _ = reply_command(&client, &config, &msg, key, None, color).await;
+        let _ = reply_command(&client, &config, &msg, key, Some(args), color).await;
 
         Ok(())
     }

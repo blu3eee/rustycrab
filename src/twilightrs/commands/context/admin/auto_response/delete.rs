@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use fluent_bundle::FluentArgs;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
@@ -52,9 +53,11 @@ impl ContextCommand for DeleteAutoResponseCommand {
 
         let bot = client.get_bot().await?;
 
+        let mut args: FluentArgs<'_> = FluentArgs::new();
         let (key, color) = if
             let ParsedArg::Text(trigger) = command_args.first().ok_or("invalid command")?
         {
+            args.set("trigger", trigger.to_string());
             if
                 let Ok(autores) = AutoResponsesQueries::find_by_trigger(
                     &client.db,
@@ -64,7 +67,7 @@ impl ContextCommand for DeleteAutoResponseCommand {
                 ).await
             {
                 if let Ok(_) = AutoResponsesQueries::delete_by_id(&client.db, autores.id).await {
-                    ("autores-delete-success", ColorResolvables::Green)
+                    ("autores-deleted", ColorResolvables::Green)
                 } else {
                     ("autores-delete-failed", ColorResolvables::Red)
                 }
@@ -75,7 +78,7 @@ impl ContextCommand for DeleteAutoResponseCommand {
             ("command-invalid", ColorResolvables::Red)
         };
 
-        let _ = reply_command(&client, &config, &msg, key, None, color).await;
+        let _ = reply_command(&client, &config, &msg, key, Some(args), color).await;
 
         Ok(())
     }

@@ -1,12 +1,21 @@
+mod utils;
 mod add;
 mod delete;
 mod list;
 mod image;
-mod utils;
+mod thumbnail;
+mod color;
+mod content;
+mod text_message;
 
 use add::AddAutoResponseCommand;
 use delete::DeleteAutoResponseCommand;
 use list::ListAutoResponseCommand;
+use image::ImageUpdateAutoResCommand;
+use thumbnail::ThumbnailUpdateAutoResCommand;
+use color::ColorUpdateAutoResCommand;
+use content::ContentUpdateAutoResCommand;
+use text_message::MessageUpdateAutoResCommand;
 
 use async_trait::async_trait;
 use twilight_model::{ gateway::payload::incoming::MessageCreate, guild::Permissions };
@@ -36,7 +45,12 @@ impl ContextCommand for AutoResCommand {
         vec![
             Box::new(AddAutoResponseCommand {}) as Box<dyn ContextCommand>,
             Box::new(DeleteAutoResponseCommand {}) as Box<dyn ContextCommand>,
-            Box::new(ListAutoResponseCommand {}) as Box<dyn ContextCommand>
+            Box::new(ListAutoResponseCommand {}) as Box<dyn ContextCommand>,
+            Box::new(ImageUpdateAutoResCommand {}) as Box<dyn ContextCommand>,
+            Box::new(ThumbnailUpdateAutoResCommand {}) as Box<dyn ContextCommand>,
+            Box::new(ColorUpdateAutoResCommand {}) as Box<dyn ContextCommand>,
+            Box::new(ContentUpdateAutoResCommand {}) as Box<dyn ContextCommand>,
+            Box::new(MessageUpdateAutoResCommand {}) as Box<dyn ContextCommand>
         ]
     }
 
