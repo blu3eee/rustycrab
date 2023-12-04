@@ -28,10 +28,15 @@ async fn main() {
     // Retrieve all bots from the database and their running state
     let running_bots = running_bots(&db).await.expect("Failed to run Discord bots");
 
-    let app_state = AppState {
-        db,
-        running_bots,
-    };
-
-    run(app_state).await;
+    // Check if `--w-api` argument is passed
+    if env::args().any(|arg| arg == "--api") {
+        let app_state = AppState {
+            db,
+            running_bots,
+        };
+        run(app_state).await;
+    } else {
+        loop {
+        }
+    }
 }
