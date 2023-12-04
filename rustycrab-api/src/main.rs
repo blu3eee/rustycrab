@@ -1,4 +1,4 @@
-use api::{ app_state::AppState, run, running_bots };
+use rustycrab_api::{ app_state::AppState, run, running_bots };
 
 use dotenv::dotenv;
 use sea_orm::Database;

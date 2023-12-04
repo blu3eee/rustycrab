@@ -104,7 +104,7 @@ impl DefaultRoutes for TicketSupportTeamRoutes {
         format!("teams")
     }
 
-    async fn more_routes(_: AppState) -> Router {
+    async fn more_routes() -> Router {
         let path = Self::path();
         Router::new()
             .route(

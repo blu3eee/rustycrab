@@ -120,7 +120,11 @@ impl Related<super::ticket_multi_panels::Entity> for Entity {
         super::ticket_multi_panels_panels_ticket_panels::Relation::TicketMultiPanels.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::ticket_multi_panels_panels_ticket_panels::Relation::TicketPanels.def().rev())
+        Some(
+            super::ticket_multi_panels_panels_ticket_panels::Relation::TicketPanels
+                .def()
+                .rev(),
+        )
     }
 }
 

@@ -59,19 +59,17 @@ impl DefaultRoutes for BotsRouter {
         format!("bots")
     }
 
-    async fn more_routes(state: AppState) -> Router
+    async fn more_routes() -> Router
         where
             <<<<BotsRouter as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<<BotsRouter as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<<BotsRouter as DefaultRoutes>::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let path = Self::path();
-        Router::new()
-            .route(&format!("/{}/discord/:bot_discord_id", &path), get(Self::get_one_by_discord_id))
-            .route(
-                &format!("/{}/discord/:bot_discord_id", &path),
-                patch(Self::update_by_discord_id)
-            )
-            .layer(Extension(state))
+        Router::new().nest(
+            &format!("/{}", &Self::path()),
+            Router::new()
+                .route("/discord/:bot_discord_id", get(Self::get_one_by_discord_id))
+                .route("/discord/:bot_discord_id", patch(Self::update_by_discord_id))
+        )
     }
 }
 

@@ -2,18 +2,18 @@ use serde::{ Deserialize, Serialize };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RequestCreateBotUser {
-    pub bot_id: String,
-    pub user_id: String,
+    pub bot_discord_id: String,
+    pub user_discord_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RequestUpdateBotUser {
     pub balance: Option<i32>,
     pub pray_points: Option<i32>,
     pub inventory: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ResponseBotUser {
     pub id: i32,
     pub balance: i32,

@@ -8,6 +8,9 @@ use sea_orm::{
     Condition,
     ActiveModelTrait,
     Set,
+    JoinType,
+    RelationTrait,
+    QuerySelect,
 };
 
 use crate::{
@@ -21,6 +24,21 @@ use super::{ bot_queries::BotQueries, user_queries::UserQueries };
 pub struct BotUserQueries {}
 
 impl BotUserQueries {
+    pub async fn find_or_create_by_discord_ids(
+        db: &DatabaseConnection,
+        bot_id: &str,
+        user_id: &str
+    ) -> Result<BotUserModel, AppError> {
+        if let Ok(bot_user) = Self::find_by_discord_ids(db, bot_id, user_id).await {
+            Ok(bot_user)
+        } else {
+            <Self as DefaultSeaQueries>::create_entity(db, RequestCreateBotUser {
+                bot_discord_id: bot_id.to_string(),
+                user_discord_id: user_id.to_string(),
+            }).await
+        }
+    }
+
     pub async fn find_by_discord_ids(
         db: &DatabaseConnection,
         bot_id: &str,
@@ -60,8 +78,8 @@ impl BotUserQueries {
             Ok(bot_user) => Ok(bot_user),
             Err(_) =>
                 Self::create_entity(db, RequestCreateBotUser {
-                    bot_id: bot_id.to_owned(),
-                    user_id: user_id.to_owned(),
+                    bot_discord_id: bot_id.to_owned(),
+                    user_discord_id: user_id.to_owned(),
                 }).await,
         }
     }
@@ -100,25 +118,37 @@ impl DefaultSeaQueries for BotUserQueries {
         }
         Ok(())
     }
+
     async fn create_entity(
         db: &DatabaseConnection,
         create_dto: Self::CreateData
     ) -> Result<BotUserModel, AppError> {
         if
             let Ok(Some(bot_user)) = BotUser::find()
-                .filter(Condition::all().add(bots::Column::BotId.eq(&create_dto.bot_id)))
-                .filter(Condition::all().add(users::Column::DiscordId.eq(&create_dto.user_id)))
+                .join(JoinType::LeftJoin, bot_users::Relation::Bots.def())
+                .join(JoinType::LeftJoin, bot_users::Relation::Users.def())
+                .filter(
+                    Condition::all()
+                        .add(bots::Column::BotId.eq(&create_dto.bot_discord_id))
+                        .add(users::Column::DiscordId.eq(&create_dto.user_discord_id))
+                )
                 .one(db).await
         {
+            eprintln!(
+                "bot_user already created {} {}",
+                create_dto.bot_discord_id,
+                create_dto.user_discord_id
+            );
             return Ok(bot_user);
         }
 
-        let bot = BotQueries::find_by_discord_id(db, &create_dto.bot_id).await?;
-        let user = UserQueries::find_user_or_create(db, &create_dto.user_id).await?;
+        let bot = BotQueries::find_by_discord_id(db, &create_dto.bot_discord_id).await?;
+        let user = UserQueries::find_user_or_create(db, &create_dto.user_discord_id).await?;
 
         let bot_user: bot_users::ActiveModel = bot_users::ActiveModel {
             bot_id: Set(bot.id),
             user_id: Set(user.id),
+            inventory: Set(String::new()),
             ..Default::default()
         };
 

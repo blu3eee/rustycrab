@@ -73,19 +73,16 @@ impl DefaultRoutes for ActionLogsRoutes {
         format!("action-logs")
     }
 
-    async fn more_routes(_: AppState) -> Router {
-        Router::new()
-            .route(
-                &format!(
-                    "/{}/:bot_discord_id/:guild_discord_id/:channel_discord_id",
-                    &Self::path()
-                ),
-                get(Self::get_unique)
-            )
-            .route(
-                &format!("/{}/:bot_discord_id/:guild_discord_id", &Self::path()),
-                get(Self::get_guild_actions_logs)
-            )
+    async fn more_routes() -> Router {
+        Router::new().nest(
+            &format!("/{}", &Self::path()),
+            Router::new()
+                .route(
+                    "/:bot_discord_id/:guild_discord_id/:channel_discord_id",
+                    get(Self::get_unique)
+                )
+                .route("/:bot_discord_id/:guild_discord_id", get(Self::get_guild_actions_logs))
+        )
     }
 }
 

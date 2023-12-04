@@ -1,6 +1,5 @@
 use crate::{
     router::routes::{
-        hello_world::hello_world,
         bots::BotsRouter,
         bot_guild_configs::BotGuildConfigsRoutes,
         bot_guild_welcomes::BotGuildWelcomesRoutes,
@@ -13,25 +12,23 @@ use crate::{
 
 use axum::{ routing::get, Router, Extension, middleware };
 
-use super::{ middlewares::log_route::log_route, routes::tickets::ticket_routes };
+use super::{
+    middlewares::log_route::log_route,
+    routes::{ tickets::ticket_routes, discord_oauth::auth_routes },
+};
 
 pub async fn create_router(app_state: AppState) -> Router {
-    let router = Router::new()
-        .merge(BotsRouter::router(app_state.clone()).await)
-        .merge(
-            <BotGuildConfigsRoutes as UniqueBotGuildEntityRoutes>::router(app_state.clone()).await
-        )
-        .merge(
-            <BotGuildWelcomesRoutes as UniqueBotGuildEntityRoutes>::router(app_state.clone()).await
-        )
-        .merge(bot_logs_routes(app_state.clone()).await)
-        .merge(ticket_routes(app_state.clone()).await)
-        .layer(Extension(app_state))
-        .layer(middleware::from_fn(log_route))
+    Router::new()
+        .merge(BotsRouter::router().await)
+        .merge(<BotGuildConfigsRoutes as UniqueBotGuildEntityRoutes>::router().await)
+        .merge(<BotGuildWelcomesRoutes as UniqueBotGuildEntityRoutes>::router().await)
+        .merge(bot_logs_routes().await)
+        .merge(ticket_routes().await)
+        .layer(Extension(app_state.clone()))
+        .merge(auth_routes().await)
         .route(
             "/",
             get(|| async { "Hello, World!" })
         )
-        .route("/hello", get(hello_world));
-    router
+        .layer(middleware::from_fn(log_route))
 }

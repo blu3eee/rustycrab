@@ -1,5 +1,6 @@
 use csscolorparser::Color as CssColor;
 
+#[derive(Debug, PartialEq)]
 pub enum ColorResolvables {
     ColorInt(u32),
     HexString(String),

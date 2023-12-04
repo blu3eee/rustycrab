@@ -44,7 +44,7 @@ pub enum Relation {
         from = "Column::RingId",
         to = "super::items::Column::Id",
         on_update = "NoAction",
-        on_delete = "NoAction"
+        on_delete = "SetNull"
     )]
     Items,
 }

@@ -5,22 +5,19 @@ pub mod log_ignores;
 use axum::Router;
 
 use crate::{
-    app_state::AppState,
     unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
     default_router::DefaultRoutes,
 };
 
 use self::log_ignores::ignore_routes;
 
-pub async fn bot_logs_routes(state: AppState) -> Router {
+pub async fn bot_logs_routes() -> Router {
     let router = Router::new()
         .merge(
-            <log_settings::BotGuildLogSettingsRoutes as UniqueBotGuildEntityRoutes>::router(
-                state.clone()
-            ).await
+            <log_settings::BotGuildLogSettingsRoutes as UniqueBotGuildEntityRoutes>::router().await
         )
-        .merge(action_logs::ActionLogsRoutes::router(state.clone()).await)
-        .merge(ignore_routes(state.clone()).await);
+        .merge(action_logs::ActionLogsRoutes::router().await)
+        .merge(ignore_routes().await);
 
     Router::new().nest("/logs", router)
 }

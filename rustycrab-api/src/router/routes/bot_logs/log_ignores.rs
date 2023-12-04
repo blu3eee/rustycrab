@@ -62,12 +62,12 @@ async fn get_all_guild_ignores(
     )
 }
 
-pub async fn ignore_routes(state: AppState) -> Router {
+pub async fn ignore_routes() -> Router {
     Router::new().nest(
         "/ignores",
         Router::new()
-            .merge(BotGuildLogIgnoresChannelRoutes::router(state.clone()).await)
-            .merge(BotGuildLogIgnoresRoleRoutes::router(state.clone()).await)
+            .merge(BotGuildLogIgnoresChannelRoutes::router().await)
+            .merge(BotGuildLogIgnoresRoleRoutes::router().await)
             .route("/:bot_discord_id/:guild_discord_id", get(get_all_guild_ignores))
     )
 }
@@ -123,7 +123,7 @@ impl DefaultRoutes for BotGuildLogIgnoresChannelRoutes {
         format!("channels")
     }
 
-    async fn more_routes(_: AppState) -> Router {
+    async fn more_routes() -> Router {
         let path = Self::path();
         Router::new()
             .route(
@@ -189,7 +189,7 @@ impl DefaultRoutes for BotGuildLogIgnoresRoleRoutes {
         format!("roles")
     }
 
-    async fn more_routes(_: AppState) -> Router {
+    async fn more_routes() -> Router {
         let path = Self::path();
         Router::new()
             .route(

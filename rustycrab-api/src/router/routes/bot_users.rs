@@ -72,16 +72,13 @@ impl DefaultRoutes for BotUsersRoutes {
         format!("bot-users")
     }
 
-    async fn more_routes(_: AppState) -> Router {
-        Router::new()
-            .route(
-                &format!("/{}/:bot_discord_id/:user_discord_id", &Self::path()),
-                get(Self::get_by_discord_ids)
-            )
-            .route(
-                &format!("/{}/:bot_discord_id/:user_discord_id", &Self::path()),
-                patch(Self::update_by_discord_ids)
-            )
+    async fn more_routes() -> Router {
+        Router::new().nest(
+            &format!("/{}", &Self::path()),
+            Router::new()
+                .route("/:bot_discord_id/:user_discord_id", get(Self::get_by_discord_ids))
+                .route("/:bot_discord_id/:user_discord_id", patch(Self::update_by_discord_ids))
+        )
     }
 }
 

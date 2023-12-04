@@ -2,12 +2,10 @@ use crate::{
     database::log_settings::Model as LogSettingModel,
     default_router::DefaultRoutes,
     queries::guild_logs::log_setting_queries::LogSettingQueries,
-    app_state::AppState,
     unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
 };
 
 use async_trait::async_trait;
-use axum::Router;
 use rustycrab_model::response::logs::setting::ResponseLogSetting;
 
 pub struct BotGuildLogSettingsRoutes {}
@@ -22,10 +20,6 @@ impl DefaultRoutes for BotGuildLogSettingsRoutes {
 
     fn path() -> String {
         format!("settings")
-    }
-
-    async fn more_routes(_: AppState) -> Router {
-        Router::new()
     }
 }
 

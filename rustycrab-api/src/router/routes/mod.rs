@@ -9,6 +9,7 @@ pub mod bot_guild_welcomes;
 pub mod bot_logs;
 pub mod tickets;
 pub mod auto_responses;
+pub mod discord_oauth;
 
 use crate::database::{ embed_info::Model as EmbedModel, buttons::Model as ButtonModel };
 use rustycrab_model::response::discord_message::{ ResponseEmbed, ResponseButton };

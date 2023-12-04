@@ -1,7 +1,6 @@
 use axum::Router;
 
 use crate::{
-    app_state::AppState,
     default_router::DefaultRoutes,
     unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
     multi_bot_guild_entities_router::MultipleBotGuildEntitiesRoutes,
@@ -21,14 +20,14 @@ pub mod ticket_panels;
 pub mod ticket_support_teams;
 pub mod tickets;
 
-pub async fn ticket_routes(state: AppState) -> Router {
+pub async fn ticket_routes() -> Router {
     Router::new().nest(
         "/ticket",
         Router::new()
-            .merge(<TicketSettingRoutes as UniqueBotGuildEntityRoutes>::router(state.clone()).await)
-            .merge(TicketSupportTeamRoutes::router(state.clone()).await)
-            .merge(TicketPanelsRoutes::router(state.clone()).await)
-            .merge(TicketMultiPanelsRoutes::router(state.clone()).await)
-            .merge(<TicketsRoutes as MultipleBotGuildEntitiesRoutes>::router(state.clone()).await)
+            .merge(<TicketSettingRoutes as UniqueBotGuildEntityRoutes>::router().await)
+            .merge(TicketSupportTeamRoutes::router().await)
+            .merge(TicketPanelsRoutes::router().await)
+            .merge(TicketMultiPanelsRoutes::router().await)
+            .merge(<TicketsRoutes as MultipleBotGuildEntitiesRoutes>::router().await)
     )
 }

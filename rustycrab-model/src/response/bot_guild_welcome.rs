@@ -21,7 +21,6 @@ pub struct RequestUpdateWelcome {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseGuildWelcome {
     pub id: i32,
-    pub enabled: i8,
     pub channel_id: Option<String>,
     pub bot_id: i32,
     pub guild_id: i32,
@@ -31,7 +30,6 @@ pub struct ResponseGuildWelcome {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseGuildWelcomeDetails {
     pub id: i32,
-    pub enabled: i8,
     pub channel_id: Option<String>,
     pub bot: Option<ResponseBot>,
     pub guild: Option<ResponseGuild>,

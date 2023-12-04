@@ -110,14 +110,13 @@ impl DefaultRoutes for TicketPanelsRoutes {
         format!("panels")
     }
 
-    async fn more_routes(_: AppState) -> Router {
-        let path = Self::path();
-        Router::new()
-            .route(
-                &format!("/{}/:bot_discord_id/:guild_discord_id", &path),
-                get(Self::get_panels_by_discord_ids)
-            )
-            .route(&format!("/{}/:id/send", &path), get(Self::send_panel))
+    async fn more_routes() -> Router {
+        Router::new().nest(
+            &format!("/{}", &Self::path()),
+            Router::new()
+                .route("/:bot_discord_id/:guild_discord_id", get(Self::get_panels_by_discord_ids))
+                .route("/:id/send", get(Self::send_panel))
+        )
     }
 }
 

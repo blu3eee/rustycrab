@@ -12,9 +12,26 @@ pub struct Model {
     #[sea_orm(column_type = "Text")]
     pub value: String,
     pub inline: i8,
+    #[sea_orm(column_name = "embedInfoId")]
+    pub embed_info_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::embed_info::Entity",
+        from = "Column::EmbedInfoId",
+        to = "super::embed_info::Column::Id",
+        on_update = "NoAction",
+        on_delete = "Cascade"
+    )]
+    EmbedInfo,
+}
+
+impl Related<super::embed_info::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EmbedInfo.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

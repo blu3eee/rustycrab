@@ -51,7 +51,7 @@ impl DefaultRoutes for TicketMultiPanelsRoutes {
         format!("multipanels")
     }
 
-    async fn more_routes(_: AppState) -> Router {
+    async fn more_routes() -> Router {
         let path = Self::path();
         Router::new()
             .route(

@@ -1,11 +1,9 @@
-use crate::app_state::AppState;
 use crate::unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes;
 use crate::database::bot_guild_welcomes::Model as WelcomeModel;
 use crate::default_router::DefaultRoutes;
 use crate::queries::guild_welcome_queries::GuildWelcomeQueries;
 
 use async_trait::async_trait;
-use axum::Router;
 use rustycrab_model::response::bot_guild_welcome::ResponseGuildWelcome;
 
 pub struct BotGuildWelcomesRoutes {}
@@ -21,10 +19,6 @@ impl DefaultRoutes for BotGuildWelcomesRoutes {
     fn path() -> String {
         format!("welcomes")
     }
-
-    async fn more_routes(_: AppState) -> Router {
-        Router::new()
-    }
 }
 
 impl UniqueBotGuildEntityRoutes for BotGuildWelcomesRoutes {}
@@ -33,7 +27,6 @@ impl From<WelcomeModel> for ResponseGuildWelcome {
     fn from(model: WelcomeModel) -> Self {
         Self {
             id: model.id,
-            enabled: model.enabled,
             channel_id: model.channel_id,
             bot_id: model.bot_id,
             guild_id: model.guild_id,

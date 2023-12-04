@@ -1,5 +1,5 @@
 [package]
-name = "api"
+name = "rustycrab-api"
 version = "0.2.0"
 edition = "2021"
 
@@ -10,7 +10,16 @@ voice = ["opus", "sodiumoxide", "byteorder"]
 [dependencies]
 rustycrab-model = { default-features = false, path = "../rustycrab-model", version = "0.2.0" }
 axum = { version = "0.7.1", features = ["macros"] }
-dotenv = "0.15.0"                                                                              # To manage environment variables
+tower-sessions = { version = "0.7.0", features = ["mysql-store"] }
+oauth2 = "4.4.2"
+
+log = "0.4.20"
+env_logger = "0.10.1"
+sea-orm = { version = "0.12.6", features = [
+    "sqlx-mysql",
+    "runtime-tokio-rustls",
+] }
+dotenv = "0.15.0" # To manage environment variables
 serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
 tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
@@ -57,13 +66,8 @@ fluent = "0.16.0"
 fluent-bundle = "0.15.2"
 intl-memoizer = "0.5.1"
 unic-langid = "0.9.1"
-
-log = "0.4.20"
-env_logger = "0.10"
-sea-orm = { version = "0.12.6", features = [
-    "sqlx-mysql",
-    "runtime-tokio-rustls",
-] }
+tower = "0.4.13"
+time = "0.3.30"
 
 [dependencies.sodiumoxide]
 version = "0.2.5"

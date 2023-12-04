@@ -16,6 +16,8 @@ pub struct Model {
     pub bot_id: i32,
     #[sea_orm(column_name = "userId")]
     pub user_id: i32,
+    #[sea_orm(column_name = "userType")]
+    pub user_type: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -39,8 +39,16 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::embed_fields::Entity")]
+    EmbedFields,
     #[sea_orm(has_one = "super::messages::Entity")]
     Messages,
+}
+
+impl Related<super::embed_fields::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EmbedFields.def()
+    }
 }
 
 impl Related<super::messages::Entity> for Entity {

@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use axum::Router;
 use rustycrab_model::response::bot_guild_config::ResponseGuildConfig;
 
 use crate::{
@@ -7,7 +6,6 @@ use crate::{
     default_router::DefaultRoutes,
     queries::guild_config_queries::GuildConfigQueries,
     unique_bot_guild_entity_router::UniqueBotGuildEntityRoutes,
-    app_state::AppState,
 };
 
 pub struct BotGuildConfigsRoutes {}
@@ -22,10 +20,6 @@ impl DefaultRoutes for BotGuildConfigsRoutes {
 
     fn path() -> String {
         format!("configs")
-    }
-
-    async fn more_routes(_: AppState) -> Router {
-        Router::new()
     }
 }
 

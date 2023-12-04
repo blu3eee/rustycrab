@@ -25,7 +25,7 @@ pub enum Relation {
         from = "Column::EmbedId",
         to = "super::embed_info::Column::Id",
         on_update = "NoAction",
-        on_delete = "Cascade"
+        on_delete = "SetNull"
     )]
     EmbedInfo,
     #[sea_orm(has_one = "super::ticket_multi_panels::Entity")]

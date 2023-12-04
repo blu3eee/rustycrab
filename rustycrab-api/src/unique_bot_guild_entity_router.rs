@@ -113,22 +113,17 @@ pub trait UniqueBotGuildEntityRoutes: DefaultRoutes where Self::Queries: UniqueB
     ///
     /// ### Description
     /// This function performs a database query to find an entity that is linked with both a specific bot and guild, identified
-    async fn bot_guild_router(state: AppState) -> Router
+    async fn bot_guild_router() -> Router
         where
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let path = Self::path();
-        Router::new()
-            .route(
-                &format!("/{}/:bot_discord_id/:guild_discord_id", &path),
-                get(Self::get_by_discord_ids)
-            )
-            .route(
-                &format!("/{}/:bot_discord_id/:guild_discord_id", &path),
-                patch(Self::update_by_discord_ids)
-            )
-            .layer(Extension(state))
+        Router::new().nest(
+            &format!("/{}", &Self::path()),
+            Router::new()
+                .route("/:bot_discord_id/:guild_discord_id", get(Self::get_by_discord_ids))
+                .route("/:bot_discord_id/:guild_discord_id", patch(Self::update_by_discord_ids))
+        )
     }
 
     /// Creates a comprehensive router combining the default CRUD routes, additional custom routes, and bot-guild-specific routes.
@@ -146,14 +141,14 @@ pub trait UniqueBotGuildEntityRoutes: DefaultRoutes where Self::Queries: UniqueB
     /// ### Description
     /// This function assembles a complete router by merging the default CRUD routes, any additional custom routes defined in `more_routes`,
     /// and bot-guild-specific routes from `bot_guild_router`. It ensures comprehensive coverage of all required endpoints for the application.
-    async fn router(state: AppState) -> Router
+    async fn router() -> Router
         where
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let default_routes = Self::default_router(state.clone()).await;
-        let custom_routes = Self::more_routes(state.clone()).await;
-        let bot_guild_routes = Self::bot_guild_router(state.clone()).await;
+        let default_routes = Self::default_router().await;
+        let custom_routes = Self::more_routes().await;
+        let bot_guild_routes = Self::bot_guild_router().await;
 
         default_routes.merge(custom_routes).merge(bot_guild_routes)
     }

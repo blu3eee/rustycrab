@@ -8,6 +8,8 @@ pub mod logs;
 pub mod ticket;
 pub mod auto_response;
 pub mod discord_message;
+pub mod marriages;
+pub mod items;
 
 use serde::{ Serialize, Deserialize };
 

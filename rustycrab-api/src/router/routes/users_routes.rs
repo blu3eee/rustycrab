@@ -62,19 +62,17 @@ impl DefaultRoutes for UsersRoutes {
         format!("users")
     }
 
-    async fn more_routes(state: AppState) -> Router
+    async fn more_routes() -> Router
         where
             <<<<UsersRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<<UsersRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<<UsersRoutes as DefaultRoutes>::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let path = Self::path();
-        Router::new()
-            .route(&format!("/{}/discord/:bot_discord_id", &path), get(Self::get_one_by_discord_id))
-            .route(
-                &format!("/{}/discord/:bot_discord_id", &path),
-                patch(Self::update_by_discord_id)
-            )
-            .layer(Extension(state))
+        Router::new().nest(
+            &format!("/{}", &Self::path()),
+            Router::new()
+                .route("/discord/:bot_discord_id", get(Self::get_one_by_discord_id))
+                .route("/discord/:bot_discord_id", patch(Self::update_by_discord_id))
+        )
     }
 }
 

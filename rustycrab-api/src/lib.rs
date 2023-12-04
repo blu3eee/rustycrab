@@ -86,7 +86,7 @@ pub async fn run(app_state: AppState) {
 
     // axum::serve::Serve::bind(&address).serve(app.into_make_service()).await.unwrap();
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app.into_make_service()).await.unwrap();
 }
 
 /// Initializes and runs all bots present in the database.

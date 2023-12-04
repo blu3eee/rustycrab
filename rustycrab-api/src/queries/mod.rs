@@ -10,6 +10,8 @@ pub mod message_queries;
 pub mod guild_logs;
 pub mod tickets_system;
 pub mod auto_responses_queries;
+pub mod marriages_queries;
+pub mod item_queries;
 
 use crate::utilities::app_error::AppError;
 use axum::http::StatusCode;

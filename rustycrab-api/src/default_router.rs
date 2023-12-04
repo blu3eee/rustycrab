@@ -238,19 +238,20 @@ pub trait DefaultRoutes: 'static {
     /// - **Standardization**: Ensures a consistent routing structure across different parts of the application.
     /// - **Ease of Use**: Simplifies the creation of a fully functional router with minimal boilerplate.
     /// - **Flexibility**: Allows for easy extension and customization of routes.
-    async fn default_router(state: AppState) -> Router
+    async fn default_router() -> Router
         where
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let path = Self::path();
-        Router::new()
-            .route(&format!("/{}", &path), get(Self::get_all))
-            .route(&format!("/{}/:id", &path), get(Self::get_one))
-            .route(&format!("/{}", &path), post(Self::create_one))
-            .route(&format!("/{}/:id", &path), patch(Self::update_by_id))
-            .route(&format!("/{}/:id", &path), delete(Self::delete_by_id))
-            .layer(Extension(state))
+        Router::new().nest(
+            &format!("/{}", &Self::path()),
+            Router::new()
+                .route("/", get(Self::get_all))
+                .route("/{}/:id", get(Self::get_one))
+                .route("/{}", post(Self::create_one))
+                .route("/{}/:id", patch(Self::update_by_id))
+                .route("/{}/:id", delete(Self::delete_by_id))
+        )
     }
 
     /// Provides a way for implementers to add more routes to the router.
@@ -279,7 +280,7 @@ pub trait DefaultRoutes: 'static {
     /// }
     /// ```
     #[allow(unused_variables)]
-    async fn more_routes(state: AppState) -> Router
+    async fn more_routes() -> Router
         where
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
@@ -301,13 +302,13 @@ pub trait DefaultRoutes: 'static {
     /// let app_state = //... initialize AppState ...
     /// let router = MyCustomRoutes::router(app_state).await;
     /// ```
-    async fn router(state: AppState) -> Router
+    async fn router() -> Router
         where
             <<<Self::Queries as DefaultSeaQueries>::Entity as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType: From<i32>,
             <<Self::Queries as DefaultSeaQueries>::Entity as sea_orm::EntityTrait>::Model: IntoActiveModel<<Self::Queries as DefaultSeaQueries>::ActiveModel>
     {
-        let default_routes = Self::default_router(state.clone()).await;
-        let custom_routes = Self::more_routes(state.clone()).await;
+        let default_routes = Self::default_router().await;
+        let custom_routes = Self::more_routes().await;
 
         default_routes.merge(custom_routes)
     }
