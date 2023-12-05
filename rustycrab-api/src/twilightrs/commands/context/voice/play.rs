@@ -53,7 +53,12 @@ impl ContextCommand for PlayCommand {
 
         // get the voice channel of the command author
         let channel_id = match client.cache.voice_state(msg.author.id, guild_id) {
-            Some(state) => state.channel_id(),
+            Some(state) => {
+                if !state.deaf() {
+                    let _ = client.http.update_current_user_voice_state(guild_id).suppress().await;
+                }
+                state.channel_id()
+            }
             None => {
                 return Err(
                     client.get_locale_string(&config.locale, "music-user-novoice", None).into()
