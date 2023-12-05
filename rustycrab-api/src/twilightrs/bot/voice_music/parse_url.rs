@@ -122,7 +122,7 @@ pub async fn parse_url_or_search_query(
         vec![format!("ytsearch1:{url}")]
     };
 
-    Ok((urls, urls))
+    Ok((urls.clone(), urls.clone()))
 }
 
 async fn check_url(url: &str) -> Result<(String, String), BoxedError> {
