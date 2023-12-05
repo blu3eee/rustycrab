@@ -12,6 +12,7 @@ WORKDIR /usr/src/rustycrab-api
 COPY ./rustycrab-api ./
 COPY ./.env ./
 COPY ./rustycrab-model /usr/src/rustycrab-model
+COPY ./spotify-api /usr/src/spotify-api
 
 # Build your program for release
 RUN cargo build --release
