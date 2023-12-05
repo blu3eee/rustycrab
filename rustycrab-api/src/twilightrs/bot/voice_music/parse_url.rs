@@ -121,8 +121,8 @@ pub async fn parse_url_or_search_query(
     } else {
         vec![format!("ytsearch1:{url}")]
     };
-    // println!("urls {:?}", urls);
-    Ok(prune_list(urls).await)
+
+    Ok((urls, urls))
 }
 
 async fn check_url(url: &str) -> Result<(String, String), BoxedError> {
