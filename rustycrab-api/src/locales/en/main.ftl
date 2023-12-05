@@ -113,7 +113,7 @@ afk-notify-added = You will be notified when this user is back
 afk-notfound = This user is no longer AFK
 
 # VOICE & MUSIC
-music-note = This feature only accepts Youtube and Soundcloud. Search results will get the first video from youtube search and add it to the queue
+music-note = This feature only accepts Youtube, Soundcloud, and Spotify. Search results will get the first video from youtube search and add it to the queue
 music-not-same-channel = You need to be in the same voice channel as the bot to use this command
 music-nowplaying = Now playing
 music-not-playing = I'm not playing any music

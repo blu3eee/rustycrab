@@ -112,7 +112,7 @@ afk-notify-added = Bạn sẽ nhận được thông báo khi người dùng nà
 afk-notfound = Người dùng này không còn ở trạng thái AFK nữa.
 
 # VOICE & MUSIC
-music-note = Tính năng này chỉ chấp nhận URL từ SoundCloud và Youtube hoặc tìm kiếm trên Youtube. Kết quả tìm kiếm sẽ lấy video đầu tiên từ tìm kiếm Youtube và thêm vào hàng đợi
+music-note = Tính năng này chỉ chấp nhận URL từ SoundCloud, Youtube, Spotify, hoặc tìm kiếm trên Youtube. Kết quả tìm kiếm sẽ lấy video đầu tiên từ tìm kiếm Youtube và thêm vào hàng đợi
 music-not-same-channel = Bạn cần ở trong cùng kênh giọng nói với bot để sử dụng lệnh này
 music-nowplaying = Đang phát
 music-not-playing = Tớ không phát nhạc nào
