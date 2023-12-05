@@ -10,6 +10,7 @@ voice = ["opus", "sodiumoxide", "byteorder"]
 [dependencies]
 rustycrab-model = { default-features = false, path = "../rustycrab-model", version = "0.2.0" }
 axum = { version = "0.7.1", features = ["macros"] }
+tower = "0.4.13"
 tower-sessions = { version = "0.7.0", features = ["mysql-store"] }
 oauth2 = "4.4.2"
 
@@ -66,7 +67,7 @@ fluent = "0.16.0"
 fluent-bundle = "0.15.2"
 intl-memoizer = "0.5.1"
 unic-langid = "0.9.1"
-tower = "0.4.13"
+
 time = "0.3.30"
 
 [dependencies.sodiumoxide]
