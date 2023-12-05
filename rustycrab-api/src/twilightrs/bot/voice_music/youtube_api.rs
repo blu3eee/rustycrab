@@ -48,7 +48,7 @@ pub struct YoutubeVideoDetails {
 use url::Url;
 
 pub fn is_youtube_url(url: &str) -> bool {
-    url.contains("youtube.com/watch?v=") || url.contains("youtu.be/")
+    url.contains("youtube.com") || url.contains("youtu.be/")
 }
 
 pub fn is_youtube_playlist_url(url: &str) -> bool {

@@ -6,20 +6,13 @@ use spotify_api::queries::{
     playlist::get_playlist_data,
 };
 
+use youtube_dl::YoutubeDl as YouTubeDlSearch;
+
 use crate::{ twilightrs::discord_client::DiscordClient, utilities::app_error::BoxedError };
 
 use super::{
-    youtube_api::{
-        is_youtube_url,
-        is_youtube_playlist_url,
-        fetch_playlist_videos,
-        // search_youtube
-    },
-    soundcloud_api::{
-        is_soundcloud_url,
-        fetch_soundcloud_playlist_tracks,
-        is_soundcloud_playlist_url,
-    },
+    youtube_api::{ is_youtube_url, is_youtube_playlist_url },
+    soundcloud_api::{ is_soundcloud_url, is_soundcloud_playlist_url },
     spotify_api::is_spotify_link,
 };
 
@@ -32,34 +25,53 @@ pub async fn parse_url_or_search_query(
         println!("{url} {}", is_spotify_link(url));
         if is_youtube_url(url) || is_soundcloud_url(url) {
             if is_youtube_playlist_url(url) {
-                match fetch_playlist_videos(url).await {
-                    Ok(urls) => { urls }
+                println!("fetching youtube playlist");
+                let output = YouTubeDlSearch::new(url)
+                    .socket_timeout("15")
+                    .flat_playlist(true)
+                    .ignore_errors(true)
+                    .run();
+                println!("output {output:?}");
+                match output {
+                    Ok(output) => {
+                        output
+                            .into_playlist()
+                            .ok_or("can't find playlist")?
+                            .entries.ok_or("no tracks found")?
+                            .iter()
+                            .filter_map(|video| video.url.clone())
+                            .collect::<Vec<String>>()
+                    }
                     Err(e) => {
-                        println!("error fetch_playlist_videos {e:?}");
-                        return Err(
-                            client
-                                .get_locale_string(locale, "music-playlist-fetch-error", None)
-                                .into()
-                        );
+                        eprintln!("error youtubedlsearch: {e:}");
+                        return Err(e.into());
                     }
                 }
             } else if is_soundcloud_playlist_url(url) {
-                match fetch_soundcloud_playlist_tracks(url).await {
-                    Ok(urls) => { urls }
+                let output = YouTubeDlSearch::new(url)
+                    .socket_timeout("15")
+                    .flat_playlist(true)
+                    .ignore_errors(true)
+                    .run();
+                match output {
+                    Ok(output) => {
+                        output
+                            .into_playlist()
+                            .ok_or("can't find playlist")?
+                            .entries.ok_or("no tracks found")?
+                            .iter()
+                            .filter_map(|video| video.url.clone())
+                            .collect::<Vec<String>>()
+                    }
                     Err(e) => {
-                        println!("error fetch_soundcloud_playlist_tracks {e:?}");
-                        return Err(
-                            client
-                                .get_locale_string(locale, "music-playlist-fetch-error", None)
-                                .into()
-                        );
+                        eprintln!("error youtubedlsearch: {e:}");
+                        return Err(e.into());
                     }
                 }
             } else {
                 vec![url.to_string()]
             }
         } else if is_spotify_link(url) {
-            println!("spotify link");
             let spotify_tracks = if let Some((url_type, id)) = extract_spotify_id_from_url(url) {
                 if url_type == "track" {
                     println!("spotify track");
@@ -107,13 +119,6 @@ pub async fn parse_url_or_search_query(
             return Err(client.get_locale_string(locale, "music-note", None).into());
         }
     } else {
-        // Perform a YouTube search and get the first result's URL
-        // match search_youtube(url).await {
-        //     Ok(url) => vec![url],
-        //     Err(_) => {
-        //         return Err(client.get_locale_string(locale, "music-search-error", None).into());
-        //     }
-        // }
         vec![format!("ytsearch1:{url}")]
     };
     // println!("urls {:?}", urls);

@@ -94,7 +94,17 @@ impl ContextCommand for PlayCommand {
         // now the bot has connect to the channel
         // get the url(s) to play audio
         let (valid_urls, _) = if let Some(ParsedArg::Text(arg)) = command_args.first() {
-            parse_url_or_search_query(&client, &config.locale, arg).await?
+            match parse_url_or_search_query(&client, &config.locale, arg).await {
+                Ok(urls) => { urls }
+                Err(e) => {
+                    eprintln!("Error: {e:?}");
+                    return Err(
+                        client
+                            .get_locale_string(&config.locale, "command-play-invalid-url", None)
+                            .into()
+                    );
+                }
+            }
         } else {
             return Err(
                 client.get_locale_string(&config.locale, "command-play-invalid-url", None).into()

@@ -3,7 +3,7 @@ FROM rust:latest
 
 # Install Chrome
 
-RUN apt-get update && apt-get install -y cmake pkg-config libssl-dev openssl libopus-dev  youtube-dl ffmpeg chromium chromium-browser
+RUN apt-get update && apt-get install -y cmake pkg-config libssl-dev openssl libopus-dev  youtube-dl ffmpeg
 
 # Set the working directory in the container
 WORKDIR /usr/src/rustycrab-api
