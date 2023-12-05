@@ -8,6 +8,8 @@ default = ["voice"]
 voice = ["opus", "sodiumoxide", "byteorder"]
 
 [dependencies]
+dotenv = "0.15.0"                                                                              # To manage environment variables
+spotify-api = { default-features = false, path = "../spotify-api", version = "0.1.0" }
 rustycrab-model = { default-features = false, path = "../rustycrab-model", version = "0.2.0" }
 axum = { version = "0.7.1", features = ["macros"] }
 tower = "0.4.13"
@@ -20,7 +22,6 @@ sea-orm = { version = "0.12.6", features = [
     "sqlx-mysql",
     "runtime-tokio-rustls",
 ] }
-dotenv = "0.15.0" # To manage environment variables
 serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
 tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }

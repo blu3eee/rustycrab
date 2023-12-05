@@ -1,14 +1,9 @@
 # Use the official Rust image as a parent image
 FROM rust:latest
 
-# RUN apt update &amp;&amp; apt upgrade -y 
-# RUN apt install -y g++-arm-linux-gnueabihf libc6-dev-armhf-cross
- 
-# RUN rustup target add armv7-unknown-linux-gnueabihf 
-# RUN rustup toolchain install stable-armv7-unknown-linux-gnueabihf 
+# Install Chrome
 
-RUN apt-get update && apt-get install -y cmake pkg-config libssl-dev openssl libopus-dev  youtube-dl ffmpeg
-
+RUN apt-get update && apt-get install -y cmake pkg-config libssl-dev openssl libopus-dev  youtube-dl ffmpeg chromium chromium-browser
 
 # Set the working directory in the container
 WORKDIR /usr/src/rustycrab-api

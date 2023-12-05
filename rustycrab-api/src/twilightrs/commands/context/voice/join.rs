@@ -51,13 +51,10 @@ impl ContextCommand for JoinCommand {
                     channel_id
                 ).await;
 
-                if !state.deaf() {
-                    let _ = client.http.update_current_user_voice_state(guild_id).suppress().await;
-                }
-
                 match join_result {
-                    Ok(_call_lock) => {
-                        // Successfully joined the channel
+                    Ok(call_lock) => {
+                        let mut call = call_lock.lock().await;
+                        let _ = call.deafen(true).await;
                         ("command-join-joined", ColorResolvables::Green)
                     }
                     Err(e) => {

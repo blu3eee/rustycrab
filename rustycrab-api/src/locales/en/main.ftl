@@ -128,7 +128,7 @@ music-content-credits-soundcloud = Listen on Soundcloud
 music-content-credits-youtube = Listen on Youtube
 music-content-creator = Content creator
 music-playlist-fetch-error = Error getting tracks from playlist, please check the link or the video/playlist availablity.
-music-loading-url = Loading track(s) from url
+music-loading-url = Loading track(s)
 
 # Join Command
 command-join = Ask the bot to join a voice channel

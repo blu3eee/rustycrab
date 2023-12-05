@@ -4,6 +4,7 @@ members = [
     "rustycrab-model",
     "rustycrab-webapp",
     "database-migration",
+    "spotify-api",
 ]
 
 resolver = "2"

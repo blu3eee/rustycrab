@@ -53,12 +53,7 @@ impl ContextCommand for PlayCommand {
 
         // get the voice channel of the command author
         let channel_id = match client.cache.voice_state(msg.author.id, guild_id) {
-            Some(state) => {
-                if !state.deaf() {
-                    let _ = client.http.update_current_user_voice_state(guild_id).suppress().await;
-                }
-                state.channel_id()
-            }
+            Some(state) => { state.channel_id() }
             None => {
                 return Err(
                     client.get_locale_string(&config.locale, "music-user-novoice", None).into()
@@ -70,7 +65,9 @@ impl ContextCommand for PlayCommand {
         // if the bot is already in a channel, check if the bot is in the same channel as the command author
         // if the bot is not in a voice channel, ask the bot to join the voice channel of the command author
         // return error if the bot is not in the same channel or not able to connect
-        if let Ok(_) = client.fetch_call_lock(guild_id, Some(&config.locale)).await {
+        if let Ok(call_lock) = client.fetch_call_lock(guild_id, Some(&config.locale)).await {
+            let mut call = call_lock.lock().await;
+            let _ = call.deafen(true).await;
             client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
         } else if let Err(_) = client.voice_music_manager.songbird.join(guild_id, channel_id).await {
             return Err(

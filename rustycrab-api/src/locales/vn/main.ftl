@@ -127,7 +127,7 @@ music-content-credits-soundcloud = Nghe trên Soundcloud
 music-content-credits-youtube = Nghe trên Youtube
 music-content-creator = Content creator
 music-playlist-fetch-error = Lỗi khi lấy bài hát từ danh sách phát, vui lòng kiểm tra lại link hoặc chế độ riêng tư của video/danh sách phát.
-music-loading-url = Đang tải bài hát từ url
+music-loading-url = Đang tải bài hát
 
 # Join Command
 command-join = Yêu cầu bot tham gia kênh voice

@@ -40,6 +40,7 @@ pub fn is_soundcloud_playlist_url(url: &str) -> bool {
 pub async fn fetch_soundcloud_playlist_tracks(
     soundcloud_url: &str
 ) -> Result<Vec<String>, Box<dyn Error + Sync + Send>> {
+    println!("fetch_soundcloud_playlist_tracks");
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
     tab.navigate_to(soundcloud_url)?;

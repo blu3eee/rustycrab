@@ -1,3 +1,4 @@
+use rustycrab_model::color::ColorResolvables;
 // src/twilightrs/events/message_create.rs
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::{ error::Error, sync::Arc };
@@ -10,7 +11,9 @@ use crate::{
         dispatchers::ClientDispatchers,
         utils::afk::check_afk,
         bot::auto_response::check_autores,
+        messages::{ DiscordEmbed, DiscordEmbedField },
     },
+    cdn_avatar,
 };
 
 pub async fn handle_message_create(
@@ -34,6 +37,28 @@ pub async fn handle_message_create(
         ).await?;
 
         let content = msg.content.trim().to_string();
+
+        if content == format!("<@{}>", bot.id) && msg.guild_id.is_some() {
+            let _ = client.send_message(
+                msg.channel_id,
+                crate::twilightrs::discord_client::MessageContent::DiscordEmbeds(
+                    vec![DiscordEmbed {
+                        author_name: Some(bot.name),
+                        author_icon_url: bot.avatar.map(|hash| cdn_avatar!(bot.id, hash)),
+                        fields: Some(
+                            vec![DiscordEmbedField {
+                                name: "Prefix".to_string(),
+                                value: format!("{}", config.prefix),
+                                inline: true,
+                            }]
+                        ),
+                        color: Some(ColorResolvables::Green.as_u32()),
+                        ..Default::default()
+                    }]
+                )
+            ).await;
+            return Ok(());
+        }
 
         let command_prefix = if content.starts_with(&config.prefix) {
             Some(config.prefix.clone())
