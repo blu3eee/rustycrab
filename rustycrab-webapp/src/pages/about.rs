@@ -1,11 +1,8 @@
-use gloo::utils::format::JsValueSerdeExt;
-use rustycrab_model::{ color::ColorResolvables, auth::SessionUserData };
+use rustycrab_model::auth::SessionUserData;
 use yew_hooks::prelude::*;
-use reqwasm::http::Request;
-use serde::de::{ DeserializeOwned };
 
-use yew::{ function_component, Html, html, Callback, use_state, use_effect, UseStateHandle };
-use crate::{ components::button::Button, utils::{ api_fetch, Error } };
+use yew::{ function_component, Html, html };
+use crate::utils::{ api_fetch, Error };
 
 async fn fetch_user_data() -> Result<Option<SessionUserData>, Error> {
     Ok(api_fetch::<Option<SessionUserData>>("/auth/state").await?)
@@ -16,7 +13,7 @@ pub fn page() -> Html {
     let user_state = use_async(async move { fetch_user_data().await });
 
     {
-        let user_state = user_state.clone();
+        let _ = user_state.clone();
         use_async_with_options(
             async move {
                 fetch_user_data().await
