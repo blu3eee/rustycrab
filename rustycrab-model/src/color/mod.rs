@@ -9,6 +9,7 @@ pub enum ColorResolvables {
     Green,
     Blue,
     Yellow,
+    SpotifyGreen,
 }
 
 impl ColorResolvables {
@@ -33,6 +34,7 @@ impl ColorResolvables {
             }
             ColorResolvables::Red => 0xef476f, // Direct hex values
             ColorResolvables::Green => 0x06d6a0,
+            ColorResolvables::SpotifyGreen => 0x1db954,
             ColorResolvables::Blue => 0x118ab2,
             ColorResolvables::Yellow => 0xffd166,
         }
