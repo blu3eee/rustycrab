@@ -154,18 +154,21 @@ pub trait ContextCommand: Send + Sync {
             }
         }
 
+        // parse the arguments for the command if there is any
         let arg_specs = self.args();
         let parsed_args = self.parse_args(cmd_args, &arg_specs, &client.http).await;
         match parsed_args {
+            // if the arguments are successfully parsed, we run the command
             Ok(args) => {
-                // client.set_bundle(&config.locale);
                 if let Err(err) = self.run(Arc::clone(&client), config, msg, args).await {
+                    let content = client.get_locale_string(&config.locale, &err.to_string(), None);
+                    // if an error happened with the command, prompt the user of the erro
                     client.reply_message(
                         msg.channel_id,
                         msg.id,
                         MessageContent::DiscordEmbeds(
                             vec![DiscordEmbed {
-                                description: Some(err.to_string()),
+                                description: Some(content),
                                 color: Some(ColorResolvables::Red.as_u32()),
                                 ..Default::default()
                             }]
@@ -173,6 +176,7 @@ pub trait ContextCommand: Send + Sync {
                     ).await?;
                 }
             }
+            // if the message command does not have correct arguments, prompt user the command usage
             Err(_) => {
                 let _ = client.reply_message(
                     msg.channel_id,
