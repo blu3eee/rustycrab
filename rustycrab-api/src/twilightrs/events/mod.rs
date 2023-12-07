@@ -1,8 +1,4 @@
 // src/twilightrs/events/mod.rs
-mod message_create;
-mod message_delete;
-mod interaction_handlers;
-
 use std::{ error::Error, sync::Arc };
 use twilight_gateway::{ Event, Shard, stream::ShardEventStream };
 
@@ -13,10 +9,16 @@ use self::{
     message_create::handle_message_create,
     message_delete::handle_message_delete,
     interaction_handlers::handle_interaction_create,
+    voice_updates::handle_voice_state_update,
 };
 
 use super::{ discord_client::DiscordClient, dispatchers::ClientDispatchers };
 
+mod message_create;
+mod message_delete;
+mod interaction_handlers;
+
+mod voice_updates;
 pub async fn handle_bot_events(
     mut shards: Vec<Shard>,
     client: DiscordClient
@@ -44,15 +46,15 @@ pub async fn handle_bot_events(
             }
         };
 
-        client.voice_music_manager.songbird.process(&event).await;
-        client.standby.process(&event);
-
         if let Event::MessageDelete(_) = &event {
         } else {
             // Update the cache.
             client.cache.update(&event);
         }
-        spawn(handle_event(Arc::clone(&client), event, dispatchers.clone()));
+        client.standby.process(&event);
+        client.voice_music_manager.songbird.process(&event).await;
+
+        spawn(handle_event(Arc::clone(&client), event.clone(), dispatchers.clone()));
     }
 
     Ok(())
@@ -63,11 +65,11 @@ async fn handle_event(
     event: Event,
     dispatchers: Arc<ClientDispatchers>
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    match event {
+    // event logger
+
+    let handle_event_result = match event.clone() {
         Event::MessageCreate(message_create) => {
-            if let Err(e) = handle_message_create(client, &message_create, &dispatchers).await {
-                eprintln!("Error handling MessageCreate event: {}", e);
-            }
+            handle_message_create(client, &message_create, &dispatchers).await
         }
         Event::Ready(ready) => {
             println!("[{}#{:04}] Shard is ready", ready.user.name, ready.user.discriminator);
@@ -77,22 +79,24 @@ async fn handle_event(
                 ready.user.discriminator
             );
             let _ = dispatchers.slash_commands.register_commands(Arc::clone(&client)).await;
+
+            Ok(())
         }
         Event::MessageDelete(message_delete) => {
-            handle_message_delete(Arc::clone(&client), &message_delete).await?;
+            handle_message_delete(Arc::clone(&client), &message_delete).await
         }
         Event::InteractionCreate(interaction) => {
-            if
-                let Err(e) = handle_interaction_create(
-                    Arc::clone(&client),
-                    &interaction,
-                    &dispatchers
-                ).await
-            {
-                eprintln!("Error handling InteractionCreate event: {}", e);
-            }
+            handle_interaction_create(Arc::clone(&client), &interaction, &dispatchers).await
         }
-        _ => {}
+        Event::VoiceStateUpdate(update) => { handle_voice_state_update(client, &update).await }
+        _ => { Ok(()) }
+    };
+
+    // handler event error
+    if let Err(e) = handle_event_result {
+        {
+            eprintln!("Error handling event {event:?}: {e:?}");
+        }
     }
 
     Ok(())
