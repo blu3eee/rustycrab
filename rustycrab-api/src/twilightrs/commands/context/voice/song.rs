@@ -10,7 +10,7 @@ use crate::{
         commands::context::{ context_command::{ ContextCommand, GuildConfigModel }, ParsedArg },
         discord_client::DiscordClient,
         messages::DiscordEmbed,
-        bot::voice_music::voice_manager::track_info_fields,
+        bot::voice_music::player::track_info::track_info_fields,
     },
     cdn_avatar,
 };

@@ -9,7 +9,7 @@ voice = ["opus", "sodiumoxide", "byteorder"]
 
 [dependencies]
 dotenv = "0.15.0"                                                                              # To manage environment variables
-spotify-api = { default-features = false, path = "../spotify-api", version = "0.1.0" }
+spotify = { default-features = false, path = "../spotify", version = "0.1.0" }
 rustycrab-model = { default-features = false, path = "../rustycrab-model", version = "0.2.0" }
 axum = { version = "0.7.1", features = ["macros"] }
 tower = "0.4.13"
@@ -36,7 +36,7 @@ twilight-cache-inmemory = { version = "0.15.4", features = [
 twilight-standby = "0.15.4"
 
 # music feature
-songbird = { version = "0.4.0-rc", features = ["twilight"] }
+songbird = { version = "0.4.0-rc", features = ["twilight", "driver"] }
 symphonia = { features = [
     "aac",
     "mp3",
@@ -44,7 +44,6 @@ symphonia = { features = [
     "alac",
 ], version = "0.5.3" } # needed for soundbird
 opus = { version = "0.3.0", optional = true }
-headless_chrome = "1.0.8"
 
 # utils
 futures = "0.3.29"

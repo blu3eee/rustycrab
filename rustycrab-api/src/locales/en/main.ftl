@@ -120,15 +120,17 @@ music-not-playing = I'm not playing any music
 music-no-voice = I'm not in any voice channel
 music-user-novoice = You need to be in a voice channel to use the command
 music-cannot-connect = I can't connect to your channel
-music-error-track = Error retrieving track information
+music-error-track = An error happened while playing this track
 music-duration = Duration
 music-position-inqueue = Position in queue
 music-content-credits = Credits
 music-content-credits-soundcloud = Listen on Soundcloud
 music-content-credits-youtube = Listen on Youtube
+music-content-credits-spotify = Listen on Spotify
 music-content-creator = Content creator
 music-playlist-fetch-error = Error getting tracks from playlist, please check the link or the video/playlist availablity.
 music-loading-url = Loading track(s)
+music-playlist-found = Spotify Playlist
 
 # Join Command
 command-join = Ask the bot to join a voice channel

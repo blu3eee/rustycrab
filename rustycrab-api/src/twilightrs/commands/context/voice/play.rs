@@ -1,3 +1,4 @@
+use std::time::Duration;
 use std::{ error::Error, sync::Arc };
 
 use async_trait::async_trait;
@@ -5,15 +6,16 @@ use fluent_bundle::FluentArgs;
 use rustycrab_model::color::ColorResolvables;
 use songbird::input::{ YoutubeDl, Compose };
 
+use spotify::models::SpotifyPlaylistResponse;
 use twilight_model::gateway::payload::incoming::MessageCreate;
 use twilight_model::id::Id;
 use twilight_model::id::marker::GuildMarker;
 
-use crate::twilightrs::bot::voice_music::parse_url::parse_url_or_search_query;
-
 use crate::utilities::app_error::BoxedError;
+use crate::utilities::format_duration;
 use crate::{
     twilightrs::{
+        messages::DiscordEmbedField,
         commands::context::{
             context_command::{ ContextCommand, GuildConfigModel },
             ParsedArg,
@@ -22,7 +24,10 @@ use crate::{
         },
         discord_client::{ DiscordClient, MessageContent },
         messages::DiscordEmbed,
-        bot::voice_music::voice_manager::{ add_track_to_queue, track_info_fields },
+        bot::voice_music::{
+            utils::parse_url::parse_url_or_search_query,
+            player::{ track_info::track_info_fields, add_track_to_queue::add_track_to_queue },
+        },
     },
     cdn_avatar,
 };
@@ -61,18 +66,21 @@ impl ContextCommand for PlayCommand {
             }
         };
 
-        // get the current call of the bot (if there is any)
-        // if the bot is already in a channel, check if the bot is in the same channel as the command author
-        // if the bot is not in a voice channel, ask the bot to join the voice channel of the command author
-        // return error if the bot is not in the same channel or not able to connect
-        if let Ok(call_lock) = client.fetch_call_lock(guild_id, Some(&config.locale)).await {
-            let mut call = call_lock.lock().await;
-            let _ = call.deafen(true).await;
+        if let Some(_) = client.get_bot_vc_channel_id(guild_id).await? {
             client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
-        } else if let Err(_) = client.voice_music_manager.songbird.join(guild_id, channel_id).await {
-            return Err(
-                client.get_locale_string(&config.locale, "music-cannot-connect", None).into()
-            );
+        }
+
+        match client.voice_music_manager.songbird.join(guild_id, channel_id).await {
+            Ok(call_lock) => {
+                let mut call = call_lock.lock().await;
+                let _ = call.deafen(true).await;
+            }
+            Err(e) => {
+                println!("error joining channel {e}");
+                return Err(
+                    client.get_locale_string(&config.locale, "music-cannot-connect", None).into()
+                );
+            }
         }
 
         let sent_msg = client
@@ -93,7 +101,7 @@ impl ContextCommand for PlayCommand {
 
         // now the bot has connect to the channel
         // get the url(s) to play audio
-        let (valid_urls, _) = if let Some(ParsedArg::Text(arg)) = command_args.first() {
+        let (valid_urls, playlist_data) = if let Some(ParsedArg::Text(arg)) = command_args.first() {
             match parse_url_or_search_query(&client, &config.locale, arg).await {
                 Ok(urls) => { urls }
                 Err(e) => {
@@ -118,7 +126,7 @@ impl ContextCommand for PlayCommand {
             );
         }
 
-        let _ = build_response(&client, msg, valid_urls, guild_id, config).await;
+        let _ = build_response(&client, config, msg, guild_id, valid_urls, playlist_data).await;
 
         let _ = client.http.delete_message(sent_msg.channel_id, sent_msg.id).await;
 
@@ -130,19 +138,92 @@ impl PlayCommand {}
 
 async fn build_response(
     client: &DiscordClient,
+    config: &GuildConfigModel,
     msg: &MessageCreate,
-    urls: Vec<String>,
     guild_id: Id<GuildMarker>,
-    config: &GuildConfigModel
+    urls: Vec<String>,
+    playlist_data: Option<SpotifyPlaylistResponse>
 ) -> Result<(), BoxedError> {
     // We need to ensure that this guild has a TrackQueue created for it.
     let track_queue = client.voice_music_manager.get_play_queue(guild_id);
+
+    let mut embeds: Vec<DiscordEmbed> = Vec::new();
+
+    // spotify playlist data
+    if let Some(playlist_data) = playlist_data {
+        embeds.push(DiscordEmbed {
+            author_name: Some(
+                client.get_locale_string(&config.locale, "music-playlist-found", None)
+            ),
+            author_icon_url: Some(client.voice_music_manager.spinning_disk.clone()),
+            fields: Some(
+                vec![
+                    DiscordEmbedField {
+                        name: client.get_locale_string(
+                            &config.locale,
+                            "music-content-credits-spotify",
+                            None
+                        ),
+                        value: format!(
+                            "[{}]({})",
+                            playlist_data.name,
+                            playlist_data.external_urls.spotify
+                        ),
+                        inline: false,
+                    },
+                    DiscordEmbedField {
+                        name: client.get_locale_string(&config.locale, "music-duration", None),
+                        value: format!(
+                            "{}",
+                            format_duration(
+                                &Duration::from_millis(
+                                    playlist_data.tracks.items
+                                        .iter()
+                                        .map(|track_item| track_item.track.duration_ms)
+                                        .sum::<u64>()
+                                )
+                            )
+                        ),
+                        inline: true,
+                    },
+                    DiscordEmbedField {
+                        name: format!("Tracks"),
+                        value: format!("{}", playlist_data.tracks.total),
+                        inline: true,
+                    },
+                    DiscordEmbedField {
+                        name: format!("Playlist creator"),
+                        value: format!(
+                            "[{}]({})",
+                            playlist_data.owner.display_name.unwrap_or(
+                                playlist_data.owner.id.to_string()
+                            ),
+                            playlist_data.owner.external_urls.spotify
+                        ),
+                        inline: true,
+                    },
+                    DiscordEmbedField {
+                        name: format!("Followers"),
+                        value: format!("{}", playlist_data.followers.total),
+                        inline: true,
+                    }
+                ]
+            ),
+            thumbnail: if playlist_data.images.len() > 0 {
+                Some(playlist_data.images[0].url.clone())
+            } else {
+                None
+            },
+            description: playlist_data.description,
+            color: Some(ColorResolvables::SpotifyGreen.as_u32()),
+            ..Default::default()
+        });
+    }
 
     let embed = if track_queue.is_empty() {
         // Add tracks to the queue, counting successfully added ones
         let _ = add_track_to_queue(
             Arc::clone(&client),
-            Arc::clone(&client.voice_music_manager),
             msg.channel_id,
             guild_id.clone(),
             &msg.author,
@@ -166,12 +247,14 @@ async fn build_response(
         );
         embed.footer_icon_url = msg.author.avatar.map(|hash| cdn_avatar!(msg.author.id, hash));
         embed.author_icon_url = Some(client.voice_music_manager.spinning_disk.clone());
-        let _ = client.reply_message(
-            msg.channel_id,
-            msg.id,
-            MessageContent::DiscordEmbeds(vec![embed])
-        ).await;
+        embeds.push(embed);
     }
+
+    let _ = client.reply_message(
+        msg.channel_id,
+        msg.id,
+        MessageContent::DiscordEmbeds(embeds)
+    ).await;
 
     Ok(())
 }

@@ -12,6 +12,7 @@ use twilight_model::{
     http::interaction::{ InteractionResponse, InteractionResponseType, InteractionResponseData },
     gateway::payload::incoming::InteractionCreate,
     guild::Role,
+    voice::VoiceState,
 };
 use twilight_http::{ Client as HttpClient, Response, request::channel::message::CreateMessage };
 use twilight_standby::Standby;
@@ -68,6 +69,9 @@ pub struct DiscordClientRef {
     /// Record of users marked as 'away from keyboard' (AFK).
     pub afk_users: RwLock<HashMap<Id<GuildMarker>, HashMap<Id<UserMarker>, UserAfkStatus>>>,
 
+    /// cache voice staets
+    pub voice_states_cached: RwLock<HashMap<Id<GuildMarker>, HashMap<Id<UserMarker>, VoiceState>>>,
+
     /// Manager for voice-related features.
     pub voice_music_manager: Arc<VoiceManager>,
 
@@ -113,10 +117,11 @@ impl DiscordClientRef {
             cache,
             standby,
             voice_music_manager: Arc::new(VoiceManager::new(songbird)),
-            deleted_messages: HashMap::new().into(),
+            deleted_messages: Default::default(),
             bundles,
             default_bundle: load_localization("en"),
-            afk_users: HashMap::new().into(),
+            afk_users: Default::default(),
+            voice_states_cached: Default::default(),
         }
     }
 
@@ -534,7 +539,7 @@ impl DiscordClientRef {
         };
         self.voice_music_manager.songbird
             .get(guild_id)
-            .ok_or(self.get_locale_string(&locale, "music-not-same-channel", None).into())
+            .ok_or(self.get_locale_string(&locale, "Bot is not in a call", None).into())
     }
 
     /// Retrives current handle
@@ -560,6 +565,29 @@ impl DiscordClientRef {
         }
 
         return Err(self.get_locale_string(&locale, "music-not-playing", None).into());
+    }
+
+    /// get voice chat member count
+    pub fn get_vc_member_count(&self, channel_id: Id<ChannelMarker>) -> usize {
+        let channel_members = self.cache.voice_channel_states(channel_id);
+        if let Some(mut channel_members) = channel_members {
+            let mut count: usize = 0;
+            while let Some(_) = channel_members.next() {
+                count += 1;
+            }
+            count
+        } else {
+            0
+        }
+    }
+
+    /// get bot's voice chat channel_id
+    pub async fn get_bot_vc_channel_id(
+        &self,
+        guild_id: Id<GuildMarker>
+    ) -> Result<Option<Id<ChannelMarker>>, BoxedError> {
+        let bot = self.get_bot().await?;
+        Ok(self.cache.voice_state(bot.id, guild_id).and_then(|state| Some(state.channel_id())))
     }
 }
 

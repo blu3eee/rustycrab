@@ -43,6 +43,14 @@ impl ContextCommand for JoinCommand {
         let (key, color) = match client.cache.voice_state(msg.author.id, guild_id) {
             Some(state) => {
                 // Ensure the user is in a voice channel
+                if let Some(_) = client.get_bot_vc_channel_id(guild_id).await? {
+                    client.verify_same_voicechannel(
+                        guild_id,
+                        msg.author.id,
+                        Some(&config.locale)
+                    ).await?;
+                }
+
                 let channel_id = state.channel_id();
                 args.set("channel", format!("<#{}>", channel_id));
 

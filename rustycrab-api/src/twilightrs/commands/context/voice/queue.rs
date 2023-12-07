@@ -94,9 +94,13 @@ impl ContextCommand for QueueCommand {
             match source.aux_metadata().await {
                 Ok(metadata) => {
                     format!(
-                        "[{}]({})",
+                        "[{}]{}",
                         metadata.title.unwrap_or_else(|| "Unknown title".to_string()),
-                        url
+                        if let Some(source_url) = metadata.source_url {
+                            format!("({})", source_url)
+                        } else {
+                            String::new()
+                        }
                     )
                 }
                 Err(_) => { format!("[Unknown track]({})", url) }

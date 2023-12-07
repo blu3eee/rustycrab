@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
-use rustycrab_model::color::ColorResolvables;
+use rustycrab_model::{ color::ColorResolvables, music::PlayerLoopState };
 use twilight_model::gateway::payload::incoming::MessageCreate;
 
 use crate::twilightrs::{
@@ -30,11 +30,16 @@ impl ContextCommand for LeaveChannelCommand {
 
         client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
 
-        let call_lock = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
-        let mut call = call_lock.lock().await;
-        call.stop();
+        let _ = client.fetch_call_lock(guild_id, Some(&config.locale)).await?;
+
+        // let _ = client.fetch_trackhandle(guild_id, Some(&config.locale)).await?;
+
+        client.voice_music_manager.set_loop_state(guild_id, PlayerLoopState::NoLoop);
+        client.voice_music_manager.clear_waiting_queue(guild_id);
+
         let (key, color) = {
-            if client.voice_music_manager.songbird.leave(guild_id).await.is_ok() {
+            if client.voice_music_manager.songbird.remove(guild_id).await.is_ok() {
+                // let mut call = call_lock.lock().await;
                 ("command-leave-left", ColorResolvables::Green)
             } else {
                 ("command-leave-failed", ColorResolvables::Red)

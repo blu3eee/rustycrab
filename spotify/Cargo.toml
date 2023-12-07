@@ -1,5 +1,5 @@
 [package]
-name = "spotify-api"
+name = "spotify"
 version = "0.1.0"
 edition = "2021"
 
