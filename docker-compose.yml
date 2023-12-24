@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  rustycrab-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/usr/src/rustycrab-api
+    ports:
+      - "8000:8000" # Assuming the API runs on port 8000, adjust if necessary
+    environment:
+      - RUST_LOG=info # Set environment variables if needed
