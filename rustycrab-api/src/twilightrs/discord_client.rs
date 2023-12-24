@@ -2,8 +2,8 @@ use fluent::FluentArgs;
 
 use rustycrab_model::afk::UserAfkStatus;
 use sea_orm::DatabaseConnection;
-use songbird::{ Songbird, Call, tracks::TrackHandle };
-use tokio::sync::Mutex;
+use songbird::Songbird;
+
 use twilight_cache_inmemory::{ InMemoryCache, model::CachedMessage };
 use twilight_model::{
     channel::{ Message, message::{ embed::Embed, MessageFlags }, Channel },
@@ -509,62 +509,13 @@ impl DiscordClientRef {
     pub async fn verify_same_voicechannel(
         &self,
         guild_id: Id<GuildMarker>,
-        user_id: Id<UserMarker>,
-        locale: Option<&str>
+        user_id: Id<UserMarker>
     ) -> Result<(), BoxedError> {
-        let locale = if let Some(locale) = locale {
-            locale.to_string()
-        } else {
-            let config = self.get_guild_config(&guild_id).await?;
-            String::from(config.locale)
-        };
         if !self.is_user_in_same_channel_as_bot(guild_id, user_id).await? {
-            return Err(self.get_locale_string(&locale, "music-not-same-channel", None).into());
+            return Err("music-not-same-channel".into());
         }
 
         return Ok(());
-    }
-
-    /// Retrieves guild's call
-    pub async fn fetch_call_lock(
-        &self,
-        guild_id: Id<GuildMarker>,
-        locale: Option<&str>
-    ) -> Result<Arc<Mutex<Call>>, BoxedError> {
-        let locale = if let Some(locale) = locale {
-            locale.to_string()
-        } else {
-            let config = self.get_guild_config(&guild_id).await?;
-            String::from(config.locale)
-        };
-        self.voice_music_manager.songbird
-            .get(guild_id)
-            .ok_or(self.get_locale_string(&locale, "Bot is not in a call", None).into())
-    }
-
-    /// Retrives current handle
-    pub async fn fetch_trackhandle(
-        &self,
-        guild_id: Id<GuildMarker>,
-        locale: Option<&str>
-    ) -> Result<TrackHandle, BoxedError> {
-        let locale = if let Some(locale) = locale {
-            locale.to_string()
-        } else {
-            let config = self.get_guild_config(&guild_id).await?;
-            String::from(config.locale)
-        };
-        let track_queue = {
-            let store = self.voice_music_manager.trackqueues.read().unwrap();
-            store.get(&guild_id).cloned()
-        };
-        if let Some(trackqueue) = track_queue {
-            if let Some(handle) = trackqueue.current() {
-                return Ok(handle);
-            }
-        }
-
-        return Err(self.get_locale_string(&locale, "music-not-playing", None).into());
     }
 
     /// get voice chat member count

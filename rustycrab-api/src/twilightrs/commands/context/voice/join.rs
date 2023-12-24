@@ -35,20 +35,14 @@ impl ContextCommand for JoinCommand {
         msg: &MessageCreate,
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or(
-            client.get_locale_string(&config.locale, "command-guildonly", None)
-        )?;
+        let guild_id = msg.guild_id.ok_or("command-guildonly")?;
         let mut args = FluentArgs::new();
 
         let (key, color) = match client.cache.voice_state(msg.author.id, guild_id) {
             Some(state) => {
                 // Ensure the user is in a voice channel
                 if let Some(_) = client.get_bot_vc_channel_id(guild_id).await? {
-                    client.verify_same_voicechannel(
-                        guild_id,
-                        msg.author.id,
-                        Some(&config.locale)
-                    ).await?;
+                    client.verify_same_voicechannel(guild_id, msg.author.id).await?;
                 }
 
                 let channel_id = state.channel_id();

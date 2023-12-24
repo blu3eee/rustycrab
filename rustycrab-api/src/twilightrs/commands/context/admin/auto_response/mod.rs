@@ -105,7 +105,6 @@ impl ContextCommand for AutoResCommand {
                     author_name: Some(
                         format!("Auto-Response commands - Prefix: {}", config.prefix)
                     ),
-                    author_icon_url: Some(client.voice_music_manager.spinning_disk.clone()),
                     thumbnail: bot.avatar.map(|avatar_hash| cdn_avatar!(bot.id, avatar_hash)),
                     color: Some(ColorResolvables::Blue.as_u32()),
                     footer_text: Some(

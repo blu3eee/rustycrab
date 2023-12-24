@@ -43,9 +43,7 @@ impl ContextCommand for ListAutoResponseCommand {
         msg: &MessageCreate,
         _: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or(
-            client.get_locale_string(&config.locale, "command-guildonly", None)
-        )?;
+        let guild_id = msg.guild_id.ok_or("command-guildonly")?;
 
         let bot = client.get_bot().await?;
 

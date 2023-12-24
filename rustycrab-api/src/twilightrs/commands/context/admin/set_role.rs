@@ -51,9 +51,7 @@ impl ContextCommand for RoleCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or(
-            client.get_locale_string(&config.locale, "command-guildonly", None)
-        )?;
+        let guild_id = msg.guild_id.ok_or("command-guildonly")?;
         if let Some(ParsedArg::Users(users)) = command_args.get(0) {
             if let Some(ParsedArg::Text(role_arg)) = command_args.get(1) {
                 // Find the role by name, ID, or mention

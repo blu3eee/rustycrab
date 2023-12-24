@@ -1,7 +1,8 @@
 use std::{ sync::{ Arc, RwLock }, collections::HashMap };
 
 use rustycrab_model::{ music::PlayerLoopState, error::BoxedError };
-use songbird::{ Songbird, tracks::{ TrackQueue, PlayMode, TrackHandle }, input::AuxMetadata };
+use songbird::{ Songbird, tracks::{ TrackQueue, PlayMode, TrackHandle }, input::AuxMetadata, Call };
+use tokio::sync::Mutex;
 use twilight_model::{
     id::{ marker::{ GuildMarker, ChannelMarker, MessageMarker }, Id },
     user::User,
@@ -42,6 +43,32 @@ impl VoiceManager {
             music_player_channel_ids: Default::default(),
             spinning_disk: "https://cdn.darrennathanael.com/icons/spinning_disk.gif".to_string(),
         }
+    }
+
+    /// Retrieves guild's call
+    pub async fn fetch_call_lock(
+        &self,
+        guild_id: Id<GuildMarker>
+    ) -> Result<Arc<Mutex<Call>>, BoxedError> {
+        self.songbird.get(guild_id).ok_or("Bot is not in a call".into())
+    }
+
+    /// Retrives current handle
+    pub async fn fetch_trackhandle(
+        &self,
+        guild_id: Id<GuildMarker>
+    ) -> Result<TrackHandle, BoxedError> {
+        let track_queue = {
+            let store = self.trackqueues.read().unwrap();
+            store.get(&guild_id).cloned()
+        };
+        if let Some(trackqueue) = track_queue {
+            if let Some(handle) = trackqueue.current() {
+                return Ok(handle);
+            }
+        }
+
+        return Err("music-not-playing".into());
     }
 
     /// Extends the waiting track queue for a given guild with additional URLs.
@@ -164,23 +191,6 @@ impl VoiceManager {
             };
         }
         Ok(false)
-    }
-
-    pub async fn fetch_trackhandle(
-        &self,
-        guild_id: Id<GuildMarker>
-    ) -> Result<TrackHandle, BoxedError> {
-        let track_queue = {
-            let store = self.trackqueues.read().unwrap();
-            store.get(&guild_id).cloned()
-        };
-        if let Some(trackqueue) = track_queue {
-            if let Some(handle) = trackqueue.current() {
-                return Ok(handle);
-            }
-        }
-
-        return Err("music-not-playing".into());
     }
 
     /// resume player if the player is paused, return a `bool` determine if the player is resumed from pause state

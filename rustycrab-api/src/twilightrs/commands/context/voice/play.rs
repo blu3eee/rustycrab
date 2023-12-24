@@ -52,22 +52,18 @@ impl ContextCommand for PlayCommand {
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         // make sure the command is in a guild
-        let guild_id = msg.guild_id.ok_or(
-            client.get_locale_string(&config.locale, "command-guildonly", None)
-        )?;
+        let guild_id = msg.guild_id.ok_or("command-guildonly")?;
 
         // get the voice channel of the command author
         let channel_id = match client.cache.voice_state(msg.author.id, guild_id) {
             Some(state) => { state.channel_id() }
             None => {
-                return Err(
-                    client.get_locale_string(&config.locale, "music-user-novoice", None).into()
-                );
+                return Err("music-user-novoice".into());
             }
         };
 
         if let Some(_) = client.get_bot_vc_channel_id(guild_id).await? {
-            client.verify_same_voicechannel(guild_id, msg.author.id, Some(&config.locale)).await?;
+            client.verify_same_voicechannel(guild_id, msg.author.id).await?;
         }
 
         match client.voice_music_manager.songbird.join(guild_id, channel_id).await {
@@ -106,24 +102,16 @@ impl ContextCommand for PlayCommand {
                 Ok(urls) => { urls }
                 Err(e) => {
                     eprintln!("Error: {e:?}");
-                    return Err(
-                        client
-                            .get_locale_string(&config.locale, "command-play-invalid-url", None)
-                            .into()
-                    );
+                    return Err("command-play-invalid-url".into());
                 }
             }
         } else {
-            return Err(
-                client.get_locale_string(&config.locale, "command-play-invalid-url", None).into()
-            );
+            return Err("command-play-invalid-url".into());
         };
 
         // if the parsed urls is empty, return error
         if valid_urls.is_empty() {
-            return Err(
-                client.get_locale_string(&config.locale, "command-play-invalid-url", None).into()
-            );
+            return Err("command-play-invalid-url".into());
         }
 
         let _ = build_response(&client, config, msg, guild_id, valid_urls, playlist_data).await;

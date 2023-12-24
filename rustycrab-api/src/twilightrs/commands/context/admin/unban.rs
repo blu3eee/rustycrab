@@ -41,9 +41,7 @@ impl ContextCommand for UnbanMemberCommand {
         msg: &MessageCreate,
         command_args: Vec<ParsedArg>
     ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-        let guild_id = msg.guild_id.ok_or(
-            client.get_locale_string(&config.locale, "command-guildonly", None)
-        )?;
+        let guild_id = msg.guild_id.ok_or("command-guildonly")?;
         if let Some(ParsedArg::Users(users)) = command_args.first() {
             for user in users {
                 let mut args = FluentArgs::new();

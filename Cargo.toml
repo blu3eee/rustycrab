@@ -1,11 +1,5 @@
 [workspace]
-members = [
-    "rustycrab-api",
-    "rustycrab-model",
-    "rustycrab-webapp",
-    "database-migration",
-    "spotify",
-]
+members = ["rustycrab-api", "rustycrab-model", "database-migration", "spotify"]
 
 resolver = "2"
 
