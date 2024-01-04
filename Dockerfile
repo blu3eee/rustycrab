@@ -1,8 +1,6 @@
 # Use the official Rust image as a parent image
 FROM rust:latest
 
-# Install Chrome
-
 RUN apt-get update && apt-get install -y cmake pkg-config libssl-dev openssl libopus-dev  youtube-dl ffmpeg
 
 # Set the working directory in the container
@@ -18,4 +16,4 @@ COPY ./spotify /usr/src/spotify
 RUN cargo build --release
 
 # Run the binary
-CMD ["./target/release/rustycrab-api"]
+CMD ["/usr/src/rustycrab-api/target/release/rustycrab-api"]
