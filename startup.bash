@@ -5,7 +5,7 @@ sudo apt install -y git wget
 # docker
 sudo apt-get update
 sudo apt-get install -y  ca-certificates curl gnupg
-sudo install -y -m 0755 -d /etc/apt/keyrings
+sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
