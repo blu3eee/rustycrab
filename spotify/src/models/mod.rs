@@ -1,3 +1,5 @@
+// src/models/mod.rs
+
 use std::error::Error;
 
 use serde::{ Deserialize, Serialize };
@@ -14,21 +16,32 @@ pub struct AuthRequest {
 #[derive(Deserialize)]
 pub struct AuthResponse {
     pub access_token: String,
+    pub token_type: String,
+    pub expires_in: u64,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct SpotifyTrackResponse {
+pub struct SpotifyTrack {
     pub id: String,
     pub name: String,
-    pub artists: Vec<Artist>,
+    pub artists: Vec<TrackArtist>,
     pub album: Album,
     pub duration_ms: u64,
+    pub preview_url: Option<String>,
+    pub external_urls: ExternalUrls,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct TrackArtist {
+    pub id: String,
+    pub name: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Artist {
     pub id: String,
     pub name: String,
+    pub images: Vec<Image>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -66,7 +79,7 @@ pub struct PlaylistTracks {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct PlaylistTrackItem {
-    pub track: SpotifyTrackResponse,
+    pub track: SpotifyTrack,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

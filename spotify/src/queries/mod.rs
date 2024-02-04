@@ -1,3 +1,5 @@
+// src/queries/mod.rs
+
 use std::env;
 
 use regex::Regex;
@@ -9,12 +11,12 @@ use self::auth::get_spotify_token;
 pub mod auth;
 pub mod track;
 pub mod playlist;
+pub mod manager;
 
 pub async fn get_spotify_data<T>(url: &str) -> Result<T, reqwest::Error> where T: DeserializeOwned {
     let client_id = env::var("SPOTIFY_CLIENT_ID").expect("Expected a client id");
     let client_secret = env::var("SPOTIFY_CLIENT_SECRET").expect("Expected a client secret");
 
-    // For example purposes, hardcoding a Spotify API endpoint
     let token = get_spotify_token(&client_id, &client_secret).await?;
     let client = reqwest::Client::new();
     let res = client
