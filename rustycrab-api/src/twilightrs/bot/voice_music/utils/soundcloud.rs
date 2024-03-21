@@ -25,8 +25,8 @@ pub fn is_soundcloud_playlist_url(url: &str) -> bool {
     {
         // Extract the last segment of the URL
         if let Some(last_segment) = url.split('/').last() {
-            // Check if the length of the last segment is exactly 5 characters
-            return last_segment.len() == 17;
+            // Check if the length of the last segment is exactly 5 or 17 characters
+            return last_segment.len() == 17 || last_segment.len() == 5;
         }
     }
 
