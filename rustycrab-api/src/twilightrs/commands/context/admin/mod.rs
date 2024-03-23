@@ -41,7 +41,7 @@ impl ContextCommandCategory for AdminCommands {
             Box::new(TimeoutMemberCommand) as Box<dyn ContextCommand>,
             Box::new(UntimeoutMemberCommand) as Box<dyn ContextCommand>,
             Box::new(RoleCommand) as Box<dyn ContextCommand>,
-            Box::new(AutoResCommand) as Box<dyn ContextCommand>,
+            // Box::new(AutoResCommand) as Box<dyn ContextCommand>,
         ])
     }
 }
