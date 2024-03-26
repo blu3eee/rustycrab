@@ -197,3 +197,4 @@ autores-delete-failed = Failed to delete auto-response with trigger `{ $trigger 
 autores-notfound = I can't find auto-response with trigger `{ $trigger }`
 autores-updated = Updated auto-response with trigger `{ $trigger }`
 autores-update-failed = Failed to update auto-response with trigger `{ $trigger }`
+autores-limited = Reached limit of 20 Auto-responders per server.

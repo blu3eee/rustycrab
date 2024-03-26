@@ -183,3 +183,15 @@ command-skipto = Bỏ qua đến bài hát ở một vị trí cụ thể
 command-skipto-nopos = Vui lòng cung cấp một vị trí hợp lệ để bỏ qua đến
 command-skipto-invalid = Vị trí không hợp lệ: chỉ có { $count } bài hát trong hàng đợi
 command-skipto-success = Đã bỏ qua đến bài hát ở vị trí { $position }
+
+# Auto response
+command-autores = Quản lí auto-responders
+autores-existed = Auto-res với trigger `{ $trigger } đã existed.
+autores-created = Auto-res vừa được tạo. Trigger: `{ $trigger }`
+autores-create-failed = Lỗi khi tạo auto-res với trigger `{ $trigger }`
+autores-deleted = Đã xoá auto-res với trigger: `{ $trigger }`
+autores-delete-failed = Lỗi khi xoá auto-res với trigger `{ $trigger }`
+autores-notfound = Không tìm thấy auto-res với trigger `{ $trigger }`
+autores-updated = Đã cập nhật auto-res với trigger `{ $trigger }`
+autores-update-failed = Lỗi khi cập nhật auto-res với trigger `{ $trigger }`
+autores-limited = Server bạn đã đạt giới hạn 20 auto-res/server.

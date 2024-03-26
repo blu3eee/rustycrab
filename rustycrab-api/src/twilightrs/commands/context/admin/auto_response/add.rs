@@ -11,19 +11,20 @@ use twilight_model::gateway::payload::incoming::MessageCreate;
 use std::error::Error;
 
 use crate::{
+    default_queries::DefaultSeaQueries,
+    multi_bot_guild_entities_queries::MultipleBotGuildEntityQueries,
+    queries::auto_responses_queries::AutoResponsesQueries,
     twilightrs::{
         commands::context::{
-            ContextCommand,
-            ParsedArg,
             context_command::GuildConfigModel,
             ArgSpec,
             ArgType,
+            ContextCommand,
+            ParsedArg,
         },
         discord_client::DiscordClient,
         utils::reply_command,
     },
-    queries::auto_responses_queries::AutoResponsesQueries,
-    default_queries::DefaultSeaQueries,
 };
 
 use super::{ AutoResCommand, utils::split_trigger_and_value };
@@ -69,24 +70,37 @@ impl ContextCommand for AddAutoResponseCommand {
         {
             ("autores-existed", ColorResolvables::Yellow)
         } else {
-            if
-                let Ok(_) = AutoResponsesQueries::create_entity(
-                    &client.db,
-                    RequestCreateAutoResponse {
-                        bot_discord_id: bot.id.to_string(),
-                        guild_discord_id: guild_id.to_string(),
-                        trigger: trigger.to_string(),
-                        response_data: RequestCreateUpdateMessage {
-                            r#type: Some("Embed and Text".to_string()),
-                            content: Some(response.to_string()),
-                            embed: None,
-                        },
-                    }
-                ).await
-            {
-                ("autores-created", ColorResolvables::Green)
+            let list = AutoResponsesQueries::find_by_discord_ids(
+                &client.db,
+                &bot.id.to_string(),
+                &guild_id.to_string()
+            ).await?
+                .iter()
+                .map(|autores| autores.trigger.clone())
+                .collect::<Vec<String>>();
+
+            if list.len() >= 20 {
+                ("autores-limited", ColorResolvables::Red)
             } else {
-                ("autores-create-failed", ColorResolvables::Red)
+                if
+                    let Ok(_) = AutoResponsesQueries::create_entity(
+                        &client.db,
+                        RequestCreateAutoResponse {
+                            bot_discord_id: bot.id.to_string(),
+                            guild_discord_id: guild_id.to_string(),
+                            trigger: trigger.to_string(),
+                            response_data: RequestCreateUpdateMessage {
+                                r#type: Some("Embed and Text".to_string()),
+                                content: Some(response.to_string()),
+                                embed: None,
+                            },
+                        }
+                    ).await
+                {
+                    ("autores-created", ColorResolvables::Green)
+                } else {
+                    ("autores-create-failed", ColorResolvables::Red)
+                }
             }
         };
 
